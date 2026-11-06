@@ -60,5 +60,19 @@ export function creerRendu(conteneur) {
     soleil.target.position.copy(position)
   }
 
-  return { renderer, scene, soleil, suivreSoleil }
+  /**
+   * Change l'ambiance quand on change de lieu (dehors : ciel bleu ; dedans : lumière chaude).
+   * @param {object} a { fond, brouillard: [proche, loin] ou null, ciel, sol, intensite }
+   */
+  function changerAmbiance(a) {
+    scene.background.set(a.fond)
+    scene.fog = a.brouillard ? new THREE.Fog(a.fond, a.brouillard[0], a.brouillard[1]) : null
+    lumiereAmbiante.color.set(a.ciel)
+    lumiereAmbiante.groundColor.set(a.sol)
+    lumiereAmbiante.intensity = a.intensite
+    // La couleur de la page derrière le jeu suit le fond (visible lors des rotations d'écran).
+    document.body.style.background = '#' + scene.background.getHexString()
+  }
+
+  return { renderer, scene, soleil, suivreSoleil, changerAmbiance }
 }

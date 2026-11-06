@@ -1,8 +1,8 @@
 /**
  * interface.js — les boutons et fenêtres posés par-dessus la 3D.
  *
- * Pour le jalon 1 :
- *  - une bulle d'aide « Touchez le sol pour marcher » ;
+ *  - le nom du lieu où l'on se trouve, en haut à gauche ;
+ *  - une bulle d'aide (« Touchez le sol pour marcher », puis « Touchez un bâtiment… ») ;
  *  - un bouton « À propos » (nom du jeu, auteur, version) ;
  *  - un bouton « Installer » qui apparaît quand le téléphone permet d'installer le jeu.
  */
@@ -22,9 +22,12 @@ function creer(balise, classes = '', html = '') {
 export function creerInterface() {
   const racine = document.getElementById('interface')
 
-  // --- Barre du haut ---
+  // --- Barre du haut, avec le nom du lieu actuel à gauche ---
   const barre = creer('div', 'barre-haut')
   racine.appendChild(barre)
+  const etiquetteLieu = creer('div', 'etiquette-lieu')
+  etiquetteLieu.setAttribute('aria-live', 'polite')
+  barre.appendChild(etiquetteLieu)
 
   const boutonInstaller = creer(
     'button',
@@ -37,19 +40,21 @@ export function creerInterface() {
   const boutonAPropos = creer(
     'button',
     'bouton',
-    '<span class="icone" aria-hidden="true">ℹ️</span><span>À propos</span>'
+    '<span class="icone" aria-hidden="true">ℹ️</span><span class="texte-facultatif">À propos</span>'
   )
   barre.appendChild(boutonAPropos)
 
   // --- Bulle d'aide ---
   const estTactile = window.matchMedia('(pointer: coarse)').matches
-  const bulle = creer(
-    'div',
-    'bulle-aide',
-    estTactile
+  const AIDES = {
+    marcher: estTactile
       ? '👆 Touchez le sol pour marcher'
-      : '🖱️ Cliquez sur le sol pour marcher<br><span class="discret">ou utilisez les flèches / Z Q S D</span>'
-  )
+      : '🖱️ Cliquez sur le sol pour marcher<br><span class="discret">ou utilisez les flèches / Z Q S D</span>',
+    entrer: estTactile
+      ? '🚪 Touchez un bâtiment pour y entrer<br><span class="discret">et un villageois pour lui parler</span>'
+      : '🚪 Cliquez sur un bâtiment pour y entrer<br><span class="discret">et sur un villageois pour lui parler</span>',
+  }
+  const bulle = creer('div', 'bulle-aide', AIDES.marcher)
   racine.appendChild(bulle)
 
   // --- Fenêtre « À propos » ---
@@ -104,6 +109,15 @@ export function creerInterface() {
     /** Cache la bulle d'aide (après le premier déplacement). */
     cacherAide() {
       bulle.classList.add('cache')
+    },
+    /** Affiche une autre aide : 'marcher' ou 'entrer'. */
+    montrerAide(nom) {
+      bulle.innerHTML = AIDES[nom] || ''
+      bulle.classList.remove('cache')
+    },
+    /** Affiche le nom du lieu où l'on se trouve. */
+    montrerLieu(titre) {
+      etiquetteLieu.textContent = titre
     },
     /** Cache l'écran de chargement. */
     finChargement() {

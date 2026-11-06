@@ -3,27 +3,34 @@
  *
  * Aujourd'hui, chaque modèle est fabriqué par du code (formes simples).
  * Plus tard, on pourra remplacer un modèle par un vrai fichier 3D (.glb) :
- *   1. déposer le fichier dans public/modeles/ (ex. : public/modeles/personnage.glb) ;
+ *   1. déposer le fichier dans public/modeles/ (ex. : public/modeles/maison.glb) ;
  *   2. indiquer son nom dans FICHIERS_GLB ci-dessous.
- * Le reste du jeu ne verra aucune différence : il demande toujours « obtenirModele('personnage') ».
+ * Le reste du jeu ne verra aucune différence : il demande toujours « obtenirModele('maison') ».
  */
 import { creerModelePersonnage } from './personnage.js'
+import { creerMaison, creerEtable, creerBoutique, creerChaumiere } from './batiments.js'
+import { PALETTE } from './materiaux.js'
 
-// Modèles fabriqués par code.
+// Modèles fabriqués par code. « options » permet de les personnaliser (couleurs, tailles…).
 const FABRIQUES = {
-  personnage: creerModelePersonnage,
+  personnage: (options) => creerModelePersonnage(options),
+  maison: (options) => creerMaison(options),
+  etable: (options) => creerEtable(options),
+  boutique: (options) => creerBoutique(options),
+  chaumiere: (options) =>
+    creerChaumiere({ ...options, couleurToit: PALETTE[options?.couleurToit] ?? PALETTE.toitBleu }),
 }
 
 // Modèles à charger depuis un fichier .glb (vide pour l'instant).
-// Exemple futur : { personnage: 'modeles/personnage.glb' }
+// Exemple futur : { maison: 'modeles/maison.glb' }
 export const FICHIERS_GLB = {}
 
 /**
  * Renvoie un nouvel exemplaire du modèle demandé.
  * (Le chargement des .glb sera ajouté le jour où on en aura besoin.)
  */
-export function obtenirModele(nom) {
+export function obtenirModele(nom, options = {}) {
   const fabrique = FABRIQUES[nom]
   if (!fabrique) throw new Error(`Modèle inconnu : « ${nom} »`)
-  return fabrique()
+  return fabrique(options)
 }

@@ -38,4 +38,40 @@ export const PALETTE = {
   blanc: 0xffffff,
   noir: 0x333333,
   joues: 0xf4a3a3,
+
+  // --- Bâtiments ---
+  murCreme: 0xfbefd5,
+  murJaune: 0xfbe3a0,
+  murRouge: 0xd9574a,
+  murBlanc: 0xf7f3ea,
+  toitTuile: 0xd9775a,
+  toitArdoise: 0x7c7a8a,
+  toitBleu: 0x7fa7d6,
+  toitVert: 0x86b886,
+  boisFonce: 0x8a5a3b,
+  boisClair: 0xe3c193,
+  vitre: 0xbfe3f2,
+  pierre: 0xc9c4b8,
+  brique: 0xb5654a,
+  eau: 0x8cc9e8,
+
+  // --- Intérieurs ---
+  parquet: 0xd8b07e,
+  paillasse: 0xe8cf86,
+  foin: 0xf0d36b,
+  tapisRose: 0xf2a7a0,
+  tapisVert: 0x9fcf9a,
+  tissuBleu: 0x8fb8e0,
+  tissuBlanc: 0xfdf8ee,
+  metal: 0x9aa3a8,
+  pot: 0xd97f5a,
+
+  // --- Fleurs et décor ---
+  fleurRose: 0xf49ac1,
+  fleurJaune: 0xffe066,
+  fleurBlanche: 0xffffff,
+  fleurViolette: 0xb79ce0,
+  citrouille: 0xf29b45,
+  tomate: 0xe8554e,
+  chou: 0x9ad07a,
 }

@@ -84,6 +84,21 @@ export class GrilleChemin {
   }
 
   /**
+   * Bloque tout ce qui est EN DEHORS d'un rectangle centré (ex. : les murs d'une pièce).
+   * « marge » garde un peu d'espace entre le personnage et les murs.
+   */
+  bloquerHorsRectangle(largeur, profondeur, marge = 0) {
+    for (let j = 0; j < this.nb; j++) {
+      for (let i = 0; i < this.nb; i++) {
+        const c = this.versMonde(i, j)
+        if (Math.abs(c.x) > largeur / 2 - marge || Math.abs(c.z) > profondeur / 2 - marge) {
+          this.bloquee[j * this.nb + i] = 1
+        }
+      }
+    }
+  }
+
+  /**
    * Si la case visée est bloquée, trouve la case libre la plus proche
    * (on cherche en cercles de plus en plus grands).
    */
