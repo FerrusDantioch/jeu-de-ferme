@@ -8,6 +8,7 @@ import { etat } from '../jeu/etat.js'
 import { progression, deblocagesDuNiveau, surNouveauNiveau } from '../jeu/economie.js'
 import { NIVEAU_MAXIMUM } from '../donnees/economie.js'
 import { creerFenetre, echapper } from './fenetre.js'
+import { feteDuJour, texteDate } from '../jeu/calendrier.js'
 
 /** « 1 récolte », « 3 récoltes » : met un s quand il faut. */
 const pluriel = (n, mot, mots = `${mot}s`) => `${n} ${n > 1 ? mots : mot}`
@@ -45,12 +46,14 @@ export function creerProgression(zoneCompteurs, declencheur) {
     for (let n = p.niveau + 1; n <= NIVEAU_MAXIMUM && !prochain; n++) if (deblocagesDuNiveau(n).length) prochain = n
     fenetre.ouvrir(`
       <h2>⭐ Ma progression</h2>
+      <p class="discret">📅 ${echapper(texteDate())}${feteDuJour() ? ` · ${feteDuJour().icone} ${echapper(feteDuJour().nom)}` : ''}</p>
       <p><strong>Niveau ${p.niveau}</strong>${p.niveau < NIVEAU_MAXIMUM ? ` — encore ${p.manque} ⭐ pour le niveau ${p.niveau + 1}` : ''}</p>
       ${barre(p.fraction)}
       <p>🪙 <strong>${etat.d.pieces}</strong> pièces</p>
       ${prochain ? `<p>Au niveau ${prochain}, vous débloquerez :</p>${listeDeblocages(prochain)}` : ''}
       <p class="discret">🧺 ${pluriel(s.recoltes, 'récolte')} · 🥚 ${pluriel(s.produitsRamasses, 'produit ramassé', 'produits ramassés')} ·
-      📦 ${pluriel(s.commandesLivrees, 'commande livrée', 'commandes livrées')}</p>
+      📦 ${pluriel(s.commandesLivrees, 'commande livrée', 'commandes livrées')} ·
+      📜 ${pluriel(s.quetesReussies || 0, 'quête réussie', 'quêtes réussies')}</p>
       <p class="discret">Pour gagner des ⭐ : récolter, ramasser les produits des animaux,
       les nourrir quand ils ont faim, et surtout livrer des commandes 📋.</p>`)
   }

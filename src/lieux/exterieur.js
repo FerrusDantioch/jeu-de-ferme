@@ -24,6 +24,9 @@ import {
 import { creerPnjDuLieu } from './pnj-du-lieu.js'
 import { creerAnimauxDuLieu, animerAnimaux } from './animaux-du-lieu.js'
 import { creerPotagerInteractif } from '../monde/potager.js'
+import { creerDecorationsFete } from '../monde/decorations-fetes.js'
+import { feteDuJour } from '../jeu/calendrier.js'
+import { oeufsTrouvesAujourdhui } from '../jeu/fetes.js'
 
 // Distance entre la façade et le point où l'on se tient pour passer la porte.
 const RECUL_PORTE = 0.9
@@ -162,6 +165,24 @@ export function creerLieu(outils) {
   const animaux = creerAnimauxDuLieu('exterieur', () => zoneEnclos, { groupe, touchables, pastilles: outils.pastilles })
   const animer = animerAnimaux(animaux, () => potager.actualiser())
 
+  // --- Décorations de fête (changent selon le calendrier, même en pleine partie) ---
+  // On garde une copie des obstacles « sans décoration » pour pouvoir les retirer proprement.
+  const obstaclesSansDecor = grille.bloquee.slice()
+  let decorations = null
+  function appliquerFete(fete) {
+    if (decorations) {
+      groupe.remove(decorations.groupe)
+      for (const t of decorations.touchables) touchables.splice(touchables.indexOf(t), 1)
+      grille.bloquee.set(obstaclesSansDecor)
+      decorations = null
+    }
+    if (!fete) return
+    decorations = creerDecorationsFete(fete, grille, oeufsTrouvesAujourdhui())
+    groupe.add(decorations.groupe)
+    touchables.push(...decorations.touchables)
+  }
+  appliquerFete(feteDuJour())
+
   return {
     id: 'exterieur',
     titre: '🌳 La ferme',
@@ -176,5 +197,11 @@ export function creerLieu(outils) {
     animaux,
     potager,
     miseAJour: animer,
+    appliquerFete,
+    /** Cache un œuf de Pâques trouvé. */
+    cacherOeuf(numero) {
+      const oeuf = decorations?.oeufs.get(numero)
+      if (oeuf) oeuf.visible = false
+    },
   }
 }

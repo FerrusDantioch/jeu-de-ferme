@@ -10,6 +10,7 @@ import { CULTURES } from '../donnees/cultures.js'
 import { ESPECES } from '../donnees/animaux.js'
 import { etat } from './etat.js'
 import { ajouter, retirer, quantite } from './inventaire.js'
+import { annoncer } from './evenements.js'
 
 // Fonctions à prévenir quand on passe un niveau.
 const auditeursNiveau = new Set()
@@ -133,5 +134,6 @@ export function vendre(id, n = 1) {
   const prix = PRIX_DE_VENTE[id]
   if (!prix || !retirer(id, n)) return 0
   gagnerPieces(prix * n)
+  annoncer('vendre', { id, pieces: prix * n })
   return prix * n
 }

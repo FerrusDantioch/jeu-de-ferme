@@ -14,7 +14,7 @@ function echapper(t) {
  */
 export function creerSac(barre) {
   const bouton = document.createElement('button')
-  bouton.className = 'bouton'
+  bouton.className = 'bouton bouton-sac'
   bouton.innerHTML = '<span class="icone" aria-hidden="true">🎒</span><span class="texte-facultatif">Mon sac</span>'
   bouton.setAttribute('aria-label', 'Ouvrir mon sac')
   // Le sac se place juste avant le bouton « À propos ».

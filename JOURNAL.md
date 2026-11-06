@@ -189,17 +189,67 @@
 | Ce que disent les villageois quand ils commandent       | `src/donnees/pnj.js` (`demandes`) |
 | Place du tableau des commandes                          | `src/donnees/ferme.js`      |
 
+## ✅ Jalon 5 — Quêtes et fêtes (terminé)
+
+### Ce qui est fait
+- **Quêtes du jour** : bouton 📜 « Quêtes » en haut.
+  - **3 quêtes par jour**, renouvelées **à minuit, heure du téléphone**. Exemples :
+    « Récolter 4 fois au potager », « Faire 5 câlins aux animaux », « Livrer 1 commande ».
+  - Une barre montre l'avancée. Quand une quête est finie, le personnage le dit, un petit
+    nombre apparaît sur le bouton 📜, et on touche « 🎁 Recevoir » (pièces + ⭐).
+  - Pas d'obligation : une quête finie mais oubliée est **donnée automatiquement** à minuit.
+    Les quêtes sur les animaux ne sont proposées que s'il y en a à la ferme.
+- **Fêtes**, décrites dans `src/donnees/fetes.js` : Nouvel An, Chandeleur, Saint-Valentin,
+  **Pâques (calculée automatiquement chaque année)**, Fête de la musique, Fête nationale,
+  Halloween, Noël. Pendant une fête :
+  - une fenêtre l'annonce (une fois par jour) et son icône s'affiche à côté du nom du lieu ;
+  - la ferme est décorée : œufs, sapin et cadeaux, citrouilles souriantes, cœurs,
+    guirlandes de fanions ;
+  - les villageois en parlent ;
+  - certaines fêtes ajoutent une **quête spéciale**. À Pâques, il y a une **chasse aux œufs** :
+    8 œufs cachés près des arbres, chacun rapporte des pièces, et ils se recachent chaque
+    jour de fête.
+- **Mode test caché** : dans « À propos », toucher **5 fois le numéro de version**
+  (sans limite de temps entre les touchers). On peut :
+  - choisir une date, ou sauter directement à une fête ;
+  - passer au jour suivant (nouvelles quêtes) ;
+  - revenir à la vraie date.
+  Tant qu'une fausse date est active, une étiquette 🧪 reste visible en haut (la toucher
+  rouvre le panneau). La fausse date ne change que le calendrier : les plantes et les
+  animaux suivent toujours l'heure réelle.
+
+### Vérifications faites
+- **Calcul de Pâques** comparé aux vraies dates (1943, 2024 à 2027, 2038, 2285 : tout juste),
+  et les 8 fêtes testées à leurs premiers et derniers jours, y compris le passage
+  d'une année à l'autre pour le Nouvel An.
+- Test automatique sur un téléphone simulé :
+  - une quête avance, le nombre s'affiche sur 📜, la récompense est reçue ;
+  - passage de minuit simulé : la récompense oubliée est bien donnée ;
+  - le mode test s'ouvre par 5 touchers ; Pâques s'active avec sa quête spéciale et son
+    annonce ; un œuf trouvé rapporte 5 pièces ;
+  - Noël, Halloween, Fête nationale et Saint-Valentin sont décorés ;
+  - le retour à la vraie date retire décor et étiquette 🧪.
+- Tests des jalons 2, 3 et 4 relancés : tout passe, y compris hors ligne. Aucune erreur.
+
+### Où modifier quoi (en plus des jalons précédents)
+| Je veux changer…                                     | Fichier                    |
+|------------------------------------------------------|----------------------------|
+| Les fêtes (dates, messages, décor, quête spéciale)   | `src/donnees/fetes.js`     |
+| Les quêtes du jour (textes, objectifs, récompenses)  | `src/donnees/quetes.js`    |
+| L'emplacement des œufs de Pâques                     | `src/monde/decorations-fetes.js` |
+
 ## 📌 Décisions prises
 - **Jeu doux, sans échec** (jalon 3) : arrosage facultatif (bonus de vitesse), au moins une
   graine rendue à chaque récolte, nourriture des animaux gratuite et illimitée, animaux
   qui ne meurent jamais.
 - **Commandes sans stress** (jalon 4) : jamais d'expiration ni de pénalité, une seule
   commande par villageois, livraison possible depuis le tableau des commandes.
+- **Mode test** (jalon 5) : caché derrière 5 touchers sur le numéro de version ; il ne
+  change que le calendrier (fêtes, quêtes), jamais la pousse ni les animaux.
 - **Mise en ligne** : option 2 choisie. Le jeu sera publié sur GitHub Pages seulement au
   jalon 6. Le fichier de publication automatique est déjà prêt et attend ce moment.
 
 ## 🔜 Ce qui reste
-- **Jalon 5 — Quêtes** : quotidiennes, puis calendrier des fêtes avec mode de test de date.
 - **Jalon 6 — Finitions** : sons, réglages (joystick, taille du texte, réduire les animations,
   ombres), optimisation mobile, export / import de sauvegarde, publication finale.
 

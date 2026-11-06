@@ -26,6 +26,14 @@ import { ficheParcelle, ficheAnimal, ficheReserve, ficheCommandes } from './jeu/
 import * as commandes from './jeu/commandes.js'
 import { creerBoutique } from './ui/boutique.js'
 import { creerProgression } from './ui/progression.js'
+import { creerQuetes } from './ui/quetes.js'
+import { creerModeTest } from './ui/mode-test.js'
+import { creerFenetre, echapper } from './ui/fenetre.js'
+import * as quetes from './jeu/quetes.js'
+import { feteDuJour, cleDuJour } from './jeu/calendrier.js'
+import { trouverOeuf, phraseDeFete } from './jeu/fetes.js'
+import { annoncer } from './jeu/evenements.js'
+import { CACHETTES_OEUFS } from './monde/decorations-fetes.js'
 import { activerModeHorsLigne } from './pwa.js'
 
 // 0) On reprend la partie enregistrée sur le téléphone (ou on en commence une nouvelle).
@@ -51,6 +59,17 @@ creerSac(interfaceJeu.barre)
 creerProgression(interfaceJeu.compteurs, interfaceJeu.etiquetteLieu)
 // La boutique de Lila. Un animal adopté apparaît tout de suite s'il est dans un lieu déjà construit
 // (sinon, il sera là à la première visite de l'étable).
+// Les quêtes du jour (bouton 📜) : « +15 🪙 » s'envole au-dessus du personnage à la récompense.
+const panneauQuetes = creerQuetes(interfaceJeu.barre, {
+  surRecompense: (q) => {
+    bulles.flotter(personnage.modele, `+${q.pieces} 🪙`, 1.7)
+    setTimeout(() => bulles.flotter(personnage.modele, `+${q.experience} ⭐`, 1.7), 900)
+  },
+})
+// Le mode test caché (5 touchers sur le numéro de version, dans « À propos »).
+creerModeTest(interfaceJeu.barre, () => verifierCalendrier())
+// La fenêtre qui annonce une fête (une fois par jour de fête).
+const fenetreFete = creerFenetre({ classe: 'panneau-fete', texteFermer: 'Merci !' })
 const boutique = creerBoutique({
   surAdoption: (ficheAnimal) => lieux.lieuConstruit(ficheAnimal.lieu)?.animaux?.ajouter(ficheAnimal),
 })
@@ -201,7 +220,10 @@ entrees.surToucher((x, y) => {
     const idClient = pnj.donnees.id
     const commande = commandes.commandeDe(idClient)
     const demande = commande && pnj.donnees.demandes ? pnj.donnees.demandes[0] : null
-    if (pnj.parlerAvec(personnage, demande)) {
+    // Un jour de fête, les villageois en parlent une fois sur deux.
+    const fete = !demande && Math.random() < 0.5 ? phraseDeFete() : null
+    if (pnj.parlerAvec(personnage, demande || fete)) {
+      annoncer('parler', { qui: idClient })
       if (pnj.donnees.marchande) boutique.ouvrir()
       // Un client avec une commande : on affiche ce qu'il demande.
       else if (commande) fiche.ouvrir(ficheCommandes({ bulles, joueur: personnage, idClient }))
@@ -243,6 +265,17 @@ entrees.surToucher((x, y) => {
     allerSiLoin(cible.approche)
     return
   }
+  if (cible?.type === 'oeufPaques') {
+    // Chasse aux œufs de Pâques : on le ramasse, et le personnage y va.
+    const r = trouverOeuf(cible.numero)
+    if (r) {
+      cible.objet.visible = false
+      bulles.flotter(cible.objet, `+${r.pieces} 🪙  🥚 ${r.trouves}/${CACHETTES_OEUFS.length}`, 0.6)
+      if (r.trouves === CACHETTES_OEUFS.length) bulles.dire(personnage.modele, 'Tous les œufs sont trouvés ! 🐣🎉')
+    }
+    marcherVers(new THREE.Vector3(cible.objet.position.x, 0, cible.objet.position.z + 0.6))
+    return
+  }
   if (cible?.type === 'tableau') {
     fiche.ouvrir(ficheCommandes({ bulles, joueur: personnage }))
     allerSiLoin(cible.approche)
@@ -274,6 +307,43 @@ window.addEventListener('resize', () => {
 })
 
 let horlogeSoins = 0 // compte le temps pour les soins des animaux (voir plus bas)
+
+/**
+ * Le calendrier (une fois par seconde, et après un changement de date en mode test) :
+ *  - à minuit, de nouvelles quêtes arrivent ;
+ *  - quand une fête commence ou finit, la ferme change de décor ;
+ *  - le premier jour d'une fête, une petite fenêtre l'annonce (une seule fois).
+ */
+let feteAffichee = 'pas encore regardé' // l'identifiant de la fête affichée ('' = aucune)
+let jourAffiche = null
+function verifierCalendrier() {
+  quetes.verifierJour()
+  const fete = feteDuJour()
+  const cle = cleDuJour()
+  const idFete = fete ? fete.id : ''
+  // On redessine les décorations quand la fête change, et chaque nouveau jour de fête
+  // (les œufs de Pâques se recachent tous les matins).
+  if (idFete !== feteAffichee || (fete && jourAffiche !== cle)) {
+    feteAffichee = idFete
+    jourAffiche = cle
+    lieux.lieuConstruit('exterieur')?.appliquerFete(fete)
+    interfaceJeu.montrerFete(fete)
+    interfaceJeu.montrerLieu(lieux.actuel.titre)
+  }
+  // Annonce de la fête, une fois par jour.
+  if (fete && etat.d.feteAnnoncee !== `${cle}:${fete.id}`) {
+    etat.d.feteAnnoncee = `${cle}:${fete.id}`
+    etat.signaler()
+    fenetreFete.ouvrir(`<h2>${fete.icone} ${echapper(fete.nom)}</h2><p>${echapper(fete.message)}</p>
+      ${fete.quete ? '<p class="discret">📜 Une quête spéciale vous attend aujourd’hui !</p>' : ''}`)
+  }
+}
+
+// Quand une quête est terminée, le personnage le dit (et le bouton 📜 affiche un nombre).
+quetes.surQueteTerminee(() => {
+  bulles.dire(personnage.modele, 'Quête terminée ! 📜 Touchez « Quêtes » pour recevoir la récompense.')
+  panneauQuetes.actualiser()
+})
 
 /**
  * Une fois par seconde : de nouvelles commandes arrivent quand c'est le moment,
@@ -315,6 +385,7 @@ const image = demarrerBoucle((dt) => {
     horlogeSoins = 0
     avancerTous()
     suivreCommandes()
+    verifierCalendrier()
   }
 })
 
@@ -334,6 +405,7 @@ lieux
       () => bulles.dire(personnage.modele, 'Oups, la partie n’a pas pu être sauvegardée. La mémoire du téléphone est peut-être pleine.')
     )
     etat.signaler() // première sauvegarde rapide
+    verifierCalendrier()
   })
   .catch((erreur) => {
     console.error(erreur)
@@ -343,4 +415,4 @@ lieux
 activerModeHorsLigne()
 
 // Accès pratique pour les tests automatiques (sans effet sur le jeu).
-window.__jeu = { personnage, lieux, camera, bulles, etat, fiche, boutique }
+window.__jeu = { personnage, lieux, camera, bulles, etat, fiche, boutique, verifierCalendrier }

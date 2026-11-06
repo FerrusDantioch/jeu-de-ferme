@@ -11,6 +11,7 @@
 import { ESPECES, SOINS } from '../donnees/animaux.js'
 import { etat } from './etat.js'
 import { ajouter, retirer, quantite } from './inventaire.js'
+import { annoncer } from './evenements.js'
 
 const borner = (v) => Math.min(100, Math.max(0, v))
 
@@ -64,6 +65,7 @@ export function nourrir(animal, idNourriture) {
   animal.satiete = borner(animal.satiete + SOINS.repas)
   animal.bonheur = borner(animal.bonheur + (friandise ? SOINS.bonheurFriandise : SOINS.bonheurRepas))
   etat.signaler()
+  annoncer('nourrir', { espece: animal.espece })
   return { friandise }
 }
 
@@ -71,6 +73,7 @@ export function caresser(animal) {
   avancer(animal)
   animal.bonheur = borner(animal.bonheur + SOINS.caresse)
   etat.signaler()
+  annoncer('caresser', { espece: animal.espece })
 }
 
 /** Ramasse le produit (œuf, lait, laine). Renvoie l'id du produit, ou null. */
@@ -82,6 +85,7 @@ export function ramasser(animal) {
   ajouter(produit, 1)
   etat.d.stats.produitsRamasses++
   etat.signaler()
+  annoncer('ramasser', { produit })
   return produit
 }
 

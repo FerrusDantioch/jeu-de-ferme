@@ -13,6 +13,7 @@ import { ESPECES } from '../donnees/animaux.js'
 import { etat } from './etat.js'
 import { quantite, retirer } from './inventaire.js'
 import { niveau, gagnerPieces, gagnerExperience } from './economie.js'
+import { annoncer } from './evenements.js'
 
 const auHasard = (min, max) => min + Math.random() * (max - min)
 const entier = (min, max) => Math.floor(auHasard(min, max + 1))
@@ -113,5 +114,6 @@ export function livrer(idClient, maintenant = Date.now()) {
   etat.d.stats.commandesLivrees++
   gagnerPieces(c.pieces)
   gagnerExperience(c.experience)
+  annoncer('livrer', { client: idClient })
   return { pieces: c.pieces, experience: c.experience }
 }

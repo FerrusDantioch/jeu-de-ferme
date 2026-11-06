@@ -544,6 +544,96 @@ body {
   opacity: 0.8;
 }
 
+/* --- Quêtes --- */
+.bouton-quetes {
+  position: relative;
+}
+.pastille-nombre {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  border-radius: 13px;
+  background: #e8834e;
+  color: #ffffff;
+  font-size: 0.75em;
+  font-weight: 800;
+  line-height: 26px;
+  text-align: center;
+}
+.pastille-nombre[hidden] {
+  display: none;
+}
+.carte-quete {
+  margin: 10px 0;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+.carte-quete.finie {
+  background: #f1f9ec;
+}
+.quete-texte {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.carte-quete .barre {
+  margin: 4px 0 6px;
+}
+.quete-bas {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.carte-quete .bouton {
+  width: 100%;
+  margin-top: 8px;
+}
+.quete-recue {
+  display: block;
+  margin-top: 6px;
+  color: #3d6b3b;
+  font-weight: 600;
+}
+
+/* --- Fête du jour --- */
+.lieu-fete {
+  font-weight: 400;
+}
+
+/* --- Mode test (caché) --- */
+.etiquette-test {
+  background: #fff3c4;
+  font-size: 0.85em;
+}
+.etiquette-test[hidden] {
+  display: none;
+}
+.test-ligne {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
+}
+.test-ligne input[type='date'] {
+  min-height: var(--taille-tactile);
+  font: inherit;
+  padding: 0 8px;
+  border-radius: 12px;
+  border: 2px solid #d8cdb8;
+}
+.test-raccourcis {
+  display: grid;
+  gap: 8px;
+}
+.test-raccourcis .bouton {
+  justify-content: flex-start;
+}
+
 /* --- Ordre d'empilement : ce qui est devant quoi ---
    bulles et icônes (1) < bulle d'aide et fiche (2) < barre du haut (3) < fenêtres (4) */
 .bulle-parole,

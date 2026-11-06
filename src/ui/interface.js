@@ -31,6 +31,7 @@ export function creerInterface({ aideAuDemarrage = true } = {}) {
   const nomLieu = creer('span', 'lieu-nom')
   nomLieu.setAttribute('aria-live', 'polite')
   const compteurs = creer('span', 'lieu-compteurs')
+  const iconeFete = creer('span', 'lieu-fete')
   etiquetteLieu.append(nomLieu, compteurs)
   barre.appendChild(etiquetteLieu)
 
@@ -71,7 +72,7 @@ export function creerInterface({ aideAuDemarrage = true } = {}) {
       <h2 id="titre-apropos">${NOM_DU_JEU}</h2>
       <p>Un jeu de ferme tout doux : prenez votre temps, rien ne presse. 🌱</p>
       <p>Créé par <strong>${AUTEUR}</strong>.</p>
-      <p class="discret">Version ${VERSION}<br>
+      <p class="discret"><span data-version>Version ${VERSION}</span><br>
       Sans publicité, sans achat, sans collecte de données.<br>
       Fonctionne sans Internet une fois installé.</p>
       <div class="actions">
@@ -126,6 +127,14 @@ export function creerInterface({ aideAuDemarrage = true } = {}) {
     /** Affiche le nom du lieu où l'on se trouve. */
     montrerLieu(titre) {
       nomLieu.textContent = titre
+      if (iconeFete.textContent) nomLieu.appendChild(iconeFete)
+    },
+    /** Affiche l'icône de la fête du jour à côté du nom du lieu (ou rien). */
+    montrerFete(fete) {
+      iconeFete.textContent = fete ? ` ${fete.icone}` : ''
+      iconeFete.title = fete ? fete.nom : ''
+      if (fete) nomLieu.appendChild(iconeFete)
+      else iconeFete.remove()
     },
     /** L'étiquette (à toucher) et la zone où écrire pièces et niveau. */
     etiquetteLieu,

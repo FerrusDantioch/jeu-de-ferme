@@ -8,6 +8,7 @@
 import { CULTURES, ARROSAGE, GRAINES_RENDUES } from '../donnees/cultures.js'
 import { etat } from './etat.js'
 import { ajouter, retirer, quantite } from './inventaire.js'
+import { annoncer } from './evenements.js'
 
 const MINUTE = 60 * 1000
 
@@ -62,6 +63,7 @@ export function planter(n, idCulture, maintenant = Date.now()) {
   parcelle.progression = 0
   parcelle.derniereMaj = maintenant
   etat.signaler()
+  annoncer('planter', { culture: idCulture })
   return true
 }
 
@@ -72,6 +74,7 @@ export function arroser(n, maintenant = Date.now()) {
   avancer(parcelle, maintenant)
   parcelle.humideJusqua = maintenant + ARROSAGE.minutesHumide * MINUTE
   etat.signaler()
+  annoncer('arroser')
   return true
 }
 
@@ -93,6 +96,7 @@ export function recolter(n, maintenant = Date.now()) {
   parcelle.progression = 0
   etat.d.stats.recoltes++
   etat.signaler()
+  annoncer('recolter', { culture: id })
   return { recolte: culture.recolte, graines, culture }
 }
 

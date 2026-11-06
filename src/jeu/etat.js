@@ -51,7 +51,11 @@ export function nouvellePartie(maintenant = Date.now()) {
     // Quand chaque client passera sa prochaine commande (heure, en millisecondes).
     prochainesCommandes: Object.fromEntries(CLIENTS.map((c) => [c.id, maintenant + c.premiereCommande * 60000])),
     premiereCommandeFaite: false,
-    stats: { recoltes: 0, produitsRamasses: 0, commandesLivrees: 0, piecesGagnees: 0 },
+    // Quêtes du jour : { jour: '2026-12-24', liste: [...] } (tirées à minuit).
+    quetes: { jour: null, liste: [] },
+    // Chasse aux œufs de Pâques : œufs trouvés aujourd'hui.
+    oeufsDePaques: { jour: null, trouves: [] },
+    stats: { recoltes: 0, produitsRamasses: 0, commandesLivrees: 0, piecesGagnees: 0, quetesReussies: 0 },
   }
 }
 
