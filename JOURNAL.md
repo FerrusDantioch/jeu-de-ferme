@@ -88,13 +88,68 @@
 | L'apparence des bâtiments                         | `src/modeles/batiments.js` |
 | L'apparence des meubles                           | `src/modeles/mobilier.js`  |
 
+## ✅ Jalon 3 — Potager et animaux (terminé)
+
+### Ce qui est fait
+- **Potager** : 8 parcelles. On touche une parcelle et une fiche s'ouvre en bas de l'écran
+  pour **planter**, **arroser** ou **récolter**.
+  - 6 cultures, avec 4 étapes visibles (graine, pousse, jeune plante, prête) :
+    salade 4 min, carotte 8 min, fraise 15 min, tomate 25 min, maïs 40 min, citrouille 1 h ;
+  - elles poussent en **temps réel, même jeu fermé** ;
+  - **arroser est facultatif** : la plante pousse 2× plus vite pendant 10 minutes ;
+    une plante oubliée ne fane jamais ;
+  - chaque récolte rend **au moins une graine** : on n'en manque jamais ;
+  - l'icône du légume apparaît au-dessus de la parcelle quand il est prêt.
+- **Animaux** : 3 poules et 2 moutons dans l'enclos, 2 vaches dans l'étable.
+  - Ils se promènent, picorent ou broutent.
+  - Chacun a un **ventre** et une **humeur** (deux barres dans sa fiche). On peut le
+    **nourrir**, lui donner une **friandise** (maïs, carotte ou salade) et le **caresser**.
+  - Bien soignés, ils donnent des **œufs**, du **lait** ou de la **laine**. Une petite icône
+    🥚 🥛 🧶 apparaît au-dessus d'eux, et on la ramasse en les touchant.
+  - Ils **ne meurent jamais** et ne tombent jamais malades : s'ils ont faim ou s'ennuient,
+    ils font juste une pause de production. Les textes restent doux (« Un petit creux… »).
+  - Le foin et le grain sont **gratuits et illimités** dans la réserve près de l'enclos
+    et dans le tas de foin de l'étable.
+- **Sac (inventaire)** : bouton 🎒 en haut. Tout est rangé par catégorie : graines, récoltes,
+  produits, nourriture.
+- **Sauvegarde automatique** sur le téléphone, sans rien envoyer sur Internet :
+  - toutes les 15 secondes s'il y a du changement, et dès que le jeu passe en arrière-plan ;
+  - on reprend là où on s'était arrêté, même dans un bâtiment ;
+  - si la sauvegarde est abîmée, elle est mise de côté (pas effacée), un message gentil
+    s'affiche et une nouvelle partie commence.
+- **Petits plus** : des textes qui s'envolent (« +3 🥕 », « 💕 »). La caméra se décale quand
+  une fiche est ouverte pour garder le personnage visible. Toucher entre des animaux serrés
+  choisit le bon.
+
+### Vérifications faites
+- Test automatique sur un téléphone simulé :
+  - planter, arroser, récolter (récolte et graines ajoutées au sac) ;
+  - prendre du grain à la réserve ;
+  - ramasser un œuf, nourrir et caresser une poule ;
+  - ouvrir le sac ;
+  - fiche d'une vache dans l'étable.
+- **Jeu fermé 10 minutes** (simulé) : la carotte est prête au retour.
+- Rechargement : sac, plantes et position retrouvés.
+- Sauvegarde abîmée : copie gardée de côté et message affiché.
+- Tests des jalons 1 et 2 relancés : tout passe, y compris hors ligne. Aucune erreur.
+
+### Où modifier quoi (en plus des jalons précédents)
+| Je veux changer…                                     | Fichier                    |
+|------------------------------------------------------|----------------------------|
+| Les cultures (temps de pousse, récolte), l'arrosage  | `src/donnees/cultures.js`  |
+| Les animaux (noms, nourriture, production, faim)     | `src/donnees/animaux.js`   |
+| Les objets du sac (noms, icônes)                     | `src/donnees/objets.js`    |
+| Les textes des fiches (potager, animaux, réserve)    | `src/jeu/fiches.js`        |
+| La taille du potager (nombre de parcelles)           | `src/donnees/ferme.js`     |
+
 ## 📌 Décisions prises
+- **Jeu doux, sans échec** (jalon 3) : arrosage facultatif (bonus de vitesse), au moins une
+  graine rendue à chaque récolte, nourriture des animaux gratuite et illimitée, animaux
+  qui ne meurent jamais.
 - **Mise en ligne** : option 2 choisie. Le jeu sera publié sur GitHub Pages seulement au
   jalon 6. Le fichier de publication automatique est déjà prêt et attend ce moment.
 
 ## 🔜 Ce qui reste
-- **Jalon 3 — Potager et animaux** : plantation, arrosage, croissance en temps réel, récolte,
-  soins des animaux, inventaire, sauvegarde.
 - **Jalon 4 — Économie et clients** : boutique, commandes, pièces, expérience.
 - **Jalon 5 — Quêtes** : quotidiennes, puis calendrier des fêtes avec mode de test de date.
 - **Jalon 6 — Finitions** : sons, réglages (joystick, taille du texte, réduire les animations,

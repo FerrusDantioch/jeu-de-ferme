@@ -6,6 +6,7 @@ import * as THREE from 'three'
 import { materiau, PALETTE } from './materiaux.js'
 import { boite, boule, cylindre, toitDeuxPans } from './formes.js'
 import { panneauTexte } from './batiments.js'
+import { creerBotteDeFoin, creerSac } from './mobilier.js'
 
 /** Un puits en pierre avec un petit toit. */
 export function creerPuits() {
@@ -109,15 +110,18 @@ export function creerEnclos(largeur, profondeur, ouverture = 1.6) {
   return g
 }
 
-/** Le carré de potager : terre labourée en sillons (vide pour l'instant, rempli au jalon 3). */
-export function creerPotager(largeur, profondeur) {
+/** La réserve de nourriture gratuite : des bottes de foin et un sac de grain. */
+export function creerReserve() {
   const g = new THREE.Group()
-  g.add(boite(largeur + 0.3, 0.12, profondeur + 0.3, PALETTE.boisFonce, 0, 0, 0))
-  g.add(boite(largeur, 0.14, profondeur, PALETTE.tronc, 0, 0, 0))
-  const nbSillons = Math.floor(profondeur / 0.8)
-  for (let k = 0; k < nbSillons; k++) {
-    const z = -profondeur / 2 + (profondeur / nbSillons) * (k + 0.5)
-    g.add(boite(largeur - 0.3, 0.1, 0.35, PALETTE.terre, 0, 0.12, z))
-  }
+  const b1 = creerBotteDeFoin()
+  b1.position.set(-0.3, 0, 0)
+  g.add(b1)
+  const b2 = creerBotteDeFoin()
+  b2.position.set(-0.15, 0.55, 0)
+  b2.rotation.y = 0.2
+  g.add(b2)
+  const sac = creerSac(PALETTE.paille)
+  sac.position.set(0.55, 0, 0.1)
+  g.add(sac)
   return g
 }

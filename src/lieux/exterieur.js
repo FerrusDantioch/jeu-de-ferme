@@ -14,11 +14,14 @@ import { GrilleChemin } from '../moteur/chemin.js'
 import { creerTerrain, semerFleurs } from '../monde/terrain.js'
 import { obtenirModele } from '../modeles/index.js'
 import { fusionnerParMateriau } from '../modeles/fusion.js'
-import { creerPuits, creerBanc, creerPanneau, creerEtang, creerEnclos, creerPotager } from '../modeles/decor.js'
+import { creerPuits, creerBanc, creerPanneau, creerEtang, creerEnclos, creerReserve } from '../modeles/decor.js'
+import { MATERIAU_INVISIBLE } from '../modeles/formes.js'
 import {
-  BATIMENTS, POINT_DE_DEPART, ENCLOS, POTAGER, ETANG, PUITS, BANCS, PANNEAUX,
+  BATIMENTS, POINT_DE_DEPART, ENCLOS, ETANG, PUITS, BANCS, PANNEAUX, RESERVES,
 } from '../donnees/ferme.js'
 import { creerPnjDuLieu } from './pnj-du-lieu.js'
+import { creerAnimauxDuLieu, animerAnimaux } from './animaux-du-lieu.js'
+import { creerPotagerInteractif } from '../monde/potager.js'
 
 // Distance entre la façade et le point où l'on se tient pour passer la porte.
 const RECUL_PORTE = 0.9
@@ -66,7 +69,7 @@ export function creerLieu(outils) {
     touchables.push(modele)
   }
 
-  // --- L'enclos (vide pour l'instant) ---
+  // --- L'enclos des poules et des moutons ---
   const enclos = fusionnerParMateriau(creerEnclos(ENCLOS.largeur, ENCLOS.profondeur, ENCLOS.ouverture))
   enclos.position.set(ENCLOS.x, 0, ENCLOS.z)
   groupe.add(enclos)
@@ -83,10 +86,21 @@ export function creerLieu(outils) {
     grille.bloquerRectangle(x + l / 2 - 1.2, z - p / 2 + 0.6, 1.4, 0.5, marge) // abreuvoir
   }
 
-  // --- Le potager (vide pour l'instant ; on peut marcher dessus) ---
-  const potager = fusionnerParMateriau(creerPotager(POTAGER.largeur, POTAGER.profondeur), { ombrePortee: false })
-  potager.position.set(POTAGER.x, 0, POTAGER.z)
-  groupe.add(potager)
+  // --- Le potager (on peut marcher entre les parcelles) ---
+  const potager = creerPotagerInteractif({ groupe, touchables, pastilles: outils.pastilles })
+
+  // --- Les réserves de nourriture gratuite pour les animaux ---
+  for (const r of RESERVES) {
+    const reserve = fusionnerParMateriau(creerReserve())
+    reserve.position.set(r.x, 0, r.z)
+    groupe.add(reserve)
+    grille.bloquerRectangle(r.x, r.z, 1.6, 0.7, 0.3)
+    const zone = new THREE.Mesh(new THREE.BoxGeometry(2, 1.4, 1.2), MATERIAU_INVISIBLE)
+    zone.position.set(r.x, 0.7, r.z)
+    zone.userData.toucher = { type: 'reserve', approche: { x: r.x, z: r.z + 1.0 } }
+    groupe.add(zone)
+    touchables.push(zone)
+  }
 
   // --- L'étang, le puits, les bancs, les panneaux ---
   const etang = fusionnerParMateriau(creerEtang(ETANG.rayon), { ombrePortee: false })
@@ -121,6 +135,17 @@ export function creerLieu(outils) {
   // --- Les villageois qui vivent dehors ---
   const pnj = creerPnjDuLieu('exterieur', { groupe, grille, touchables, bulles: outils.bulles, maisons })
 
+  // --- Les animaux de l'enclos (ils se promènent à l'intérieur, loin des barrières) ---
+  const m = 0.7
+  const zoneEnclos = {
+    xMin: ENCLOS.x - ENCLOS.largeur / 2 + m,
+    xMax: ENCLOS.x + ENCLOS.largeur / 2 - m,
+    zMin: ENCLOS.z - ENCLOS.profondeur / 2 + m + 0.6, // un peu plus loin du fond (l'abreuvoir)
+    zMax: ENCLOS.z + ENCLOS.profondeur / 2 - m,
+  }
+  const animaux = creerAnimauxDuLieu('exterieur', () => zoneEnclos, { groupe, touchables, pastilles: outils.pastilles })
+  const animer = animerAnimaux(animaux, () => potager.actualiser())
+
   return {
     id: 'exterieur',
     titre: '🌳 La ferme',
@@ -132,5 +157,8 @@ export function creerLieu(outils) {
     portes,
     touchables,
     pnj,
+    animaux,
+    potager,
+    miseAJour: animer,
   }
 }

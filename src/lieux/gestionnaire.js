@@ -23,6 +23,12 @@ const REPIT_APRES_PORTE = 0.6
 // Distance à la porte en dessous de laquelle on la passe.
 const DISTANCE_PORTE = 0.75
 
+/** Vrai si un point est libre (pas dans un mur ni un arbre). */
+function estLibre(grille, point) {
+  const c = grille.versCase(point.x, point.z)
+  return grille.estLibre(c.i, c.j)
+}
+
 /**
  * @param {object} ctx
  *  - scene : la scène 3D
@@ -30,6 +36,7 @@ const DISTANCE_PORTE = 0.75
  *  - personnage : le joueur
  *  - placerCamera(position) : recentre la caméra d'un coup
  *  - fondu, bulles, marqueur : outils d'interface
+ *  - outils : ce qu'on transmet à chaque lieu pour se construire ({ bulles, pastilles })
  *  - surChangement(lieu) : appelé à chaque nouveau lieu (optionnel)
  */
 export function creerGestionnaireLieux(ctx) {
@@ -44,7 +51,7 @@ export function creerGestionnaireLieux(ctx) {
     if (!lieux.has(id)) {
       const chargeur = CHARGEURS[id]
       if (!chargeur) return Promise.reject(new Error(`Lieu inconnu : « ${id} »`))
-      const promesse = chargeur().then((module) => module.creerLieu({ bulles }))
+      const promesse = chargeur().then((module) => module.creerLieu(ctx.outils))
       // En cas d'échec, on oublie la promesse pour pouvoir réessayer plus tard.
       promesse.catch(() => lieux.delete(id))
       lieux.set(id, promesse)
@@ -59,8 +66,11 @@ export function creerGestionnaireLieux(ctx) {
     scene.add(lieu.groupe)
     changerAmbiance(lieu.ambiance)
     personnage.grille = lieu.grille
-    const arrivee = lieu.arrivees[idArrivee] || Object.values(lieu.arrivees)[0]
-    personnage.placer(arrivee.x, arrivee.z, arrivee.angle)
+    // L'arrivée est soit un nom (ex. 'entree'), soit une position { x, z } (partie sauvegardée).
+    let arrivee = typeof idArrivee === 'object' && idArrivee ? idArrivee : lieu.arrivees[idArrivee]
+    if (arrivee && !estLibre(lieu.grille, arrivee)) arrivee = null
+    if (!arrivee) arrivee = Object.values(lieu.arrivees)[0]
+    personnage.placer(arrivee.x, arrivee.z, arrivee.angle ?? 0)
     personnage.porteVisee = null
     placerCamera(personnage.position)
     bulles.toutRetirer()
@@ -71,6 +81,7 @@ export function creerGestionnaireLieux(ctx) {
 
   /** Premier lieu, au lancement du jeu (sans fondu : l'écran de chargement est encore là). */
   async function demarrer(id = 'exterieur', idArrivee = 'depart') {
+    if (!CHARGEURS[id]) id = 'exterieur'
     activer(await obtenir(id), idArrivee)
   }
 

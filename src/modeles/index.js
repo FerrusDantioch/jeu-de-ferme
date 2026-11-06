@@ -9,6 +9,8 @@
  */
 import { creerModelePersonnage } from './personnage.js'
 import { creerMaison, creerEtable, creerBoutique, creerChaumiere } from './batiments.js'
+import { creerPoule, creerVache, creerMouton } from './animaux.js'
+import { creerPlante } from './plantes.js'
 import { PALETTE } from './materiaux.js'
 
 // Modèles fabriqués par code. « options » permet de les personnaliser (couleurs, tailles…).
@@ -19,6 +21,11 @@ const FABRIQUES = {
   boutique: (options) => creerBoutique(options),
   chaumiere: (options) =>
     creerChaumiere({ ...options, couleurToit: PALETTE[options?.couleurToit] ?? PALETTE.toitBleu }),
+  poule: () => creerPoule(),
+  vache: () => creerVache(),
+  mouton: () => creerMouton(),
+  // options : { modele: 'carotte', stade: 0 à 3 }
+  plante: (options) => creerPlante(options.modele, options.stade),
 }
 
 // Modèles à charger depuis un fichier .glb (vide pour l'instant).

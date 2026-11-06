@@ -54,6 +54,8 @@ export const PALETTE = {
   pierre: 0xc9c4b8,
   brique: 0xb5654a,
   eau: 0x8cc9e8,
+  terreParcelle: 0xb98a5e,
+  terreHumide: 0x7d5a3e,
 
   // --- Intérieurs ---
   parquet: 0xd8b07e,

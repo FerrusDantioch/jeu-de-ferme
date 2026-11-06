@@ -67,18 +67,22 @@ export const CHEMINS = [
   [10, 14.8, 1.2, 1.2], // devant chez Mamie Rose
 ]
 
-// L'enclos des animaux (vide pour l'instant : les animaux arrivent au jalon 3).
+// L'enclos des poules et des moutons (les vaches sont dans l'étable).
 export const ENCLOS = { x: 12, z: -1, largeur: 7, profondeur: 6, ouverture: 1.8 }
 
-// Le carré de potager (vide pour l'instant : les cultures arrivent au jalon 3).
-export const POTAGER = { x: -4.5, z: -2, largeur: 5, profondeur: 3.5 }
+// Le potager : une grille de parcelles (colonnes × rangées), chacune de « taille » mètres,
+// séparées par des allées de « ecart » mètres. (x, z) = centre du potager.
+export const POTAGER = { x: -5, z: -2, colonnes: 4, rangees: 2, taille: 1.2, ecart: 0.45 }
+
+// Les réserves de nourriture gratuite pour les animaux (foin et grain), dehors.
+export const RESERVES = [{ x: 6.6, z: -3.7 }]
 
 // Autres décors.
 export const ETANG = { x: -15, z: -3, rayon: 2.2 }
 export const PUITS = { x: 4, z: 4 }
 export const BANCS = [{ x: -4, z: 8, angle: 0 }]
 export const PANNEAUX = [
-  { x: -1.8, z: -0.6, texte: 'Potager', largeur: 1.3 },
+  { x: -8.7, z: -0.3, texte: 'Potager', largeur: 1.3 },
   { x: 2.2, z: 18.2, texte: 'Bienvenue !', largeur: 1.6 },
 ]
 

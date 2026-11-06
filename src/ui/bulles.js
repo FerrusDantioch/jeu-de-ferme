@@ -6,6 +6,7 @@
  * Elle reste affichée assez longtemps pour être lue tranquillement, puis s'efface en douceur.
  */
 import * as THREE from 'three'
+import { positionEcran } from './ancrage.js'
 
 // Temps d'affichage : au moins 4 secondes, plus pour les longues phrases.
 const DUREE_MINI = 4000
@@ -14,7 +15,10 @@ const DUREE_PAR_LETTRE = 75
 export function creerBulles() {
   const racine = document.getElementById('interface')
   const actives = new Map() // objet 3D → { el, hauteur, fin }
+  const flottants = [] // petits textes qui s'envolent (« +3 🥕 »)
   const point = new THREE.Vector3()
+  const moinsDAnimations = window.matchMedia('(prefers-reduced-motion: reduce)')
+  const DUREE_FLOTTANT = 1800
 
   function retirer(objet) {
     const bulle = actives.get(objet)
@@ -53,6 +57,19 @@ export function creerBulles() {
 
     retirer,
 
+    /**
+     * Un petit texte qui monte doucement au-dessus d'un objet puis s'efface
+     * (ex. : « +3 🥕 » après une récolte).
+     */
+    flotter(objet, texte, hauteur = 1.2) {
+      const el = document.createElement('div')
+      el.className = 'texte-flottant'
+      el.textContent = texte
+      el.style.visibility = 'hidden'
+      racine.appendChild(el)
+      flottants.push({ el, objet, hauteur, debut: performance.now() })
+    },
+
     /** Efface toutes les bulles (en changeant de lieu). */
     toutRetirer() {
       for (const objet of [...actives.keys()]) retirer(objet)
@@ -61,6 +78,21 @@ export function creerBulles() {
     /** Appelée à chaque image : replace les bulles au-dessus des têtes. */
     miseAJour(camera) {
       const maintenant = performance.now()
+      // Les petits textes qui s'envolent.
+      for (let k = flottants.length - 1; k >= 0; k--) {
+        const f = flottants[k]
+        const t = (maintenant - f.debut) / DUREE_FLOTTANT
+        if (t >= 1) {
+          f.el.remove()
+          flottants.splice(k, 1)
+          continue
+        }
+        const pos = positionEcran(f.objet, f.hauteur, camera)
+        const monte = moinsDAnimations.matches ? 0 : t * 50
+        f.el.style.transform = `translate(${Math.round(pos.x)}px, ${Math.round(pos.y - monte)}px) translate(-50%, -100%)`
+        f.el.style.opacity = String(t < 0.7 ? 1 : 1 - (t - 0.7) / 0.3)
+        f.el.style.visibility = pos.visible ? 'visible' : 'hidden'
+      }
       const largeurEcran = window.innerWidth
       const hauteurEcran = window.innerHeight
       for (const [objet, bulle] of actives) {

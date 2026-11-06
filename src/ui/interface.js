@@ -19,7 +19,7 @@ function creer(balise, classes = '', html = '') {
   return el
 }
 
-export function creerInterface() {
+export function creerInterface({ aideAuDemarrage = true } = {}) {
   const racine = document.getElementById('interface')
 
   // --- Barre du haut, avec le nom du lieu actuel à gauche ---
@@ -55,6 +55,7 @@ export function creerInterface() {
       : '🚪 Cliquez sur un bâtiment pour y entrer<br><span class="discret">et sur un villageois pour lui parler</span>',
   }
   const bulle = creer('div', 'bulle-aide', AIDES.marcher)
+  if (!aideAuDemarrage) bulle.classList.add('cache') // partie déjà commencée : pas besoin
   racine.appendChild(bulle)
 
   // --- Fenêtre « À propos » ---
@@ -106,6 +107,8 @@ export function creerInterface() {
   window.addEventListener('appinstalled', () => (boutonInstaller.hidden = true))
 
   return {
+    /** La barre du haut (pour y ajouter d'autres boutons). */
+    barre,
     /** Cache la bulle d'aide (après le premier déplacement). */
     cacherAide() {
       bulle.classList.add('cache')

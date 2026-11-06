@@ -124,9 +124,9 @@ export function creerPiece({
 
     /**
      * Termine la pièce et renvoie le lieu prêt à l'emploi.
-     * @param {object} extra  { pnj, ambiance, miseAJour }
+     * @param {object} extra  { pnj, animaux, ambiance, miseAJour }
      */
-    terminer({ pnj = [], ambiance = {}, miseAJour } = {}) {
+    terminer({ pnj = [], animaux = [], ambiance = {}, miseAJour } = {}) {
       groupe.add(fusionnerParMateriau(murs, { ombrePortee: false }))
       groupe.add(fusionnerParMateriau(decor))
       return {
@@ -145,6 +145,7 @@ export function creerPiece({
         portes: [porte],
         touchables,
         pnj,
+        animaux,
         miseAJour,
       }
     },
