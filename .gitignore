@@ -1,0 +1,6 @@
+# Dossiers générés automatiquement : inutile de les envoyer sur GitHub
+node_modules/
+dist/
+dev-dist/
+*.log
+.DS_Store

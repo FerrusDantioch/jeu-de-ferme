@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- Empêche le zoom par pincement du navigateur : le jeu gère tout lui-même. -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="%COULEUR_THEME%" />
+    <meta name="description" content="Un jeu de ferme calme et mignon." />
+    <link rel="icon" href="./icones/icone.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./icones/apple-touch-icon.png" />
+    <title>%NOM_DU_JEU%</title>
+  </head>
+  <body>
+    <!-- Zone où la 3D est dessinée -->
+    <div id="scene3d"></div>
+
+    <!-- Interface (boutons, textes) posée par-dessus la 3D -->
+    <div id="interface"></div>
+
+    <!-- Écran de chargement : visible tant que le jeu démarre -->
+    <div id="chargement">
+      <div class="chargement-titre">%NOM_DU_JEU%</div>
+      <div class="chargement-texte">Chargement…</div>
+    </div>
+
+    <!-- Message affiché si JavaScript est désactivé -->
+    <noscript>Ce jeu a besoin de JavaScript pour fonctionner.</noscript>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

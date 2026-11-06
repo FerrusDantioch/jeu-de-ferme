@@ -1,0 +1,21 @@
+{
+  "name": "jeu-de-ferme",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Un jeu de ferme 3D calme et mignon, jouable sur téléphone et ordinateur (PWA).",
+  "author": "Ferrus Dantioch",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview --host",
+    "icones": "node scripts/generer-icones.mjs"
+  },
+  "dependencies": {
+    "three": "^0.187.0"
+  },
+  "devDependencies": {
+    "vite": "^8.3.6",
+    "vite-plugin-pwa": "^2.0.0"
+  }
+}

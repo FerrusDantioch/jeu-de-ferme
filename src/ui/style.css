@@ -1,0 +1,198 @@
+/*
+ * style.css — l'apparence de l'interface (boutons, textes, fenêtres).
+ *
+ * Règles de confort respectées :
+ *  - boutons d'au moins 56 pixels de haut, bien espacés ;
+ *  - texte grand et bien contrasté ;
+ *  - animations douces (et supprimées si le téléphone demande « moins d'animations »).
+ */
+
+:root {
+  /* Taille de base du texte : tout le reste en dépend (réglable plus tard). */
+  --taille-texte: 20px;
+  --couleur-texte: #2f3a2f;
+  --couleur-panneau: #fffaf0;
+  --couleur-bouton: #ffffff;
+  --couleur-accent: #5a9e58;
+  --couleur-accent-texte: #ffffff;
+  --rayon: 18px;
+  --ombre: 0 4px 14px rgba(0, 0, 0, 0.18);
+  --taille-tactile: 56px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #cdeaf7;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: var(--taille-texte);
+  color: var(--couleur-texte);
+  /* Évite la sélection de texte et le surlignage bleu au toucher. */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Zone 3D : occupe tout l'écran. « touch-action: none » = le navigateur
+   ne fait pas défiler ni zoomer la page quand on touche le jeu. */
+#scene3d,
+#scene3d canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+}
+
+/* L'interface est posée par-dessus la 3D, mais laisse passer les touchers
+   partout où il n'y a pas de bouton. */
+#interface {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+#interface > * {
+  pointer-events: auto;
+}
+
+/* --- Écran de chargement --- */
+#chargement {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #cdeaf7;
+  transition: opacity 0.6s ease;
+  z-index: 10;
+}
+#chargement.cache {
+  opacity: 0;
+  pointer-events: none;
+}
+.chargement-titre {
+  font-size: 2em;
+  font-weight: 700;
+  color: #3d6b3b;
+}
+
+/* --- Boutons --- */
+.bouton {
+  min-height: var(--taille-tactile);
+  min-width: var(--taille-tactile);
+  padding: 0 18px;
+  border: none;
+  border-radius: var(--rayon);
+  background: var(--couleur-bouton);
+  color: var(--couleur-texte);
+  font: inherit;
+  font-weight: 600;
+  box-shadow: var(--ombre);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+}
+.bouton:active {
+  transform: scale(0.97);
+}
+.bouton:focus-visible {
+  outline: 4px solid #2c6fbf;
+  outline-offset: 2px;
+}
+.bouton-principal {
+  background: var(--couleur-accent);
+  color: var(--couleur-accent-texte);
+}
+.bouton .icone {
+  font-size: 1.2em;
+  line-height: 1;
+}
+
+/* Barre de boutons en haut à droite (laisse la place à l'encoche du téléphone). */
+.barre-haut {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+  display: flex;
+  gap: 12px;
+}
+
+/* --- Bulle d'aide en bas de l'écran --- */
+.bulle-aide {
+  position: absolute;
+  left: 50%;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  max-width: calc(100% - 32px);
+  padding: 14px 20px;
+  border-radius: var(--rayon);
+  background: var(--couleur-panneau);
+  box-shadow: var(--ombre);
+  text-align: center;
+  line-height: 1.35;
+  pointer-events: none !important;
+  transition: opacity 0.8s ease;
+}
+.bulle-aide.cache {
+  opacity: 0;
+}
+
+/* --- Fenêtre (panneau) au centre de l'écran --- */
+.voile {
+  position: absolute;
+  inset: 0;
+  background: rgba(30, 40, 30, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.voile[hidden] {
+  display: none;
+}
+.panneau {
+  width: min(480px, 100%);
+  max-height: 100%;
+  overflow-y: auto;
+  background: var(--couleur-panneau);
+  border-radius: 24px;
+  box-shadow: var(--ombre);
+  padding: 24px;
+  line-height: 1.45;
+}
+.panneau h2 {
+  margin: 0 0 12px;
+  font-size: 1.4em;
+  color: #3d6b3b;
+}
+.panneau p {
+  margin: 0 0 12px;
+}
+.panneau .actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+.panneau .discret {
+  opacity: 0.75;
+  font-size: 0.85em;
+}
+
+/* Si le téléphone demande moins d'animations : on les supprime. */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
