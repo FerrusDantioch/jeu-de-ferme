@@ -41,6 +41,10 @@
 | La place des arbres / rochers | `src/monde/terrain.js`      |
 | Le dessin de l'icône          | `scripts/generer-icones.mjs` puis `npm run icones` |
 
+## 📌 Décisions prises
+- **Mise en ligne** : option 2 choisie. Le jeu sera publié sur GitHub Pages seulement au
+  jalon 6. Le fichier de publication automatique est déjà prêt et attend ce moment.
+
 ## 🔜 Ce qui reste
 - **Jalon 2 — Monde** : ferme extérieure, maison / étable / boutique, entrée et sortie avec fondu,
   PNJ qui marchent.
