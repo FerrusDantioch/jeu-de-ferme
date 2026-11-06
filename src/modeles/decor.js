@@ -125,3 +125,19 @@ export function creerReserve() {
   g.add(sac)
   return g
 }
+
+/** Le tableau des commandes : un panneau en bois avec des petits papiers épinglés. */
+export function creerTableauCommandes() {
+  const g = new THREE.Group()
+  for (const x of [-0.8, 0.8]) g.add(boite(0.12, 1.8, 0.12, PALETTE.boisFonce, x, 0, 0))
+  g.add(boite(1.8, 1.0, 0.08, PALETTE.bois, 0, 0.7, 0.02))
+  g.add(boite(1.9, 0.12, 0.25, PALETTE.toitTuile, 0, 1.75, 0.02)) // petit toit
+  const titre = panneauTexte('Commandes', 1.3, 0.28)
+  titre.position.set(0, 1.42, 0.07)
+  g.add(titre)
+  for (const [x, y, c] of [[-0.5, 0.85, PALETTE.blanc], [0, 0.8, PALETTE.fleurJaune], [0.5, 0.86, PALETTE.blanc]]) {
+    g.add(boite(0.36, 0.42, 0.02, c, x, y, 0.07))
+    g.add(boule(0.03, PALETTE.tomate, x, y + 0.38, 0.09)) // punaise
+  }
+  return g
+}

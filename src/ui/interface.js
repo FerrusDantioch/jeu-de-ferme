@@ -25,8 +25,13 @@ export function creerInterface({ aideAuDemarrage = true } = {}) {
   // --- Barre du haut, avec le nom du lieu actuel à gauche ---
   const barre = creer('div', 'barre-haut')
   racine.appendChild(barre)
-  const etiquetteLieu = creer('div', 'etiquette-lieu')
-  etiquetteLieu.setAttribute('aria-live', 'polite')
+  // L'étiquette montre le lieu, les pièces et le niveau ; la toucher ouvre « Ma progression ».
+  const etiquetteLieu = creer('button', 'etiquette-lieu')
+  etiquetteLieu.setAttribute('aria-label', 'Ma progression')
+  const nomLieu = creer('span', 'lieu-nom')
+  nomLieu.setAttribute('aria-live', 'polite')
+  const compteurs = creer('span', 'lieu-compteurs')
+  etiquetteLieu.append(nomLieu, compteurs)
   barre.appendChild(etiquetteLieu)
 
   const boutonInstaller = creer(
@@ -120,8 +125,11 @@ export function creerInterface({ aideAuDemarrage = true } = {}) {
     },
     /** Affiche le nom du lieu où l'on se trouve. */
     montrerLieu(titre) {
-      etiquetteLieu.textContent = titre
+      nomLieu.textContent = titre
     },
+    /** L'étiquette (à toucher) et la zone où écrire pièces et niveau. */
+    etiquetteLieu,
+    compteurs,
     /** Cache l'écran de chargement. */
     finChargement() {
       const ecran = document.getElementById('chargement')

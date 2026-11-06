@@ -1,7 +1,7 @@
 /**
  * boutique.js — l'intérieur de la boutique : le comptoir de Lila, des étagères,
  * des sacs de graines et des paniers de légumes. Chargé seulement à la première visite.
- * (Acheter et vendre arrivera au jalon 4.)
+ * Toucher Lila ou son comptoir ouvre la boutique (acheter, vendre).
  */
 import { creerPiece } from './piece.js'
 import { PALETTE } from '../modeles/materiaux.js'
@@ -9,6 +9,8 @@ import {
   creerComptoir, creerEtagere, creerSac, creerPanier, creerTapis, creerPlante,
   creerCaisse, creerFenetreInterieure,
 } from '../modeles/mobilier.js'
+import * as THREE from 'three'
+import { MATERIAU_INVISIBLE } from '../modeles/formes.js'
 import { creerPnjDuLieu } from './pnj-du-lieu.js'
 
 export function creerLieu(outils) {
@@ -24,6 +26,12 @@ export function creerLieu(outils) {
 
   // Le comptoir, avec Lila derrière (elle est ajoutée par la liste des villageois).
   placer(creerComptoir(3.6), 0, -1.6, { obstacle: [3.6, 0.7] })
+  // Le comptoir se touche pour ouvrir la boutique.
+  const zoneComptoir = new THREE.Mesh(new THREE.BoxGeometry(3.8, 1.2, 0.9), MATERIAU_INVISIBLE)
+  zoneComptoir.position.set(0, 0.6, -1.6)
+  zoneComptoir.userData.toucher = { type: 'boutique', approche: { x: 0, z: -0.6 } }
+  piece.groupe.add(zoneComptoir)
+  piece.touchables.push(zoneComptoir)
 
   // Étagères garnies contre le mur du fond.
   placer(creerEtagere(1.6, [PALETTE.tomate, PALETTE.fleurJaune, PALETTE.chou]), -2.8, -3.25, { obstacle: [1.6, 0.45] })

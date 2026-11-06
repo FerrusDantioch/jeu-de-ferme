@@ -13,13 +13,15 @@ import { Animal } from '../entites/animal.js'
  */
 export function creerAnimauxDuLieu(idLieu, zonePour, { groupe, touchables, pastilles }) {
   const liste = []
-  for (const fiche of etat.d.animaux) {
-    if (fiche.lieu !== idLieu) continue
+  // Ajoute un animal au lieu (sert aussi pour les animaux adoptés plus tard).
+  liste.ajouter = (fiche) => {
     const animal = new Animal(fiche, zonePour(fiche), pastilles)
     groupe.add(animal.modele)
     touchables.push(animal.zoneToucher)
     liste.push(animal)
+    return animal
   }
+  for (const fiche of etat.d.animaux) if (fiche.lieu === idLieu) liste.ajouter(fiche)
   return liste
 }
 

@@ -1,7 +1,9 @@
 /**
  * etat.js — « la mémoire » du jeu : tout ce qu'il faut retenir d'une partie.
  *
+ *  - les pièces, l'expérience (⭐) ;
  *  - le contenu du sac (inventaire) ;
+ *  - les commandes des villageois ;
  *  - les parcelles du potager (ce qui y pousse, depuis quand) ;
  *  - les animaux (ventre, bonheur, production) ;
  *  - où se trouve le personnage.
@@ -13,6 +15,8 @@
 import { GRAINES_DE_DEPART } from '../donnees/cultures.js'
 import { ANIMAUX_DE_DEPART } from '../donnees/animaux.js'
 import { POTAGER } from '../donnees/ferme.js'
+import { PIECES_DE_DEPART } from '../donnees/economie.js'
+import { CLIENTS } from '../donnees/commandes.js'
 
 // Numéro de version du format de sauvegarde (à augmenter si on change sa forme).
 export const VERSION_SAUVEGARDE = 1
@@ -40,7 +44,14 @@ export function nouvellePartie(maintenant = Date.now()) {
       derniereMaj: maintenant,
     })),
     joueur: null, // { lieu, x, z } : rempli à la première sauvegarde
-    stats: { recoltes: 0, produitsRamasses: 0 },
+    pieces: PIECES_DE_DEPART,
+    experience: 0,
+    // Commandes en cours : { idClient: { articles: [{ id, n }], pieces, experience } }
+    commandes: {},
+    // Quand chaque client passera sa prochaine commande (heure, en millisecondes).
+    prochainesCommandes: Object.fromEntries(CLIENTS.map((c) => [c.id, maintenant + c.premiereCommande * 60000])),
+    premiereCommandeFaite: false,
+    stats: { recoltes: 0, produitsRamasses: 0, commandesLivrees: 0, piecesGagnees: 0 },
   }
 }
 
@@ -53,6 +64,8 @@ export function completer(donnees) {
   const d = { ...neuf, ...donnees }
   d.inventaire = { ...(donnees.inventaire || {}) }
   d.stats = { ...neuf.stats, ...(donnees.stats || {}) }
+  d.commandes = { ...(donnees.commandes || {}) }
+  d.prochainesCommandes = { ...neuf.prochainesCommandes, ...(donnees.prochainesCommandes || {}) }
   // Parcelles : on garde les anciennes, on ajoute les nouvelles s'il y en a plus.
   const parcelles = Array.isArray(donnees.parcelles) ? donnees.parcelles : []
   d.parcelles = neuf.parcelles.map((vide, n) => ({ ...vide, ...(parcelles[n] || {}) }))

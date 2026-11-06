@@ -10,8 +10,17 @@ import { ESPECES, SOINS, PRISE_RESERVE } from '../donnees/animaux.js'
 import { infosObjet } from '../donnees/objets.js'
 import { etat } from './etat.js'
 import { quantite, ajouter } from './inventaire.js'
+import { EXPERIENCE } from '../donnees/economie.js'
+import { PNJ } from '../donnees/pnj.js'
 import * as potager from './potager.js'
 import * as elevage from './elevage.js'
+import * as commandes from './commandes.js'
+import { gagnerExperience } from './economie.js'
+
+/** Affiche « +3 ⭐ » un peu après une action (le temps de lire le premier texte). */
+function montrerExperience(bulles, objet, n, hauteur, delai = 900) {
+  if (n > 0) setTimeout(() => bulles.flotter(objet, `+${n} ⭐`, hauteur), delai)
+}
 
 /**
  * Fiche d'une parcelle du potager.
@@ -72,10 +81,12 @@ export function ficheParcelle(n, { bulles, objet, actualiser }) {
             texte: 'Récolter',
             principal: true,
             faire: () => {
+              const id = etat.d.parcelles[n].culture
               const r = potager.recolter(n)
               if (r) {
                 bulles.flotter(objet, `+${r.recolte} ${r.culture.icone}`, 0.9)
                 setTimeout(() => bulles.flotter(objet, `+${r.graines} 🌱`, 0.9), 500)
+                montrerExperience(bulles, objet, gagnerExperience(EXPERIENCE.recolte[id] || 2), 0.9, 1000)
               }
               apres()
             },
@@ -135,7 +146,10 @@ export function ficheAnimal(animal, { bulles, joueur, lieuReserve }) {
         texte: `Ramasser`,
         principal: true,
         faire: () => {
-          if (elevage.ramasser(a)) bulles.flotter(animal.modele, `+1 ${produit.icone}`, 1.2)
+          if (elevage.ramasser(a)) {
+            bulles.flotter(animal.modele, `+1 ${produit.icone}`, 1.2)
+            montrerExperience(bulles, animal.modele, gagnerExperience(EXPERIENCE.ramasser), 1.2)
+          }
           regarder()
           animal.rafraichirIcone()
         },
@@ -152,7 +166,10 @@ export function ficheAnimal(animal, { bulles, joueur, lieuReserve }) {
         desactive: plein || nb === 0,
         faire: () => {
           const r = elevage.nourrir(a, id)
-          if (r) bulles.flotter(animal.modele, r.friandise ? '😋💕' : '😋', 1.2)
+          if (r) {
+            bulles.flotter(animal.modele, r.friandise ? '😋💕' : '😋', 1.2)
+            montrerExperience(bulles, animal.modele, gagnerExperience(EXPERIENCE.nourrir), 1.2)
+          }
           regarder()
           animal.rafraichirIcone()
         },
@@ -197,4 +214,76 @@ export function ficheReserve({ bulles, joueur }) {
     ],
     actions: [prendre('foin'), prendre('grain')],
   })
+}
+
+// --- Commandes ---
+
+const NOMS_CLIENTS = Object.fromEntries(PNJ.map((p) => [p.id, p.nom]))
+
+/** Les lignes qui décrivent une commande (articles, récompense). */
+function lignesCommande(commande) {
+  const lignes = commande.articles.map((a) => {
+    const o = infosObjet(a.id)
+    const ai = Math.min(quantite(a.id), a.n)
+    return { texte: `${ai >= a.n ? '✅' : '⬜'} ${o.icone} ${o.nom} : ${ai} / ${a.n}` }
+  })
+  lignes.push({ texte: `Récompense : 🪙 ${commande.pieces} · ⭐ ${commande.experience}`, discret: true })
+  return lignes
+}
+
+/** Le bouton « Livrer » d'une commande. */
+function actionLivrer(idClient, commande, { bulles, joueur, avecNom }) {
+  const manque = commande.articles
+    .filter((a) => quantite(a.id) < a.n)
+    .map((a) => `${a.n - quantite(a.id)} ${infosObjet(a.id).icone}`)
+  return {
+    icone: '📦',
+    texte: avecNom ? `Livrer à ${NOMS_CLIENTS[idClient]}` : 'Livrer',
+    detail: manque.length ? `Il manque ${manque.join(', ')}` : 'Tout est prêt !',
+    principal: manque.length === 0,
+    desactive: manque.length > 0,
+    faire: () => {
+      const r = commandes.livrer(idClient)
+      if (!r) return
+      bulles.flotter(joueur.modele, `+${r.pieces} 🪙`, 1.7)
+      montrerExperience(bulles, joueur.modele, r.experience, 1.7)
+    },
+  }
+}
+
+/**
+ * Fiche des commandes : celle d'un villageois (idClient donné),
+ * ou toutes à la fois (le tableau des commandes).
+ */
+export function ficheCommandes({ bulles, joueur, idClient = null }) {
+  return () => {
+    if (idClient) {
+      const c = commandes.commandeDe(idClient)
+      if (!c) return null // commande livrée : la fiche se ferme
+      return {
+        icone: '📋',
+        titre: `Commande de ${NOMS_CLIENTS[idClient]}`,
+        lignes: lignesCommande(c),
+        actions: [actionLivrer(idClient, c, { bulles, joueur })],
+      }
+    }
+    const enCours = commandes.commandesEnCours()
+    if (enCours.length === 0) {
+      return {
+        icone: '📋',
+        titre: 'Tableau des commandes',
+        lignes: [{ texte: 'Pas de commande pour l’instant. Les villageois repasseront bientôt ! 🌷' }],
+        actions: [],
+      }
+    }
+    const lignes = []
+    const actions = []
+    for (const [id, c] of enCours) {
+      lignes.push({ texte: `— ${NOMS_CLIENTS[id]} —` })
+      lignes.push(...lignesCommande(c))
+      actions.push(actionLivrer(id, c, { bulles, joueur, avecNom: true }))
+    }
+    lignes.push({ texte: 'Pas de limite de temps : livrez quand vous voulez.', discret: true })
+    return { icone: '📋', titre: 'Tableau des commandes', lignes, actions }
+  }
 }

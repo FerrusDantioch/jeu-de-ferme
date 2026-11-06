@@ -14,10 +14,12 @@ import { GrilleChemin } from '../moteur/chemin.js'
 import { creerTerrain, semerFleurs } from '../monde/terrain.js'
 import { obtenirModele } from '../modeles/index.js'
 import { fusionnerParMateriau } from '../modeles/fusion.js'
-import { creerPuits, creerBanc, creerPanneau, creerEtang, creerEnclos, creerReserve } from '../modeles/decor.js'
+import {
+  creerPuits, creerBanc, creerPanneau, creerEtang, creerEnclos, creerReserve, creerTableauCommandes,
+} from '../modeles/decor.js'
 import { MATERIAU_INVISIBLE } from '../modeles/formes.js'
 import {
-  BATIMENTS, POINT_DE_DEPART, ENCLOS, ETANG, PUITS, BANCS, PANNEAUX, RESERVES,
+  BATIMENTS, POINT_DE_DEPART, ENCLOS, ETANG, PUITS, BANCS, PANNEAUX, RESERVES, TABLEAU_COMMANDES,
 } from '../donnees/ferme.js'
 import { creerPnjDuLieu } from './pnj-du-lieu.js'
 import { creerAnimauxDuLieu, animerAnimaux } from './animaux-du-lieu.js'
@@ -127,6 +129,20 @@ export function creerLieu(outils) {
     panneau.position.set(p.x, 0, p.z)
     groupe.add(panneau)
     grille.bloquerCercle(p.x, p.z, 0.1, 0.3)
+  }
+
+  // --- Le tableau des commandes (on peut y livrer toutes les commandes) ---
+  {
+    const { x, z } = TABLEAU_COMMANDES
+    const tableau = fusionnerParMateriau(creerTableauCommandes())
+    tableau.position.set(x, 0, z)
+    groupe.add(tableau)
+    grille.bloquerRectangle(x, z, 1.8, 0.2, 0.3)
+    const zone = new THREE.Mesh(new THREE.BoxGeometry(2, 1.9, 0.8), MATERIAU_INVISIBLE)
+    zone.position.set(x, 0.95, z)
+    zone.userData.toucher = { type: 'tableau', approche: { x, z: z + 1.0 } }
+    groupe.add(zone)
+    touchables.push(zone)
   }
 
   // --- Les fleurs (après les obstacles, pour ne pas en semer dans les murs) ---

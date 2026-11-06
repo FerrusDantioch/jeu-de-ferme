@@ -8,7 +8,9 @@
  *  - promenade : les endroits où il aime aller se promener [x, z] ;
  *  - fixe : true = il reste à sa place (ex. : la marchande derrière son comptoir) ;
  *  - salutations : ce qu'il dit quand on passe près de lui ;
- *  - phrases : ce qu'il dit quand on le touche, ou de temps en temps tout seul.
+ *  - phrases : ce qu'il dit quand on le touche, ou de temps en temps tout seul ;
+ *  - demandes : ce qu'il dit quand il a une commande pour nous (voir src/donnees/commandes.js) ;
+ *  - marchande : true = toucher ce personnage ouvre la boutique.
  *
  * Vous pouvez changer les phrases librement (garder les guillemets ' ' autour).
  */
@@ -35,6 +37,10 @@ export const PNJ = [
       'J’aime bien m’asseoir près de l’étang.',
       'Il fait bon, aujourd’hui.',
     ],
+    demandes: [
+      'J’aimerais préparer un bon repas… Tu pourrais m’apporter ceci ?',
+      'Mes petits-enfants viennent dimanche ! Tu m’aiderais ?',
+    ],
   },
   {
     id: 'leon',
@@ -55,6 +61,10 @@ export const PNJ = [
       'Bientôt des poules dans ton enclos ?',
       'Une bonne récolte, ça se fête !',
       'Je vais faire un tour jusqu’au puits.',
+    ],
+    demandes: [
+      'Dis, j’aurais besoin de quelques bricoles de ta ferme.',
+      'Je prépare une surprise pour Théo… Tu peux m’aider ?',
     ],
   },
   {
@@ -77,6 +87,10 @@ export const PNJ = [
       'Tu auras des moutons ? J’adore les moutons ! 🐑',
       'Le puits fait un drôle d’écho !',
     ],
+    demandes: [
+      'J’ai une liste ! C’est pour un goûter géant !',
+      'Tu peux m’apporter ça ? S’il te plaîîît ?',
+    ],
   },
   {
     id: 'lila',
@@ -87,11 +101,12 @@ export const PNJ = [
       tablier: 0x7cc47a, coiffure: 'chignon', chapeau: 'aucun',
     },
     fixe: true,
+    marchande: true,
     depart: [0, -2.6],
     salutations: ['Bonjour, bienvenue ! 🧺'],
     phrases: [
       'Bienvenue dans ma boutique !',
-      'Les graines arrivent très bientôt, repasse me voir 🌱',
+      'J’ai de belles graines toutes fraîches 🌱',
       'Prends ton temps pour regarder.',
       'Il fait bon ici, n’est-ce pas ?',
     ],

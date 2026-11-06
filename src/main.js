@@ -22,7 +22,10 @@ import { creerSac } from './ui/sac.js'
 import { etat } from './jeu/etat.js'
 import { chargerPartie, demarrerSauvegardeAuto } from './jeu/sauvegarde.js'
 import { avancerTous } from './jeu/elevage.js'
-import { ficheParcelle, ficheAnimal, ficheReserve } from './jeu/fiches.js'
+import { ficheParcelle, ficheAnimal, ficheReserve, ficheCommandes } from './jeu/fiches.js'
+import * as commandes from './jeu/commandes.js'
+import { creerBoutique } from './ui/boutique.js'
+import { creerProgression } from './ui/progression.js'
 import { activerModeHorsLigne } from './pwa.js'
 
 // 0) On reprend la partie enregistrée sur le téléphone (ou on en commence une nouvelle).
@@ -45,6 +48,12 @@ const fondu = creerFondu()
 const pastilles = creerPastilles()
 const fiche = creerFiche({ surOuverture: () => interfaceJeu.cacherAide() })
 creerSac(interfaceJeu.barre)
+creerProgression(interfaceJeu.compteurs, interfaceJeu.etiquetteLieu)
+// La boutique de Lila. Un animal adopté apparaît tout de suite s'il est dans un lieu déjà construit
+// (sinon, il sera là à la première visite de l'étable).
+const boutique = creerBoutique({
+  surAdoption: (ficheAnimal) => lieux.lieuConstruit(ficheAnimal.lieu)?.animaux?.ajouter(ficheAnimal),
+})
 
 // 3) Le personnage (sa grille d'obstacles sera celle du lieu où il se trouve)
 //    et le petit cercle qui montre où il va.
@@ -189,7 +198,13 @@ entrees.surToucher((x, y) => {
   if (cible?.type === 'pnj') {
     // Un villageois : il nous parle ; s'il est loin, on s'approche un peu de lui.
     const pnj = cible.pnj
-    if (pnj.parlerAvec(personnage)) {
+    const idClient = pnj.donnees.id
+    const commande = commandes.commandeDe(idClient)
+    const demande = commande && pnj.donnees.demandes ? pnj.donnees.demandes[0] : null
+    if (pnj.parlerAvec(personnage, demande)) {
+      if (pnj.donnees.marchande) boutique.ouvrir()
+      // Un client avec une commande : on affiche ce qu'il demande.
+      else if (commande) fiche.ouvrir(ficheCommandes({ bulles, joueur: personnage, idClient }))
       const distance = personnage.distanceA(pnj.position)
       if (distance > 2.2) {
         const vers = new THREE.Vector3().subVectors(personnage.position, pnj.position).setY(0).normalize()
@@ -228,6 +243,18 @@ entrees.surToucher((x, y) => {
     allerSiLoin(cible.approche)
     return
   }
+  if (cible?.type === 'tableau') {
+    fiche.ouvrir(ficheCommandes({ bulles, joueur: personnage }))
+    allerSiLoin(cible.approche)
+    return
+  }
+  if (cible?.type === 'boutique') {
+    // Le comptoir : Lila dit bonjour et la boutique s'ouvre.
+    const lila = lieux.actuel.pnj.find((p) => p.donnees.marchande)
+    if (lila) lila.parlerAvec(personnage)
+    boutique.ouvrir()
+    return
+  }
   if (cible?.type === 'info') {
     // Un bâtiment fermé : le personnage dit ce que c'est, et s'en approche.
     bulles.dire(personnage.modele, cible.texte)
@@ -247,6 +274,22 @@ window.addEventListener('resize', () => {
 })
 
 let horlogeSoins = 0 // compte le temps pour les soins des animaux (voir plus bas)
+
+/**
+ * Une fois par seconde : de nouvelles commandes arrivent quand c'est le moment,
+ * et une icône 📋 flotte au-dessus des villageois qui ont une commande pour nous.
+ */
+function suivreCommandes() {
+  const nouveaux = commandes.mettreAJour()
+  for (const pnj of lieux.actuel.pnj) {
+    const id = pnj.donnees.id
+    pastilles.definir(pnj.modele, commandes.commandeDe(id) ? '📋' : null, pnj.hauteurBulle + 0.45)
+    // Un villageois tout juste arrivé avec une commande le dit (s'il est visible).
+    if (nouveaux.includes(id) && pnj.present && pnj.donnees.demandes) {
+      pnj.dire(pnj.donnees.demandes[Math.floor(Math.random() * pnj.donnees.demandes.length)])
+    }
+  }
+}
 
 // 7) La boucle de jeu : mise à jour puis dessin, à chaque image.
 const image = demarrerBoucle((dt) => {
@@ -271,6 +314,7 @@ const image = demarrerBoucle((dt) => {
   if (horlogeSoins >= 1) {
     horlogeSoins = 0
     avancerTous()
+    suivreCommandes()
   }
 })
 
@@ -299,4 +343,4 @@ lieux
 activerModeHorsLigne()
 
 // Accès pratique pour les tests automatiques (sans effet sur le jeu).
-window.__jeu = { personnage, lieux, camera, bulles, etat, fiche }
+window.__jeu = { personnage, lieux, camera, bulles, etat, fiche, boutique }

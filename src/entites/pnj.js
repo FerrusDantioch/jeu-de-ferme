@@ -86,14 +86,15 @@ export class PNJ extends Marcheur {
 
   /**
    * Le joueur le touche : il s'arrête, se tourne vers lui et parle.
+   * @param {string} [texteImpose]  ce qu'il doit dire (sinon : une phrase au hasard)
    * @returns {boolean} vrai s'il a pu parler
    */
-  parlerAvec(joueur) {
+  parlerAvec(joueur, texteImpose) {
     if (!this.present) return false
     this.arreter()
     this.ecoute = 5
     this.regarderVers(joueur.position.x, joueur.position.z)
-    this.dire(this._phraseAuHasard(this.donnees.phrases))
+    this.dire(texteImpose || this._phraseAuHasard(this.donnees.phrases))
     this.depuisSalut = 0
     return true
   }

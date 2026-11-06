@@ -42,6 +42,7 @@ function estLibre(grille, point) {
 export function creerGestionnaireLieux(ctx) {
   const { scene, changerAmbiance, personnage, placerCamera, fondu, bulles, marqueur } = ctx
   const lieux = new Map() // id → promesse du lieu construit
+  const construits = new Map() // id → lieu déjà construit
   let actuel = null
   let enTransition = false
   let repit = 0
@@ -51,7 +52,11 @@ export function creerGestionnaireLieux(ctx) {
     if (!lieux.has(id)) {
       const chargeur = CHARGEURS[id]
       if (!chargeur) return Promise.reject(new Error(`Lieu inconnu : « ${id} »`))
-      const promesse = chargeur().then((module) => module.creerLieu(ctx.outils))
+      const promesse = chargeur().then((module) => {
+        const lieu = module.creerLieu(ctx.outils)
+        construits.set(id, lieu)
+        return lieu
+      })
       // En cas d'échec, on oublie la promesse pour pouvoir réessayer plus tard.
       promesse.catch(() => lieux.delete(id))
       lieux.set(id, promesse)
@@ -147,6 +152,8 @@ export function creerGestionnaireLieux(ctx) {
       return enTransition
     },
     DISTANCE_PORTE,
+    /** Le lieu s'il a déjà été construit (sinon null : il sera construit à la première visite). */
+    lieuConstruit: (id) => construits.get(id) || null,
     demarrer,
     passerPorte,
     verifierPortesClavier,

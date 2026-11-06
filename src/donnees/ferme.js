@@ -77,6 +77,9 @@ export const POTAGER = { x: -5, z: -2, colonnes: 4, rangees: 2, taille: 1.2, eca
 // Les réserves de nourriture gratuite pour les animaux (foin et grain), dehors.
 export const RESERVES = [{ x: 6.6, z: -3.7 }]
 
+// Le tableau des commandes (on peut y livrer toutes les commandes sans chercher les clients).
+export const TABLEAU_COMMANDES = { x: 2.6, z: 7.6 }
+
 // Autres décors.
 export const ETANG = { x: -15, z: -3, rayon: 2.2 }
 export const PUITS = { x: 4, z: 4 }

@@ -132,7 +132,8 @@ body {
   gap: 12px;
   pointer-events: none !important; /* on peut toucher le jeu entre les boutons */
 }
-.barre-haut > .bouton {
+.barre-haut > .bouton,
+.barre-haut > .etiquette-lieu {
   pointer-events: auto;
 }
 /* Sur un écran étroit, le bouton « À propos » ne garde que son icône. */
@@ -213,14 +214,24 @@ body {
   margin-right: auto;
   min-height: var(--taille-tactile);
   display: flex;
-  align-items: center;
-  padding: 0 16px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 4px 16px;
+  border: none;
   border-radius: var(--rayon);
-  background: rgba(255, 250, 240, 0.9);
+  background: rgba(255, 250, 240, 0.92);
   box-shadow: var(--ombre);
+  font: inherit;
   font-weight: 700;
   color: #3d6b3b;
-  pointer-events: none !important;
+  line-height: 1.2;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.lieu-compteurs {
+  font-size: 0.8em;
+  color: #6b4a35;
 }
 
 /* --- Bulles de paroles au-dessus des personnages --- */
@@ -441,6 +452,114 @@ body {
 }
 .sac-nombre {
   font-weight: 700;
+}
+
+/* --- Fenêtres : progression, fête, boutique --- */
+.panneau h3 {
+  margin: 14px 0 8px;
+  font-size: 1em;
+  color: #6b4a35;
+}
+.panneau .barre {
+  margin: 4px 0 14px;
+}
+.liste-deblocages {
+  margin: 0 0 12px;
+  padding-left: 0;
+  list-style: none;
+}
+.liste-deblocages li {
+  padding: 4px 0;
+  font-weight: 600;
+}
+.panneau-fete {
+  text-align: center;
+}
+.panneau-fete h2 {
+  font-size: 1.8em;
+}
+.panneau-boutique {
+  width: min(560px, 100%);
+}
+.boutique-entete {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 32px;
+  margin-bottom: 8px;
+}
+.boutique-pieces {
+  font-weight: 800;
+  font-size: 1.1em;
+}
+.boutique-message {
+  font-size: 0.85em;
+  color: #3d6b3b;
+}
+.onglets {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.onglets .bouton {
+  flex: 1;
+}
+.ligne-boutique {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #efe5d2;
+}
+.ligne-boutique.bloquee {
+  opacity: 0.6;
+}
+.lb-icone {
+  font-size: 1.8em;
+  width: 1.4em;
+  text-align: center;
+}
+.lb-texte {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 140px;
+  line-height: 1.25;
+}
+.lb-texte .discret {
+  font-size: 0.78em;
+  opacity: 0.8;
+}
+.lb-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+.lb-actions .bouton {
+  padding: 0 14px;
+}
+.verrou {
+  font-size: 0.85em;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+/* --- Ordre d'empilement : ce qui est devant quoi ---
+   bulles et icônes (1) < bulle d'aide et fiche (2) < barre du haut (3) < fenêtres (4) */
+.bulle-parole,
+.pastille,
+.texte-flottant {
+  z-index: 1;
+}
+.bulle-aide,
+.fiche {
+  z-index: 2;
+}
+.barre-haut {
+  z-index: 3;
+}
+.voile {
+  z-index: 4;
 }
 
 /* Si le téléphone demande moins d'animations : on les supprime. */

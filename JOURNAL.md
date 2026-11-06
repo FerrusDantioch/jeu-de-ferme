@@ -142,15 +142,63 @@
 | Les textes des fiches (potager, animaux, réserve)    | `src/jeu/fiches.js`        |
 | La taille du potager (nombre de parcelles)           | `src/donnees/ferme.js`     |
 
+## ✅ Jalon 4 — Économie et clients (terminé)
+
+### Ce qui est fait
+- **Pièces 🪙 et niveau ⭐**, affichés en haut à gauche, sous le nom du lieu. Toucher ce
+  compteur ouvre **« Ma progression »** : niveau, barre d'expérience, ce qui se débloque
+  au prochain niveau, petites statistiques.
+- **Expérience** : on en gagne en récoltant, en ramassant les produits des animaux, en les
+  nourrissant quand ils ont faim, et surtout en livrant des commandes. Un nouveau niveau
+  s'annonce par une **petite fête** douce (une fenêtre, sans flash) qui liste les nouveautés.
+- **La boutique de Lila** (on touche Lila ou son comptoir), avec deux onglets :
+  - **Acheter** : des graines (+1 ou +5) et des animaux à adopter, avec une confirmation
+    avant d'adopter. Ce qui n'est pas encore débloqué affiche 🔒 « Niveau 3 ».
+    Places maximum : 6 poules, 4 moutons, 3 vaches.
+    Un animal adopté apparaît tout de suite dans l'enclos ou l'étable, avec un prénom.
+  - **Vendre** : récoltes, œufs, lait, laine (1 ou tout). La boutique rappelle combien il
+    en faut pour les commandes en cours, pour ne pas tout vendre par erreur.
+- **Commandes** : Mamie Rose, Léon et Théo ont chacun au plus une commande à la fois.
+  - Une icône 📋 flotte au-dessus d'eux. On les touche pour voir la commande et la livrer.
+  - On peut aussi tout livrer depuis le **tableau des commandes**, près de l'allée,
+    sans avoir à chercher les villageois.
+  - **Aucune limite de temps, aucune pénalité** : une commande attend aussi longtemps
+    qu'il faut. Une nouvelle arrive 3 à 8 minutes après chaque livraison.
+  - On ne demande que ce que le joueur peut produire : cultures débloquées et produits
+    des animaux qu'il possède.
+  - La toute première commande sert à apprendre : 2 salades pour Mamie Rose.
+- **Ancienne partie** : une sauvegarde du jalon 3 est complétée automatiquement
+  (pièces de départ, commandes) sans rien perdre.
+
+### Vérifications faites
+- Test automatique sur un téléphone simulé :
+  - livrer une commande depuis le tableau (pièces et ⭐ gagnées) ;
+  - passer au niveau 2 (fête affichée) et ouvrir « Ma progression » ;
+  - acheter 5 graines, adopter une poule (elle apparaît dans l'enclos), vendre des œufs ;
+  - commande de Léon avec son icône 📋 ;
+  - reprise d'une ancienne sauvegarde.
+- Tests des jalons 2 et 3 relancés : tout passe, y compris hors ligne. Aucune erreur.
+- Corrigé en route : les bulles des villageois passaient devant les fenêtres, et la
+  boutique ne se mettait pas à jour quand les pièces changeaient.
+
+### Où modifier quoi (en plus des jalons précédents)
+| Je veux changer…                                        | Fichier                     |
+|---------------------------------------------------------|-----------------------------|
+| Prix, niveaux de déblocage, expérience, noms des animaux | `src/donnees/economie.js`  |
+| Clients, délai entre commandes, récompenses             | `src/donnees/commandes.js`  |
+| Ce que disent les villageois quand ils commandent       | `src/donnees/pnj.js` (`demandes`) |
+| Place du tableau des commandes                          | `src/donnees/ferme.js`      |
+
 ## 📌 Décisions prises
 - **Jeu doux, sans échec** (jalon 3) : arrosage facultatif (bonus de vitesse), au moins une
   graine rendue à chaque récolte, nourriture des animaux gratuite et illimitée, animaux
   qui ne meurent jamais.
+- **Commandes sans stress** (jalon 4) : jamais d'expiration ni de pénalité, une seule
+  commande par villageois, livraison possible depuis le tableau des commandes.
 - **Mise en ligne** : option 2 choisie. Le jeu sera publié sur GitHub Pages seulement au
   jalon 6. Le fichier de publication automatique est déjà prêt et attend ce moment.
 
 ## 🔜 Ce qui reste
-- **Jalon 4 — Économie et clients** : boutique, commandes, pièces, expérience.
 - **Jalon 5 — Quêtes** : quotidiennes, puis calendrier des fêtes avec mode de test de date.
 - **Jalon 6 — Finitions** : sons, réglages (joystick, taille du texte, réduire les animations,
   ombres), optimisation mobile, export / import de sauvegarde, publication finale.
