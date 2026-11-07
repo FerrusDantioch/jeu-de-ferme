@@ -238,6 +238,58 @@
 | Les quêtes du jour (textes, objectifs, récompenses)  | `src/donnees/quetes.js`    |
 | L'emplacement des œufs de Pâques                     | `src/monde/decorations-fetes.js` |
 
+## ✅ Jalon 6 — Finitions (terminé)
+
+### Ce qui est fait
+- **⚙️ Réglages** (bouton en haut), retenus sur l'appareil :
+  - 🔊 sons activés ou coupés, et volume doux, moyen ou fort ;
+  - 🕹️ joystick à l'écran (en bas à gauche, caché quand une fiche est ouverte) ;
+  - 🔠 taille du texte : normale, grande, très grande ;
+  - 🌀 animations normales ou réduites (suit le réglage du téléphone par défaut) ;
+  - 🌗 ombres oui ou non, et 🔋 mode économie (image un peu moins fine, plus fluide).
+  On y trouve aussi « ❓ Comment jouer » (petit guide) et « ℹ️ À propos », qui n'encombre
+  plus la barre du haut.
+- **Sons doux** fabriqués par le code : aucun fichier à télécharger, ils marchent hors ligne.
+  Petits « pop », carillons, une pièce qui tinte, une courte mélodie au nouveau niveau.
+- **Sauvegarde dans un fichier** (dans les Réglages) :
+  - 📤 Exporter : le téléphone enregistre un petit fichier dans « Téléchargements » ;
+  - 📥 Importer : un fichier d'un autre jeu est refusé, et on confirme avant de remplacer ;
+  - 🆕 Nouvelle partie : double confirmation, avec le conseil d'exporter d'abord.
+- **Optimisation** : le téléphone dessine maintenant environ **3 fois moins de pièces par
+  image** (84 au lieu de 253 au départ). Les couleurs sont « peintes » sur les formes, ce qui
+  permet de coller ensemble toutes les pièces qui ne bougent pas. Si le jeu reste lent les
+  premières secondes, il propose une seule fois le mode économie.
+- **Corrections** :
+  - les boutons « cachés » (ex. : « Installer ») s'affichaient quand même ; c'est corrigé ;
+  - une fenêtre ouverte depuis une autre passe maintenant toujours au premier plan.
+- Version **1.0.0**.
+
+### Vérifications faites
+- Test automatique sur un téléphone simulé :
+  - tous les réglages ;
+  - le joystick fait marcher le personnage ;
+  - export, puis import d'un fichier modifié (bien repris) ;
+  - un mauvais fichier est refusé ;
+  - nouvelle partie avec double confirmation ;
+  - « Comment jouer », « À propos », et mode test toujours accessible.
+- Tests des jalons 2 à 5 relancés : tout passe, y compris hors ligne. Aucune erreur.
+
+### Où modifier quoi
+| Je veux changer…                         | Fichier                     |
+|------------------------------------------|-----------------------------|
+| Les sons (notes, durée)                  | `src/moteur/sons.js`        |
+| Les réglages par défaut                  | `src/jeu/reglages.js`       |
+| Le texte de « Comment jouer »            | `src/ui/reglages.js`        |
+
+## 🚀 Mise en ligne (GitHub Pages)
+Le dépôt n'a pas de branche `main` : sa branche principale est `claude/sweet-newton-ef19ch`.
+Le fichier `.github/workflows/publication.yml` publie donc le jeu à chaque mise à jour de
+cette branche (et de `main`, si on la crée un jour).
+
+**À faire une seule fois, dans GitHub :** Settings → Pages → « Build and deployment » →
+Source : **GitHub Actions**. Tant que ce n'est pas fait, la publication échoue (croix rouge
+dans l'onglet « Actions ») : c'est normal, et sans danger.
+
 ## 📌 Décisions prises
 - **Jeu doux, sans échec** (jalon 3) : arrosage facultatif (bonus de vitesse), au moins une
   graine rendue à chaque récolte, nourriture des animaux gratuite et illimitée, animaux
@@ -246,12 +298,11 @@
   commande par villageois, livraison possible depuis le tableau des commandes.
 - **Mode test** (jalon 5) : caché derrière 5 touchers sur le numéro de version ; il ne
   change que le calendrier (fêtes, quêtes), jamais la pousse ni les animaux.
-- **Mise en ligne** : option 2 choisie. Le jeu sera publié sur GitHub Pages seulement au
-  jalon 6. Le fichier de publication automatique est déjà prêt et attend ce moment.
+- **Mise en ligne** : option 2 choisie (publication au jalon 6). Comme le dépôt n'a pas de
+  branche `main`, la publication se fait depuis sa branche principale actuelle.
 
 ## 🔜 Ce qui reste
-- **Jalon 6 — Finitions** : sons, réglages (joystick, taille du texte, réduire les animations,
-  ombres), optimisation mobile, export / import de sauvegarde, publication finale.
+- Vérifier la fluidité sur le vrai téléphone, une fois le jeu en ligne.
 
 ## Commandes utiles (pour un développeur)
 - `npm install` : installe les outils (une seule fois).

@@ -37,7 +37,10 @@ export function creerLieu(outils) {
   const groupe = new THREE.Group()
   groupe.name = 'exterieur'
   const grille = new GrilleChemin(MONDE.taille, MONDE.tailleCase)
-  creerTerrain(groupe, grille)
+  // Tout ce qui ne bouge jamais (bâtiments, enclos, puits, chemins…) est rangé ici,
+  // puis « collé » en un seul bloc à la fin : beaucoup moins de travail pour le téléphone.
+  const statique = new THREE.Group()
+  creerTerrain(groupe, grille, statique)
 
   const portes = []
   const touchables = []
@@ -46,9 +49,13 @@ export function creerLieu(outils) {
 
   // --- Les bâtiments ---
   for (const b of BATIMENTS) {
-    const modele = fusionnerParMateriau(obtenirModele(b.modele, b))
+    const modele = obtenirModele(b.modele, b)
     modele.position.set(b.x, 0, b.z)
-    groupe.add(modele)
+    statique.add(modele)
+    // Zone invisible (aux dimensions du bâtiment) pour le toucher.
+    const zoneBatiment = new THREE.Mesh(new THREE.BoxGeometry(b.largeur + 0.4, 4.5, b.profondeur + 0.4), MATERIAU_INVISIBLE)
+    zoneBatiment.position.set(b.x, 2.25, b.z)
+    groupe.add(zoneBatiment)
     grille.bloquerRectangle(b.x, b.z, b.largeur, b.profondeur, 0.35)
 
     // Le point devant la porte (au milieu de la façade avant).
@@ -67,17 +74,17 @@ export function creerLieu(outils) {
       }
       portes.push(porte)
       arrivees[`devant-${b.id}`] = { x: devant.x, z: devant.z + RECUL_SORTIE, angle: 0 }
-      modele.userData.toucher = { type: 'porte', porte }
+      zoneBatiment.userData.toucher = { type: 'porte', porte }
     } else {
-      modele.userData.toucher = { type: 'info', texte: b.texte, x: devant.x, z: devant.z }
+      zoneBatiment.userData.toucher = { type: 'info', texte: b.texte, x: devant.x, z: devant.z }
     }
-    touchables.push(modele)
+    touchables.push(zoneBatiment)
   }
 
   // --- L'enclos des poules et des moutons ---
-  const enclos = fusionnerParMateriau(creerEnclos(ENCLOS.largeur, ENCLOS.profondeur, ENCLOS.ouverture))
+  const enclos = creerEnclos(ENCLOS.largeur, ENCLOS.profondeur, ENCLOS.ouverture)
   enclos.position.set(ENCLOS.x, 0, ENCLOS.z)
-  groupe.add(enclos)
+  statique.add(enclos)
   {
     const { x, z, largeur: l, profondeur: p, ouverture: o } = ENCLOS
     const e = 0.2 // épaisseur d'une barrière
@@ -96,9 +103,9 @@ export function creerLieu(outils) {
 
   // --- Les réserves de nourriture gratuite pour les animaux ---
   for (const r of RESERVES) {
-    const reserve = fusionnerParMateriau(creerReserve())
+    const reserve = creerReserve()
     reserve.position.set(r.x, 0, r.z)
-    groupe.add(reserve)
+    statique.add(reserve)
     grille.bloquerRectangle(r.x, r.z, 1.6, 0.7, 0.3)
     const zone = new THREE.Mesh(new THREE.BoxGeometry(2, 1.4, 1.2), MATERIAU_INVISIBLE)
     zone.position.set(r.x, 0.7, r.z)
@@ -108,38 +115,38 @@ export function creerLieu(outils) {
   }
 
   // --- L'étang, le puits, les bancs, les panneaux ---
-  const etang = fusionnerParMateriau(creerEtang(ETANG.rayon), { ombrePortee: false })
+  const etang = creerEtang(ETANG.rayon)
   etang.position.set(ETANG.x, 0, ETANG.z)
-  groupe.add(etang)
+  statique.add(etang)
   grille.bloquerCercle(ETANG.x, ETANG.z, ETANG.rayon, 0.3)
 
-  const puits = fusionnerParMateriau(creerPuits())
+  const puits = creerPuits()
   puits.position.set(PUITS.x, 0, PUITS.z)
-  groupe.add(puits)
+  statique.add(puits)
   grille.bloquerCercle(PUITS.x, PUITS.z, 0.75, 0.35)
 
   for (const b of BANCS) {
-    const banc = fusionnerParMateriau(creerBanc())
+    const banc = creerBanc()
     banc.position.set(b.x, 0, b.z)
     banc.rotation.y = b.angle
-    groupe.add(banc)
+    statique.add(banc)
     const tourne = Math.abs(Math.sin(b.angle)) > 0.5
     grille.bloquerRectangle(b.x, b.z, tourne ? 0.5 : 1.6, tourne ? 1.6 : 0.5, 0.25)
   }
 
   for (const p of PANNEAUX) {
-    const panneau = fusionnerParMateriau(creerPanneau(p.texte, p.largeur))
+    const panneau = creerPanneau(p.texte, p.largeur)
     panneau.position.set(p.x, 0, p.z)
-    groupe.add(panneau)
+    statique.add(panneau)
     grille.bloquerCercle(p.x, p.z, 0.1, 0.3)
   }
 
   // --- Le tableau des commandes (on peut y livrer toutes les commandes) ---
   {
     const { x, z } = TABLEAU_COMMANDES
-    const tableau = fusionnerParMateriau(creerTableauCommandes())
+    const tableau = creerTableauCommandes()
     tableau.position.set(x, 0, z)
-    groupe.add(tableau)
+    statique.add(tableau)
     grille.bloquerRectangle(x, z, 1.8, 0.2, 0.3)
     const zone = new THREE.Mesh(new THREE.BoxGeometry(2, 1.9, 0.8), MATERIAU_INVISIBLE)
     zone.position.set(x, 0.95, z)
@@ -147,6 +154,9 @@ export function creerLieu(outils) {
     groupe.add(zone)
     touchables.push(zone)
   }
+
+  // On colle tout ce qui ne bouge pas en un seul bloc (une pièce par couleur).
+  groupe.add(fusionnerParMateriau(statique))
 
   // --- Les fleurs (après les obstacles, pour ne pas en semer dans les murs) ---
   semerFleurs(groupe, grille)

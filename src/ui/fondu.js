@@ -6,6 +6,8 @@
  * Si le téléphone demande « moins d'animations », le changement est presque instantané.
  */
 
+import { animationsReduites } from '../jeu/reglages.js'
+
 const DUREE = 450 // durée du fondu, en millisecondes
 
 export function creerFondu() {
@@ -17,8 +19,7 @@ export function creerFondu() {
   voile.appendChild(titre)
   document.body.appendChild(voile)
 
-  const moinsDAnimations = window.matchMedia('(prefers-reduced-motion: reduce)')
-  const attendre = (ms) => new Promise((ok) => setTimeout(ok, moinsDAnimations.matches ? Math.min(ms, 60) : ms))
+  const attendre = (ms) => new Promise((ok) => setTimeout(ok, animationsReduites() ? Math.min(ms, 60) : ms))
 
   return {
     /** Voile l'écran et affiche le nom du lieu de destination. */

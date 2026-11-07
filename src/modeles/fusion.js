@@ -3,13 +3,23 @@
  *
  * Un bâtiment est fait de dizaines de petites pièces (murs, fenêtres, toit…).
  * Dessiner chaque pièce séparément demande beaucoup de travail au téléphone.
- * Ici, on « colle » ensemble toutes les pièces de la même couleur en une seule :
- * le dessin est identique, mais beaucoup plus rapide.
+ * Ici, on « colle » ensemble les pièces en une seule : les couleurs sont alors
+ * « peintes » directement sur la forme (couleur par sommet). Le dessin est identique,
+ * mais beaucoup plus rapide. Seules les pièces avec une image (ex. : une enseigne)
+ * ou transparentes restent à part.
  *
  * À n'utiliser que pour des objets qui ne bougent pas (bâtiments, meubles…).
  */
 import * as THREE from 'three'
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
+
+// Une seule « peinture » pour toutes les pièces collées : elle lit la couleur peinte sur chaque sommet.
+const PEINTURE_PAR_SOMMET = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true })
+
+/** Vrai si une pièce peut être collée avec les autres (couleur simple, sans image, opaque). */
+function collable(materiau) {
+  return materiau.isMeshLambertMaterial && !materiau.map && !materiau.transparent && !materiau.vertexColors
+}
 
 /**
  * Fusionne les pièces d'un groupe, par couleur.
@@ -33,13 +43,31 @@ export function fusionnerParMateriau(groupe, { ombrePortee = true, ombreRecue = 
     geo.applyMatrix4(relative)
     // On garde seulement ce dont on a besoin (position, orientation des faces, textures).
     for (const nom of Object.keys(geo.attributes)) {
-      if (!['position', 'normal', 'uv'].includes(nom)) geo.deleteAttribute(nom)
+      if (!['position', 'normal', 'uv', 'color'].includes(nom)) geo.deleteAttribute(nom)
     }
+    // Les pièces déjà peintes gardent leurs couleurs ; les autres n'en ont pas besoin ici.
+    if (objet.material !== PEINTURE_PAR_SOMMET && geo.attributes.color) geo.deleteAttribute('color')
     if (!geo.attributes.uv) {
       geo.setAttribute('uv', new THREE.Float32BufferAttribute(new Float32Array(geo.attributes.position.count * 2), 2))
     }
-    if (!parMateriau.has(objet.material)) parMateriau.set(objet.material, [])
-    parMateriau.get(objet.material).push(geo)
+    let cle = objet.material
+    if (collable(objet.material)) {
+      // On peint la couleur de la pièce sur chacun de ses sommets.
+      const n = geo.attributes.position.count
+      const couleurs = new Float32Array(n * 3)
+      const { r, g, b } = objet.material.color
+      for (let k = 0; k < n; k++) {
+        couleurs[k * 3] = r
+        couleurs[k * 3 + 1] = g
+        couleurs[k * 3 + 2] = b
+      }
+      geo.setAttribute('color', new THREE.Float32BufferAttribute(couleurs, 3))
+      cle = PEINTURE_PAR_SOMMET
+    } else if (objet.material === PEINTURE_PAR_SOMMET) {
+      cle = PEINTURE_PAR_SOMMET // déjà peinte (fusion d'une fusion)
+    }
+    if (!parMateriau.has(cle)) parMateriau.set(cle, [])
+    parMateriau.get(cle).push(geo)
   })
 
   const resultat = new THREE.Group()
@@ -68,4 +96,20 @@ export function fusionnerParMateriau(groupe, { ombrePortee = true, ombreRecue = 
     resultat.add(o)
   }
   return resultat
+}
+
+/**
+ * Fusionne « sur place » les pièces d'un groupe qui bouge (ex. : la tête d'un personnage) :
+ * le groupe garde sa place et son animation, mais contient beaucoup moins de pièces.
+ * @param {THREE.Group} groupe
+ * @param {object} [o]  profond : true = toutes les pièces à l'intérieur (y compris les sous-groupes) ;
+ *                      false = seulement les pièces posées directement dedans (les sous-groupes animés restent).
+ */
+export function fusionnerEnPlace(groupe, { profond = false } = {}) {
+  const pieces = profond ? [...groupe.children] : groupe.children.filter((o) => o.isMesh)
+  if (pieces.length < 2) return
+  const temporaire = new THREE.Group()
+  for (const p of pieces) temporaire.add(p) // (cela les retire du groupe)
+  const fusion = fusionnerParMateriau(temporaire, { ombrePortee: true, ombreRecue: false })
+  for (const m of [...fusion.children]) groupe.add(m)
 }

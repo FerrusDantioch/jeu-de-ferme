@@ -9,7 +9,7 @@
 import { NOM_DU_JEU, AUTEUR } from '../config.js'
 
 // Numéro de version du jeu (lu automatiquement dans package.json par Vite).
-const VERSION = import.meta.env.VITE_VERSION || '0.1.0'
+const VERSION = import.meta.env.VITE_VERSION || '1.0.0'
 
 // Petite aide pour créer un élément HTML.
 function creer(balise, classes = '', html = '') {
@@ -48,6 +48,9 @@ export function creerInterface({ aideAuDemarrage = true } = {}) {
     'bouton',
     '<span class="icone" aria-hidden="true">ℹ️</span><span class="texte-facultatif">À propos</span>'
   )
+  // Le bouton « À propos » reste dans la barre (pour garder sa place), mais caché :
+  // on y accède maintenant par ⚙️ Réglages.
+  boutonAPropos.hidden = true
   barre.appendChild(boutonAPropos)
 
   // --- Bulle d'aide ---
@@ -115,6 +118,10 @@ export function creerInterface({ aideAuDemarrage = true } = {}) {
   return {
     /** La barre du haut (pour y ajouter d'autres boutons). */
     barre,
+    /** Ouvre la fenêtre « À propos ». */
+    ouvrirAPropos() {
+      boutonAPropos.click()
+    },
     /** Cache la bulle d'aide (après le premier déplacement). */
     cacherAide() {
       bulle.classList.add('cache')

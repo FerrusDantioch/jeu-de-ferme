@@ -7,6 +7,7 @@
  */
 import * as THREE from 'three'
 import { positionEcran } from './ancrage.js'
+import { animationsReduites } from '../jeu/reglages.js'
 
 // Temps d'affichage : au moins 4 secondes, plus pour les longues phrases.
 const DUREE_MINI = 4000
@@ -17,7 +18,6 @@ export function creerBulles() {
   const actives = new Map() // objet 3D → { el, hauteur, fin }
   const flottants = [] // petits textes qui s'envolent (« +3 🥕 »)
   const point = new THREE.Vector3()
-  const moinsDAnimations = window.matchMedia('(prefers-reduced-motion: reduce)')
   const DUREE_FLOTTANT = 1800
 
   function retirer(objet) {
@@ -88,7 +88,7 @@ export function creerBulles() {
           continue
         }
         const pos = positionEcran(f.objet, f.hauteur, camera)
-        const monte = moinsDAnimations.matches ? 0 : t * 50
+        const monte = animationsReduites() ? 0 : t * 50
         f.el.style.transform = `translate(${Math.round(pos.x)}px, ${Math.round(pos.y - monte)}px) translate(-50%, -100%)`
         f.el.style.opacity = String(t < 0.7 ? 1 : 1 - (t - 0.7) / 0.3)
         f.el.style.visibility = pos.visible ? 'visible' : 'hidden'

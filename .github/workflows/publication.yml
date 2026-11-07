@@ -1,13 +1,17 @@
 # publication.yml — publie automatiquement le jeu sur GitHub Pages.
 #
-# À chaque fois que la branche « main » est mise à jour, GitHub :
+# À chaque fois que la branche principale du dépôt est mise à jour, GitHub :
 #   1. installe les outils, 2. construit le jeu (dossier dist/), 3. le met en ligne.
 # On peut aussi lancer la publication à la main depuis l'onglet « Actions » du dépôt.
+#
+# Avant la toute première publication, il faut activer GitHub Pages UNE fois :
+# Settings → Pages → « Build and deployment » → Source : « GitHub Actions ».
 name: Publication sur GitHub Pages
 
 on:
   push:
-    branches: [main]
+    # La branche principale actuelle du dépôt (et « main », si on la crée un jour).
+    branches: [main, claude/sweet-newton-ef19ch]
   workflow_dispatch:
 
 permissions:
@@ -31,6 +35,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+      # Vérifie que GitHub Pages est bien activé (sinon, message clair dans l'onglet Actions).
+      - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

@@ -24,6 +24,12 @@
   box-sizing: border-box;
 }
 
+/* Un élément marqué « caché » l'est toujours, même si son style dit le contraire
+   (sans cette règle, les boutons masqués restaient visibles). */
+[hidden] {
+  display: none !important;
+}
+
 html,
 body {
   margin: 0;
@@ -632,6 +638,79 @@ body {
 }
 .test-raccourcis .bouton {
   justify-content: flex-start;
+}
+
+/* --- Réglages --- */
+.ligne-reglage {
+  padding: 10px 0;
+  border-bottom: 1px solid #efe5d2;
+}
+.reglage-titre {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.reglage-choix {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.reglage-choix .bouton {
+  flex: 1 1 auto;
+}
+.reglage-message {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f1f9ec;
+  font-size: 0.9em;
+}
+.bouton-attention {
+  background: #e8834e;
+  color: #ffffff;
+}
+.guide {
+  padding-left: 0;
+  list-style: none;
+}
+.guide li {
+  margin: 0 0 12px;
+}
+
+/* --- Joystick (en option) --- */
+.joystick {
+  position: absolute;
+  left: max(20px, env(safe-area-inset-left));
+  bottom: max(24px, env(safe-area-inset-bottom));
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: rgba(255, 250, 240, 0.45);
+  border: 3px solid rgba(255, 255, 255, 0.8);
+  box-shadow: var(--ombre);
+  touch-action: none;
+  z-index: 2;
+}
+.joystick[hidden] {
+  display: none;
+}
+.joystick-bouton {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 64px;
+  height: 64px;
+  margin: -32px 0 0 -32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+}
+
+/* « Réduire les animations » choisi dans les Réglages (même effet que le réglage du téléphone). */
+.moins-animations *,
+.moins-animations *::before,
+.moins-animations *::after {
+  transition: none !important;
+  animation: none !important;
 }
 
 /* --- Ordre d'empilement : ce qui est devant quoi ---

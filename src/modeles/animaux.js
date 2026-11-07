@@ -8,6 +8,15 @@
 import * as THREE from 'three'
 import { materiau, PALETTE } from './materiaux.js'
 import { boite, boule } from './formes.js'
+import { fusionnerEnPlace } from './fusion.js'
+
+/** Optimisation : on « colle » les pièces de la tête et du corps (les pattes restent séparées). */
+function optimiser(g) {
+  const tete = g.getObjectByName('tete')
+  if (tete) fusionnerEnPlace(tete, { profond: true })
+  fusionnerEnPlace(g.getObjectByName('corps'))
+  return g
+}
 
 const OMBRE = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.16, depthWrite: false })
 
@@ -63,7 +72,7 @@ export function creerPoule() {
   g.add(patte(0.03, 0.17, PALETTE.citrouille, -0.06, 0.17, 0, 'patte0'))
   g.add(patte(0.03, 0.17, PALETTE.citrouille, 0.06, 0.17, 0, 'patte1'))
   g.add(ombreRonde(0.22))
-  return g
+  return optimiser(g)
 }
 
 export function creerVache() {
@@ -96,7 +105,7 @@ export function creerVache() {
     g.add(patte(0.12, 0.3, PALETTE.blanc, x, 0.3, z, `patte${n++}`))
   }
   g.add(ombreRonde(0.6))
-  return g
+  return optimiser(g)
 }
 
 export function creerMouton() {
@@ -128,7 +137,7 @@ export function creerMouton() {
     g.add(patte(0.07, 0.3, PALETTE.toitArdoise, x, 0.3, z, `patte${n++}`))
   }
   g.add(ombreRonde(0.4))
-  return g
+  return optimiser(g)
 }
 
 export const FABRIQUES_ANIMAUX = { poule: creerPoule, vache: creerVache, mouton: creerMouton }

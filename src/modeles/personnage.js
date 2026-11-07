@@ -12,6 +12,7 @@
  */
 import * as THREE from 'three'
 import { materiau, PALETTE } from './materiaux.js'
+import { fusionnerEnPlace } from './fusion.js'
 
 // Apparence par défaut : celle du joueur (chemise rose, salopette bleue, chapeau de paille).
 const APPARENCE_JOUEUR = {
@@ -142,6 +143,14 @@ export function creerModelePersonnage(options = {}) {
     casquette.rotation.x = -0.15
     tete.add(casquette)
     tete.add(piece(FORMES.visiere, a.couleurChapeau, 0, 0.12, 0.3))
+  }
+
+  // Optimisation : la tête (avec chapeau, yeux, joues), le tronc, chaque bras et chaque
+  // jambe deviennent chacun UNE seule pièce (ils restent séparés entre eux pour bouger).
+  fusionnerEnPlace(tete, { profond: true })
+  fusionnerEnPlace(corps)
+  for (const nom of ['jambeGauche', 'jambeDroite', 'brasGauche', 'brasDroit']) {
+    fusionnerEnPlace(corps.getObjectByName(nom), { profond: true })
   }
 
   // --- Ombre ronde sous les pieds (toujours visible, même si les ombres sont coupées) ---

@@ -37,8 +37,9 @@ export function surUnChemin(x, z, marge = 0) {
 /**
  * Construit le terrain et déclare les obstacles dans la grille de chemin.
  * @param {THREE.Group} groupe  où ajouter les objets
+ * @param {THREE.Group} [statique]  où ranger ce qui sera « collé » en un seul bloc (chemins, barrières)
  */
-export function creerTerrain(groupe, grille) {
+export function creerTerrain(groupe, grille, statique = groupe) {
   const taille = MONDE.taille
   const demi = taille / 2
   const alea = generateurAleatoire(7)
@@ -66,7 +67,7 @@ export function creerTerrain(groupe, grille) {
     // Chaque chemin un tout petit peu plus haut que le précédent : évite le scintillement aux croisements.
     chemin.position.set(x, 0.01 + n * 0.002, z)
     chemin.receiveShadow = true
-    groupe.add(chemin)
+    statique.add(chemin)
   })
 
   // --- Arbres ---
@@ -131,7 +132,7 @@ export function creerTerrain(groupe, grille) {
       barre.position.set(x, h, z)
       barre.rotation.y = rot
       barre.castShadow = true
-      groupe.add(barre)
+      statique.add(barre)
     }
   }
 

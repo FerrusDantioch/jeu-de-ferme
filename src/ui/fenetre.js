@@ -47,6 +47,8 @@ export function creerFenetre({ classe = '', texteFermer = 'Fermer', surClic, sur
     /** Ouvre la fenêtre (le contenu est du HTML déjà préparé). */
     ouvrir(html) {
       if (html !== undefined) contenu.innerHTML = html
+      // On la remet tout au-dessus des autres fenêtres (ex. : « Comment jouer » ouvert depuis les Réglages).
+      voile.parentElement.appendChild(voile)
       voile.hidden = false
       voile.querySelector('[data-fermer]').focus({ preventScroll: true })
     },

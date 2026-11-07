@@ -10,12 +10,22 @@
  *
  * Si une sauvegarde est abîmée, on la met de côté (sans l'effacer) et on
  * recommence une partie, avec un message gentil.
+ *
+ * On peut aussi « exporter » la partie dans un fichier (pour la garder ou la
+ * passer sur un autre appareil) et l'« importer » plus tard.
  */
-import { etat, nouvellePartie, completer } from './etat.js'
+import { etat, nouvellePartie, completer, VERSION_SAUVEGARDE } from './etat.js'
+import { NOM_DU_JEU } from '../config.js'
 
 const CLE = 'jeu-de-ferme:sauvegarde'
 const CLE_ABIMEE = 'jeu-de-ferme:sauvegarde-abimee'
 const INTERVALLE = 15000 // millisecondes
+// Marque reconnue dans les fichiers exportés (pour refuser les fichiers d'autres jeux).
+const MARQUE = 'jeu-de-ferme'
+
+// Quand on remplace la partie (import, nouvelle partie), on bloque la sauvegarde
+// automatique pour qu'elle n'écrase pas la nouvelle avec l'ancienne.
+let bloque = false
 
 /**
  * Charge la partie enregistrée (ou en crée une nouvelle).
@@ -56,6 +66,7 @@ export function chargerPartie() {
  * @returns {boolean} vrai si tout s'est bien passé
  */
 export function enregistrer(avantEnregistrement) {
+  if (bloque) return true
   try {
     if (avantEnregistrement) avantEnregistrement(etat.d)
     etat.d.enregistreLe = Date.now()
@@ -92,4 +103,71 @@ export function demarrerSauvegardeAuto(avantEnregistrement, surEchec) {
 
   // On demande au navigateur de ne pas effacer nos données pour faire de la place.
   if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {})
+}
+
+// --- Exporter / importer / recommencer ---
+
+/** Le fichier (texte) d'une partie exportée. */
+function fichierDePartie(donnees) {
+  return JSON.stringify({ marque: MARQUE, jeu: NOM_DU_JEU, version: VERSION_SAUVEGARDE, exporteLe: new Date().toISOString(), partie: donnees }, null, 1)
+}
+
+/**
+ * Exporte la partie : le téléphone télécharge un petit fichier (dans « Téléchargements »).
+ * @returns {string} le nom du fichier
+ */
+export function exporterPartie(avantEnregistrement) {
+  enregistrer(avantEnregistrement)
+  const d = new Date()
+  const jour = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const nom = `petite-ferme-sauvegarde-${jour}.json`
+  const blob = new Blob([fichierDePartie(etat.d)], { type: 'application/json' })
+  const lien = document.createElement('a')
+  lien.href = URL.createObjectURL(blob)
+  lien.download = nom
+  document.body.appendChild(lien)
+  lien.click()
+  lien.remove()
+  setTimeout(() => URL.revokeObjectURL(lien.href), 10000)
+  return nom
+}
+
+/**
+ * Lit un fichier choisi par la personne et vérifie que c'est bien une partie de ce jeu.
+ * @returns {Promise<{ ok: boolean, donnees?: object, resume?: string, message?: string }>}
+ */
+export async function lireFichierDePartie(fichier) {
+  try {
+    if (fichier.size > 5 * 1024 * 1024) return { ok: false, message: 'Ce fichier est bien trop gros pour être une partie.' }
+    const lu = JSON.parse(await fichier.text())
+    if (!lu || lu.marque !== MARQUE || typeof lu.partie !== 'object' || !lu.partie) {
+      return { ok: false, message: 'Ce fichier n’est pas une sauvegarde de ce jeu.' }
+    }
+    const donnees = completer(lu.partie)
+    const date = lu.exporteLe ? new Date(lu.exporteLe).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '?'
+    return { ok: true, donnees, resume: `Partie exportée le ${date} · 🪙 ${donnees.pieces} · ⭐ ${donnees.experience} expérience` }
+  } catch (erreur) {
+    console.error('Fichier illisible :', erreur)
+    return { ok: false, message: 'Oups, ce fichier n’a pas pu être lu. Est-ce bien une sauvegarde du jeu ?' }
+  }
+}
+
+/** Remplace la partie actuelle par une autre, puis relance le jeu. */
+export function remplacerPartie(donnees) {
+  try {
+    localStorage.setItem(CLE, JSON.stringify(donnees))
+  } catch (erreur) {
+    console.error('Import impossible :', erreur)
+    return false // la partie actuelle n'a pas été touchée
+  }
+  bloque = true
+  location.reload()
+  return true
+}
+
+/** Efface la partie et en commence une nouvelle (le jeu se relance). */
+export function recommencerPartie() {
+  bloque = true
+  localStorage.removeItem(CLE)
+  location.reload()
 }

@@ -74,5 +74,28 @@ export function creerRendu(conteneur) {
     document.body.style.background = '#' + scene.background.getHexString()
   }
 
-  return { renderer, scene, soleil, suivreSoleil, changerAmbiance }
+  /**
+   * Qualité de l'image (réglages) :
+   *  - ombres : avec ou sans ombres ;
+   *  - economie : moins de pixels à dessiner (plus fluide, moins de batterie).
+   * @param {THREE.Object3D[]} autres  d'autres groupes à prévenir (lieux construits mais pas affichés)
+   */
+  function appliquerQualite({ ombres, economie }, autres = []) {
+    const ratio = economie ? 1 : Math.min(window.devicePixelRatio || 1, PERFORMANCE.plafondDensitePixels)
+    renderer.setPixelRatio(ratio)
+    renderer.setSize(window.innerWidth, window.innerHeight)
+    const ombresVoulues = PERFORMANCE.ombres && ombres
+    if (renderer.shadowMap.enabled === ombresVoulues) return
+    renderer.shadowMap.enabled = ombresVoulues
+    soleil.castShadow = ombresVoulues
+    // Les « peintures » doivent être recalculées quand on change les ombres.
+    for (const racine of [scene, ...autres]) {
+      racine.traverse((o) => {
+        if (!o.material) return
+        for (const m of Array.isArray(o.material) ? o.material : [o.material]) m.needsUpdate = true
+      })
+    }
+  }
+
+  return { renderer, scene, soleil, suivreSoleil, changerAmbiance, appliquerQualite }
 }

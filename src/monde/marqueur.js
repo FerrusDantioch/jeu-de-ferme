@@ -3,6 +3,7 @@
  * pour montrer où le personnage va. Il « respire » doucement puis s'efface à l'arrivée.
  */
 import * as THREE from 'three'
+import { animationsReduites } from '../jeu/reglages.js'
 
 export function creerMarqueur(scene) {
   const anneau = new THREE.Mesh(
@@ -34,7 +35,7 @@ export function creerMarqueur(scene) {
       if (actif) {
         // Apparition douce + légère pulsation (lente, jamais clignotante).
         anneau.material.opacity = Math.min(0.85, anneau.material.opacity + dt * 4)
-        const e = 1 + Math.sin(temps * 3) * 0.08
+        const e = animationsReduites() ? 1 : 1 + Math.sin(temps * 3) * 0.08
         anneau.scale.set(e, e, e)
       } else {
         // Disparition en fondu.

@@ -34,6 +34,12 @@ import { feteDuJour, cleDuJour } from './jeu/calendrier.js'
 import { trouverOeuf, phraseDeFete } from './jeu/fetes.js'
 import { annoncer } from './jeu/evenements.js'
 import { CACHETTES_OEUFS } from './monde/decorations-fetes.js'
+import { reglages } from './jeu/reglages.js'
+import { jouer } from './moteur/sons.js'
+import { creerJoystick } from './ui/joystick.js'
+import { creerReglages } from './ui/reglages.js'
+import { ecouterActions } from './jeu/evenements.js'
+import { surNouveauNiveau } from './jeu/economie.js'
 import { activerModeHorsLigne } from './pwa.js'
 
 // 0) On reprend la partie enregistrée sur le téléphone (ou on en commence une nouvelle).
@@ -44,7 +50,7 @@ avancerTous() // les animaux ont vécu pendant que le jeu était fermé
 
 // 1) Le dessinateur 3D, la scène et la caméra.
 const conteneur = document.getElementById('scene3d')
-const { renderer, scene, suivreSoleil, changerAmbiance } = creerRendu(conteneur)
+const { renderer, scene, suivreSoleil, changerAmbiance, appliquerQualite } = creerRendu(conteneur)
 const { camera, placerSur, suivre, adapterTaille } = creerCamera()
 adapterTaille(window.innerWidth, window.innerHeight)
 
@@ -56,6 +62,7 @@ const fondu = creerFondu()
 const pastilles = creerPastilles()
 const fiche = creerFiche({ surOuverture: () => interfaceJeu.cacherAide() })
 creerSac(interfaceJeu.barre)
+const joystick = creerJoystick()
 creerProgression(interfaceJeu.compteurs, interfaceJeu.etiquetteLieu)
 // La boutique de Lila. Un animal adopté apparaît tout de suite s'il est dans un lieu déjà construit
 // (sinon, il sera là à la première visite de l'étable).
@@ -107,6 +114,8 @@ const lieux = creerGestionnaireLieux({
   marqueur,
   outils: { bulles, pastilles },
   surChangement(lieu) {
+    if (interfaceJeu.lieuDejaAffiche) jouer('porte')
+    interfaceJeu.lieuDejaAffiche = true
     interfaceJeu.montrerLieu(lieu.titre)
     fiche.fermer()
     if (lieu.id !== 'exterieur' && !dejaEntre) {
@@ -297,7 +306,7 @@ entrees.surToucher((x, y) => {
 
   // Sinon : le sol. On y va (et on referme la fiche s'il y en a une).
   fiche.fermer()
-  if (lanceRayon.ray.intersectPlane(planDuSol, pointSol)) marcherVers(pointSol)
+  if (lanceRayon.ray.intersectPlane(planDuSol, pointSol) && marcherVers(pointSol)) jouer('toucher')
 })
 
 // 6) Adapter l'affichage quand l'écran change de taille (ou que le téléphone pivote).
@@ -334,6 +343,7 @@ function verifierCalendrier() {
   if (fete && etat.d.feteAnnoncee !== `${cle}:${fete.id}`) {
     etat.d.feteAnnoncee = `${cle}:${fete.id}`
     etat.signaler()
+    jouer('fete')
     fenetreFete.ouvrir(`<h2>${fete.icone} ${echapper(fete.nom)}</h2><p>${echapper(fete.message)}</p>
       ${fete.quete ? '<p class="discret">📜 Une quête spéciale vous attend aujourd’hui !</p>' : ''}`)
   }
@@ -341,6 +351,7 @@ function verifierCalendrier() {
 
 // Quand une quête est terminée, le personnage le dit (et le bouton 📜 affiche un nombre).
 quetes.surQueteTerminee(() => {
+  jouer('quete')
   bulles.dire(personnage.modele, 'Quête terminée ! 📜 Touchez « Quêtes » pour recevoir la récompense.')
   panneauQuetes.actualiser()
 })
@@ -361,10 +372,74 @@ function suivreCommandes() {
   }
 }
 
+let joystickAffiche = null
+
+// --- Sons : chaque action du joueur a son petit son doux ---
+const SON_DE_L_ACTION = {
+  planter: 'planter', arroser: 'arroser', recolter: 'recolter', ramasser: 'ramasser',
+  nourrir: 'nourrir', caresser: 'caresser', livrer: 'pieces', vendre: 'pieces', oeuf: 'oeuf',
+}
+ecouterActions((type) => SON_DE_L_ACTION[type] && jouer(SON_DE_L_ACTION[type]))
+surNouveauNiveau(() => setTimeout(() => jouer('niveau'), 1200))
+// Un petit « tic » pour les boutons de l'interface (ceux de la fiche ont déjà leur son).
+document.addEventListener('click', (e) => {
+  if (e.target.closest('button') && !e.target.closest('.fiche [data-n]')) jouer('bouton')
+})
+
+// --- Réglages : qualité de l'image, joystick ---
+const NOMS_DES_LIEUX = ['exterieur', 'maison', 'etable', 'boutique']
+function appliquerReglagesImage() {
+  const autres = NOMS_DES_LIEUX.map((id) => lieux.lieuConstruit(id)?.groupe).filter(Boolean)
+  appliquerQualite({ ombres: reglages.get('ombres'), economie: reglages.get('economie') }, autres)
+}
+appliquerReglagesImage()
+reglages.ecouter((nom) => {
+  if (nom === 'ombres' || nom === 'economie') appliquerReglagesImage()
+})
+
+/** Note où se trouve le personnage dans la partie (avant une sauvegarde ou un export). */
+function noterPosition(d) {
+  if (lieux.actuel) d.joueur = { lieu: lieux.actuel.id, x: personnage.position.x, z: personnage.position.z }
+}
+creerReglages({ barre: interfaceJeu.barre, ouvrirAPropos: () => interfaceJeu.ouvrirAPropos(), avantExport: noterPosition })
+
+/**
+ * Si le jeu tourne lentement (moins de 24 images par seconde en moyenne pendant
+ * les premières secondes), on propose gentiment le mode économie. Une seule fois.
+ */
+let mesure = { temps: 0, images: 0, fini: false }
+function surveillerFluidite(dt) {
+  if (mesure.fini) return
+  mesure.temps += dt
+  if (mesure.temps < 4) return // on laisse le jeu démarrer tranquillement
+  mesure.images++
+  if (mesure.temps < 14) return
+  mesure.fini = true
+  const parSeconde = mesure.images / (mesure.temps - 4)
+  let dejaPropose = false
+  try {
+    dejaPropose = !!localStorage.getItem('jeu-de-ferme:economie-proposee')
+    if (parSeconde < 24 && !reglages.get('economie') && !dejaPropose) {
+      localStorage.setItem('jeu-de-ferme:economie-proposee', '1')
+      bulles.dire(personnage.modele, 'Le jeu semble un peu lent sur cet appareil : essayez le « Mode économie » dans ⚙️ Réglages.')
+    }
+  } catch {
+    /* pas grave */
+  }
+  window.__jeu.imagesParSeconde = Math.round(parSeconde)
+}
+
 // 7) La boucle de jeu : mise à jour puis dessin, à chaque image.
 const image = demarrerBoucle((dt) => {
   if (!lieux.actuel) return
-  const dir = entrees.directionClavier()
+  // Le joystick (s'il est activé) est caché quand la fiche du bas est ouverte.
+  const joystickVisible = reglages.get('joystick') && !fiche.ouverte
+  if (joystickVisible !== joystickAffiche) {
+    joystickAffiche = joystickVisible
+    joystick.afficher(joystickVisible)
+  }
+  let dir = entrees.directionClavier()
+  if (dir.x === 0 && dir.z === 0 && joystickVisible) dir = joystick.direction()
   if ((dir.x !== 0 || dir.z !== 0) && !lieux.enTransition) {
     personnage.deplacerDirection(dir.x, dir.z, dt)
     marqueur.cacher()
@@ -379,6 +454,7 @@ const image = demarrerBoucle((dt) => {
   renderer.render(scene, camera)
   bulles.miseAJour(camera)
   pastilles.miseAJour(camera)
+  surveillerFluidite(dt)
   // Une fois par seconde : les animaux vivent (faim, bonheur, production), même hors de vue.
   horlogeSoins += dt
   if (horlogeSoins >= 1) {
@@ -399,9 +475,7 @@ lieux
     if (partie.message) bulles.dire(personnage.modele, partie.message)
     // La sauvegarde automatique note aussi où se trouve le personnage.
     demarrerSauvegardeAuto(
-      (d) => {
-        if (lieux.actuel) d.joueur = { lieu: lieux.actuel.id, x: personnage.position.x, z: personnage.position.z }
-      },
+      noterPosition,
       () => bulles.dire(personnage.modele, 'Oups, la partie n’a pas pu être sauvegardée. La mémoire du téléphone est peut-être pleine.')
     )
     etat.signaler() // première sauvegarde rapide
@@ -415,4 +489,4 @@ lieux
 activerModeHorsLigne()
 
 // Accès pratique pour les tests automatiques (sans effet sur le jeu).
-window.__jeu = { personnage, lieux, camera, bulles, etat, fiche, boutique, verifierCalendrier }
+window.__jeu = { personnage, lieux, camera, bulles, etat, fiche, boutique, verifierCalendrier, renderer, reglages }
