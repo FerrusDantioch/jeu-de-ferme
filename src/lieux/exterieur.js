@@ -24,6 +24,7 @@ import {
 import { creerPnjDuLieu } from './pnj-du-lieu.js'
 import { creerAnimauxDuLieu, animerAnimaux } from './animaux-du-lieu.js'
 import { creerPotagerInteractif } from '../monde/potager.js'
+import { placesDeBanc, ajouterSiege } from '../monde/sieges.js'
 import { creerDecorationsFete } from '../monde/decorations-fetes.js'
 import { feteDuJour } from '../jeu/calendrier.js'
 import { oeufsTrouvesAujourdhui } from '../jeu/fetes.js'
@@ -52,9 +53,15 @@ export function creerLieu(outils) {
     const modele = obtenirModele(b.modele, b)
     modele.position.set(b.x, 0, b.z)
     statique.add(modele)
-    // Zone invisible (aux dimensions du bâtiment) pour le toucher.
-    const zoneBatiment = new THREE.Mesh(new THREE.BoxGeometry(b.largeur + 0.4, 4.5, b.profondeur + 0.4), MATERIAU_INVISIBLE)
-    zoneBatiment.position.set(b.x, 2.25, b.z)
+    // Zone invisible pour le toucher, à peu près à la forme du bâtiment :
+    // les murs, plus une partie plus étroite pour le toit (pour ne pas cacher ce qui est derrière).
+    const zoneBatiment = new THREE.Group()
+    const murs = new THREE.Mesh(new THREE.BoxGeometry(b.largeur + 0.3, 2.8, b.profondeur + 0.3), MATERIAU_INVISIBLE)
+    murs.position.y = 1.4
+    const toit = new THREE.Mesh(new THREE.BoxGeometry(b.largeur * 0.55, 1.6, b.profondeur + 0.3), MATERIAU_INVISIBLE)
+    toit.position.y = 3.6
+    zoneBatiment.add(murs, toit)
+    zoneBatiment.position.set(b.x, 0, b.z)
     groupe.add(zoneBatiment)
     grille.bloquerRectangle(b.x, b.z, b.largeur, b.profondeur, 0.35)
 
@@ -131,7 +138,9 @@ export function creerLieu(outils) {
     banc.rotation.y = b.angle
     statique.add(banc)
     const tourne = Math.abs(Math.sin(b.angle)) > 0.5
-    grille.bloquerRectangle(b.x, b.z, tourne ? 0.5 : 1.6, tourne ? 1.6 : 0.5, 0.25)
+    grille.bloquerRectangle(b.x, b.z, tourne ? 0.5 : 1.6, tourne ? 1.6 : 0.5, 0.1)
+    // Deux places pour s'asseoir.
+    for (const siege of placesDeBanc(b.x, b.z, b.angle, 0.5)) ajouterSiege({ groupe, touchables }, siege)
   }
 
   for (const p of PANNEAUX) {

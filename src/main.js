@@ -34,6 +34,7 @@ import { feteDuJour, cleDuJour } from './jeu/calendrier.js'
 import { trouverOeuf, phraseDeFete } from './jeu/fetes.js'
 import { annoncer } from './jeu/evenements.js'
 import { CACHETTES_OEUFS } from './monde/decorations-fetes.js'
+import { PHRASES_ASSIS } from './monde/sieges.js'
 import { reglages } from './jeu/reglages.js'
 import { jouer } from './moteur/sons.js'
 import { creerJoystick } from './ui/joystick.js'
@@ -141,8 +142,19 @@ function apresUnDeplacement() {
 personnage.surArrivee = () => {
   marqueur.cacher()
   const porte = personnage.porteVisee
+  const siege = personnage.siegeVise
   personnage.porteVisee = null
+  personnage.siegeVise = null
   if (porte && personnage.distanceA(porte) < lieux.DISTANCE_PORTE) lieux.passerPorte(porte)
+  else if (siege && personnage.distanceA(siege.devant) < 0.9) sAsseoir(siege)
+}
+
+/** Le personnage s'assoit (avec, parfois, une petite phrase). */
+function sAsseoir(siege) {
+  personnage.asseoir(siege)
+  jouer('asseoir')
+  annoncer('asseoir')
+  if (Math.random() < 0.35) bulles.dire(personnage.modele, PHRASES_ASSIS[Math.floor(Math.random() * PHRASES_ASSIS.length)])
 }
 
 // 5) Les commandes : toucher le sol pour y aller, toucher un bâtiment pour y entrer,
@@ -193,9 +205,10 @@ function objetTouche() {
 const centreObjet = new THREE.Vector3()
 
 /** Fait marcher le personnage vers un point ; renvoie vrai si c'est possible. */
-function marcherVers(point, porte = null) {
+function marcherVers(point, porte = null, siege = null) {
   const destination = personnage.allerVers(point)
   personnage.porteVisee = destination ? porte : null
+  personnage.siegeVise = destination ? siege : null
   if (destination) {
     marqueur.montrer(destination)
     apresUnDeplacement()
@@ -283,6 +296,16 @@ entrees.surToucher((x, y) => {
       if (r.trouves === CACHETTES_OEUFS.length) bulles.dire(personnage.modele, 'Tous les œufs sont trouvés ! 🐣🎉')
     }
     marcherVers(new THREE.Vector3(cible.objet.position.x, 0, cible.objet.position.z + 0.6))
+    return
+  }
+  if (cible?.type === 'siege') {
+    // Un banc, une chaise… : on y va, puis on s'assoit.
+    const siege = cible.siege
+    if (personnage.assis === siege) return // déjà assis ici
+    fiche.fermer()
+    if (personnage.assis) personnage.seLever()
+    if (personnage.distanceA(siege.devant) < 0.6) sAsseoir(siege)
+    else marcherVers(new THREE.Vector3(siege.devant.x, 0, siege.devant.z), null, siege)
     return
   }
   if (cible?.type === 'tableau') {
@@ -399,7 +422,10 @@ reglages.ecouter((nom) => {
 
 /** Note où se trouve le personnage dans la partie (avant une sauvegarde ou un export). */
 function noterPosition(d) {
-  if (lieux.actuel) d.joueur = { lieu: lieux.actuel.id, x: personnage.position.x, z: personnage.position.z }
+  if (!lieux.actuel) return
+  // Assis : on note l'endroit juste devant le siège (on y réapparaîtra debout).
+  const p = personnage.assis ? personnage.assis.devant : personnage.position
+  d.joueur = { lieu: lieux.actuel.id, x: p.x, z: p.z }
 }
 creerReglages({ barre: interfaceJeu.barre, ouvrirAPropos: () => interfaceJeu.ouvrirAPropos(), avantExport: noterPosition })
 
@@ -489,4 +515,12 @@ lieux
 activerModeHorsLigne()
 
 // Accès pratique pour les tests automatiques (sans effet sur le jeu).
-window.__jeu = { personnage, lieux, camera, bulles, etat, fiche, boutique, verifierCalendrier, renderer, reglages }
+window.__jeu = {
+  personnage, lieux, camera, bulles, etat, fiche, boutique, verifierCalendrier, renderer, reglages,
+  /** Ce qui se trouve sous un point de l'écran (pour les tests). */
+  quoiSous(x, y) {
+    pointEcran.set((x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1)
+    lanceRayon.setFromCamera(pointEcran, camera)
+    return objetTouche()?.type || 'sol'
+  },
+}

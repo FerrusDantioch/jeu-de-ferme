@@ -4,7 +4,8 @@
  * Un « marcheur » sait :
  *  - suivre un chemin calculé (en contournant les obstacles) ;
  *  - se tourner doucement vers où il va (ou vers quelqu'un) ;
- *  - animer ses bras et ses jambes quand il marche, et respirer à l'arrêt.
+ *  - animer ses bras et ses jambes quand il marche, et respirer à l'arrêt ;
+ *  - s'asseoir sur un banc ou une chaise, et se relever.
  *
  * Le joueur (personnage.js) et les villageois (pnj.js) reprennent tout ça
  * et ajoutent leurs propres comportements.
@@ -36,6 +37,10 @@ export class Marcheur {
     this.angleVise = 0
     this.tempsTotal = Math.random() * 10 // décalage : tout le monde ne respire pas en même temps
     this._marcheCeTour = false
+    this.assis = null // le siège où il est assis (ou null)
+
+    // Hauteur de ses hanches (sert à bien le poser sur un siège).
+    this.hauteurHanches = 0.45 * (this.corps?.scale.y || 1)
 
     // Fonction à appeler quand le marcheur arrive au bout de son chemin (optionnel).
     this.surArrivee = null
@@ -47,6 +52,7 @@ export class Marcheur {
 
   /** Place le marcheur directement à un endroit, tourné selon « angle » (0 = vers la caméra). */
   placer(x, z, angle = this.angleVise) {
+    this.assis = null
     this.modele.position.set(x, 0, z)
     this.angleVise = angle
     this.modele.rotation.y = angle
@@ -58,6 +64,7 @@ export class Marcheur {
    * @returns {THREE.Vector3|null} le point réellement visé (ou null si impossible)
    */
   allerVers(point) {
+    if (this.assis) this.seLever()
     const chemin = this.grille.trouverChemin(this.position, point)
     if (!chemin || chemin.length === 0) return null
     this.chemin = chemin
@@ -66,6 +73,25 @@ export class Marcheur {
 
   arreter() {
     this.chemin = []
+  }
+
+  /**
+   * S'assoit sur un siège (voir src/monde/sieges.js) : il se pose dessus,
+   * se tourne dans le bon sens, et laisse pendre ses jambes.
+   */
+  asseoir(siege) {
+    this.chemin = []
+    this.assis = siege
+    this.modele.position.set(siege.x, Math.max(0, siege.hauteur - this.hauteurHanches), siege.z)
+    this.angleVise = siege.angle
+  }
+
+  /** Se relève et se met debout juste devant le siège. */
+  seLever() {
+    const siege = this.assis
+    if (!siege) return
+    this.assis = null
+    this.modele.position.set(siege.devant.x, 0, siege.devant.z)
   }
 
   /** Vrai s'il est en train de suivre un chemin. */
@@ -94,6 +120,18 @@ export class Marcheur {
     let marche = this._marcheCeTour
     this._marcheCeTour = false
 
+    // --- Assis : posture assise (jambes en avant, mains sur les genoux), et petite respiration ---
+    if (this.assis) {
+      this._tourner(dt)
+      const t = Math.min(1, dt * 8)
+      for (const j of this.jambes) j.rotation.x += (-1.25 - j.rotation.x) * t
+      for (const b of this.bras) b.rotation.x += (-0.45 - b.rotation.x) * t
+      this.ampleur = 0
+      this.enMouvement = false
+      this.corps.position.y = Math.sin(this.tempsTotal * 2) * 0.008
+      return
+    }
+
     // --- Suivre le chemin calculé ---
     if (this.chemin.length > 0) {
       const p = this.position
@@ -116,10 +154,7 @@ export class Marcheur {
       marche = true
     }
 
-    // --- Rotation douce vers la direction voulue ---
-    let ecart = this.angleVise - this.modele.rotation.y
-    ecart = Math.atan2(Math.sin(ecart), Math.cos(ecart)) // chemin le plus court (pas de tour complet)
-    this.modele.rotation.y += ecart * Math.min(1, VITESSE_ROTATION * dt)
+    this._tourner(dt)
 
     // --- Animation ---
     this.enMouvement = marche
@@ -137,5 +172,12 @@ export class Marcheur {
     this.corps.position.y =
       Math.abs(Math.sin(this.phaseMarche)) * 0.05 * this.ampleur +
       Math.sin(this.tempsTotal * 2) * 0.008 * (1 - this.ampleur)
+  }
+
+  /** Rotation douce vers la direction voulue (par le chemin le plus court, sans tour complet). */
+  _tourner(dt) {
+    let ecart = this.angleVise - this.modele.rotation.y
+    ecart = Math.atan2(Math.sin(ecart), Math.cos(ecart))
+    this.modele.rotation.y += ecart * Math.min(1, VITESSE_ROTATION * dt)
   }
 }

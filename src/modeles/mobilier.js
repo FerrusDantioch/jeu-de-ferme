@@ -17,6 +17,18 @@ export function creerLit() {
   return g
 }
 
+/** Un fauteuil moelleux. Le dossier est vers -z (on s'y assoit en regardant vers +z). */
+export function creerFauteuil(couleur = PALETTE.tissuBleu) {
+  const g = new THREE.Group()
+  g.add(boite(0.8, 0.3, 0.75, PALETTE.boisFonce, 0, 0.05, 0))
+  g.add(boite(0.7, 0.12, 0.65, couleur, 0, 0.33, 0.03)) // coussin
+  g.add(boite(0.8, 0.6, 0.18, couleur, 0, 0.35, -0.3)) // dossier
+  for (const x of [-0.36, 0.36]) g.add(boite(0.12, 0.28, 0.7, couleur, x, 0.35, 0)) // accoudoirs
+  for (const x of [-0.32, 0.32]) for (const z of [-0.28, 0.28]) g.add(boite(0.08, 0.05, 0.08, PALETTE.boisFonce, x, 0, z))
+  g.add(boite(0.36, 0.22, 0.08, PALETTE.tapisRose, 0, 0.5, -0.17)) // petit coussin
+  return g
+}
+
 /** Une table ronde. */
 export function creerTable(rayon = 0.6) {
   const g = new THREE.Group()

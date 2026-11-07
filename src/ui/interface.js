@@ -9,7 +9,7 @@
 import { NOM_DU_JEU, AUTEUR } from '../config.js'
 
 // Numéro de version du jeu (lu automatiquement dans package.json par Vite).
-const VERSION = import.meta.env.VITE_VERSION || '1.0.0'
+const VERSION = import.meta.env.VITE_VERSION || '1.1.0'
 
 // Petite aide pour créer un élément HTML.
 function creer(balise, classes = '', html = '') {

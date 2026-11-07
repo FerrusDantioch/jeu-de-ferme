@@ -19,6 +19,8 @@ export class Personnage extends Marcheur {
 
     // La porte vers laquelle il marche (si on a touché un bâtiment), sinon null.
     this.porteVisee = null
+    // Le siège vers lequel il marche pour s'asseoir, sinon null.
+    this.siegeVise = null
   }
 
   /**
@@ -26,8 +28,10 @@ export class Personnage extends Marcheur {
    * Si un obstacle bloque, le personnage « glisse » le long de lui.
    */
   deplacerDirection(dx, dz, dt) {
+    if (this.assis) this.seLever() // bouger fait se relever
     this.chemin = [] // le clavier reprend la main : on oublie le chemin en cours
     this.porteVisee = null
+    this.siegeVise = null
     const pas = this.vitesse * dt
     const p = this.position
     const essais = [
@@ -35,9 +39,13 @@ export class Personnage extends Marcheur {
       [p.x + dx * pas, p.z], // seulement de côté
       [p.x, p.z + dz * pas], // seulement en avant / arrière
     ]
+    // Sécurité : s'il se trouve dans une case « obstacle » (ex. : coincé contre un meuble),
+    // on le laisse bouger quand même pour qu'il puisse toujours en sortir.
+    const ici = this.grille.versCase(p.x, p.z)
+    const coince = !this.grille.estLibre(ici.i, ici.j)
     for (const [x, z] of essais) {
       const c = this.grille.versCase(x, z)
-      if (this.grille.estLibre(c.i, c.j)) {
+      if (coince || this.grille.estLibre(c.i, c.j)) {
         p.x = x
         p.z = z
         break
