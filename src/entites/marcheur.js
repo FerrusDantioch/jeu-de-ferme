@@ -25,10 +25,7 @@ export class Marcheur {
     this.grille = grille
     this.vitesse = vitesse
 
-    // Pièces animées (retrouvées par leur nom).
-    this.corps = modele.getObjectByName('corps')
-    this.jambes = [modele.getObjectByName('jambeGauche'), modele.getObjectByName('jambeDroite')]
-    this.bras = [modele.getObjectByName('brasGauche'), modele.getObjectByName('brasDroit')]
+    this._retrouverPieces()
 
     this.chemin = [] // liste des points à atteindre, dans l'ordre
     this.enMouvement = false
@@ -39,11 +36,32 @@ export class Marcheur {
     this._marcheCeTour = false
     this.assis = null // le siège où il est assis (ou null)
 
-    // Hauteur de ses hanches (sert à bien le poser sur un siège).
-    this.hauteurHanches = 0.45 * (this.corps?.scale.y || 1)
-
     // Fonction à appeler quand le marcheur arrive au bout de son chemin (optionnel).
     this.surArrivee = null
+  }
+
+  /** Retrouve les pièces animées du modèle (par leur nom). */
+  _retrouverPieces() {
+    const m = this.modele
+    this.corps = m.getObjectByName('corps')
+    this.jambes = [m.getObjectByName('jambeGauche'), m.getObjectByName('jambeDroite')]
+    this.bras = [m.getObjectByName('brasGauche'), m.getObjectByName('brasDroit')]
+    // Hauteur de ses hanches (sert à bien le poser sur un siège).
+    this.hauteurHanches = 0.45 * (this.corps?.scale.y || 1)
+  }
+
+  /**
+   * Change d'apparence : les pièces du nouveau modèle remplacent les anciennes,
+   * mais le personnage garde sa place (et les bulles qui le suivent).
+   */
+  changerModele(nouveau) {
+    for (const ancien of [...this.modele.children]) {
+      this.modele.remove(ancien)
+      // On libère la mémoire des formes propres à l'ancien modèle (pas l'ombre, partagée).
+      ancien.traverse((o) => o.isMesh && o.name !== 'ombre' && o.geometry.dispose())
+    }
+    for (const piece of [...nouveau.children]) this.modele.add(piece)
+    this._retrouverPieces()
   }
 
   get position() {

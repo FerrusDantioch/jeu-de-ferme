@@ -738,3 +738,58 @@ body {
     animation: none !important;
   }
 }
+
+/* --- Fenêtre 👤 « Mon personnage » (en bas, pour voir le personnage changer au-dessus) --- */
+.voile-bas {
+  align-items: flex-end;
+  background: rgba(30, 40, 30, 0.08);
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+.panneau-perso {
+  max-height: 52vh;
+  padding: 18px 20px;
+}
+.panneau-perso .actions {
+  position: sticky;
+  bottom: -18px;
+  margin: 12px -20px -18px;
+  padding: 10px 20px 14px;
+  background: var(--couleur-panneau);
+}
+.perso-prenom {
+  display: block;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #efe5d2;
+}
+.perso-prenom input,
+.champ-texte {
+  width: 100%;
+  min-height: var(--taille-tactile);
+  padding: 0 16px;
+  border: 2px solid #e2d6bf;
+  border-radius: var(--rayon);
+  background: #fff;
+  color: var(--couleur-texte);
+  font: inherit;
+}
+.perso-prenom input:focus-visible,
+.champ-texte:focus-visible {
+  outline: 4px solid #2c6fbf;
+  outline-offset: 2px;
+}
+.choix-couleurs .bouton {
+  flex: 0 0 auto;
+}
+.pastille-couleur {
+  padding: 0;
+  background: var(--c);
+  border: 4px solid #fff;
+  border-radius: 50%;
+}
+.pastille-couleur.choisie {
+  outline: 4px solid #3d6b3b;
+  outline-offset: 1px;
+}
+.perso-hasard {
+  margin-top: 12px;
+}

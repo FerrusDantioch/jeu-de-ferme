@@ -42,6 +42,9 @@ import { creerReglages } from './ui/reglages.js'
 import { ecouterActions } from './jeu/evenements.js'
 import { surNouveauNiveau } from './jeu/economie.js'
 import { activerModeHorsLigne } from './pwa.js'
+import { creerFenetrePerso } from './ui/perso.js'
+import { demanderTexte } from './ui/saisie.js'
+import { surChangementApparence } from './jeu/perso.js'
 
 // 0) On reprend la partie enregistrée sur le téléphone (ou on en commence une nouvelle).
 const partie = chargerPartie()
@@ -52,7 +55,7 @@ avancerTous() // les animaux ont vécu pendant que le jeu était fermé
 // 1) Le dessinateur 3D, la scène et la caméra.
 const conteneur = document.getElementById('scene3d')
 const { renderer, scene, suivreSoleil, changerAmbiance, appliquerQualite } = creerRendu(conteneur)
-const { camera, placerSur, suivre, adapterTaille } = creerCamera()
+const { camera, placerSur, suivre, adapterTaille, zoomer } = creerCamera()
 adapterTaille(window.innerWidth, window.innerHeight)
 
 // 2) L'interface : boutons, bulles de paroles, fondu entre les lieux,
@@ -87,6 +90,28 @@ const boutique = creerBoutique({
 const personnage = new Personnage(scene, new GrilleChemin(2, 0.5))
 const marqueur = creerMarqueur(scene)
 
+// La fenêtre 👤 « Mon personnage » : le personnage change en direct, et se tourne vers nous.
+const fenetrePerso = creerFenetrePerso({
+  barre: interfaceJeu.barre,
+  surOuverture: () => {
+    fiche.fermer()
+    if (!personnage.assis) {
+      personnage.arreter()
+      marqueur.cacher()
+      personnage.angleVise = 0
+    }
+  },
+})
+surChangementApparence(() => personnage.actualiserApparence())
+
+/** Donner un nouveau nom à un animal (depuis sa fiche). */
+async function renommerAnimal(fiche) {
+  const nom = await demanderTexte({ titre: `✏️ Un nouveau nom pour ${fiche.nom} ?`, valeur: fiche.nom, max: 14 })
+  if (!nom || nom === fiche.nom) return
+  fiche.nom = nom
+  etat.signaler()
+}
+
 // La caméra suit le personnage, mais sans sortir des limites du lieu (s'il y en a).
 const cibleCamera = new THREE.Vector3()
 function limiterCamera(position) {
@@ -96,9 +121,10 @@ function limiterCamera(position) {
     cibleCamera.x = Math.min(Math.max(cibleCamera.x, -limites.x), limites.x)
     cibleCamera.z = Math.min(Math.max(cibleCamera.z, -limites.z), limites.z)
   }
-  // Quand la fiche du bas est ouverte, on décale la vue pour que le personnage
-  // reste visible au-dessus d'elle (la caméra glisse doucement).
-  if (fiche.ouverte) cibleCamera.z += window.innerHeight > window.innerWidth ? 2.6 : 1.6
+  // Quand la fiche du bas (ou la fenêtre 👤) est ouverte, on décale la vue pour que
+  // le personnage reste visible au-dessus d'elle (la caméra glisse doucement).
+  if (fenetrePerso.ouverte) cibleCamera.z += window.innerHeight > window.innerWidth ? 1.5 : 0.6
+  else if (fiche.ouverte) cibleCamera.z += window.innerHeight > window.innerWidth ? 2.6 : 1.6
   return cibleCamera
 }
 
@@ -272,7 +298,7 @@ entrees.surToucher((x, y) => {
     const animal = cible.animal
     animal.regarder(personnage.position.x, personnage.position.z)
     const lieuReserve = lieux.actuel.id === 'etable' ? 'de l’étable' : 'près de l’enclos'
-    fiche.ouvrir(ficheAnimal(animal, { bulles, joueur: personnage, lieuReserve }))
+    fiche.ouvrir(ficheAnimal(animal, { bulles, joueur: personnage, lieuReserve, renommer: renommerAnimal }))
     // On s'approche jusqu'à environ 1 mètre de l'animal.
     if (personnage.distanceA(animal.position) > 1.8) {
       const vers = new THREE.Vector3().subVectors(personnage.position, animal.position).setY(0).normalize()
@@ -475,6 +501,7 @@ const image = demarrerBoucle((dt) => {
   personnage.miseAJour(dt)
   lieux.miseAJour(dt)
   marqueur.miseAJour(dt)
+  zoomer(fenetrePerso.ouverte ? 0.42 : 1) // la caméra s'approche pour bien voir le personnage
   suivre(limiterCamera(personnage.position), dt)
   suivreSoleil(personnage.position)
   renderer.render(scene, camera)
@@ -499,6 +526,9 @@ lieux
     renderer.setAnimationLoop(image)
     interfaceJeu.finChargement()
     if (partie.message) bulles.dire(personnage.modele, partie.message)
+    // Nouvelle partie : on commence par choisir son prénom et son allure.
+    // (window.__sansAccueil : seulement pour les tests automatiques.)
+    if (!etat.d.perso.choisi && !window.__sansAccueil) setTimeout(() => fenetrePerso.ouvrir({ accueil: true }), 600)
     // La sauvegarde automatique note aussi où se trouve le personnage.
     demarrerSauvegardeAuto(
       noterPosition,
@@ -516,7 +546,7 @@ activerModeHorsLigne()
 
 // Accès pratique pour les tests automatiques (sans effet sur le jeu).
 window.__jeu = {
-  personnage, lieux, camera, bulles, etat, fiche, boutique, verifierCalendrier, renderer, reglages,
+  personnage, lieux, camera, bulles, etat, fiche, boutique, verifierCalendrier, renderer, reglages, fenetrePerso,
   /** Ce qui se trouve sous un point de l'écran (pour les tests). */
   quoiSous(x, y) {
     pointEcran.set((x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1)

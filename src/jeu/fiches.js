@@ -119,7 +119,7 @@ export function ficheParcelle(n, { bulles, objet, actualiser }) {
  * @param {Animal} animal  l'animal dans le monde (voir entites/animal.js)
  * @param {object} o       { bulles, joueur }
  */
-export function ficheAnimal(animal, { bulles, joueur, lieuReserve }) {
+export function ficheAnimal(animal, { bulles, joueur, lieuReserve, renommer }) {
   const espece = ESPECES[animal.espece]
   const produit = infosObjet(espece.produit)
   const regarder = () => animal.regarder(joueur.position.x, joueur.position.z)
@@ -184,6 +184,13 @@ export function ficheAnimal(animal, { bulles, joueur, lieuReserve }) {
         regarder()
       },
     })
+    if (renommer) {
+      actions.push({
+        icone: '✏️',
+        texte: 'Changer son nom',
+        faire: () => renommer(a),
+      })
+    }
     if (quantite(espece.nourritures[0]) === 0) {
       lignes.push({ texte: `🌾 Il y a du foin et du grain gratuits dans la réserve ${lieuReserve}.`, discret: true })
     }

@@ -15,6 +15,7 @@ import * as THREE from 'three'
 import { obtenirModele } from '../modeles/index.js'
 import { MATERIAU_INVISIBLE } from '../modeles/formes.js'
 import { Marcheur } from './marcheur.js'
+import { avecPrenom } from '../jeu/perso.js'
 
 // Distance (en mètres) à laquelle un villageois remarque le joueur et le salue.
 const DISTANCE_SALUT = 2.6
@@ -71,7 +72,7 @@ export class PNJ extends Marcheur {
 
   /** Dit quelque chose dans une bulle au-dessus de sa tête. */
   dire(texte) {
-    this.bulles.dire(this.modele, texte, { nom: this.nom, hauteur: this.hauteurBulle })
+    this.bulles.dire(this.modele, avecPrenom(texte), { nom: this.nom, hauteur: this.hauteurBulle })
   }
 
   /** Choisit une phrase au hasard (jamais deux fois la même d'affilée). */

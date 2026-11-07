@@ -17,6 +17,7 @@ import { ANIMAUX_DE_DEPART } from '../donnees/animaux.js'
 import { POTAGER } from '../donnees/ferme.js'
 import { PIECES_DE_DEPART } from '../donnees/economie.js'
 import { CLIENTS } from '../donnees/commandes.js'
+import { APPARENCE_DE_DEPART } from '../donnees/apparence.js'
 
 // Numéro de version du format de sauvegarde (à augmenter si on change sa forme).
 export const VERSION_SAUVEGARDE = 1
@@ -44,6 +45,8 @@ export function nouvellePartie(maintenant = Date.now()) {
       derniereMaj: maintenant,
     })),
     joueur: null, // { lieu, x, z } : rempli à la première sauvegarde
+    // Le prénom et l'apparence du personnage (fenêtre 👤 « Mon personnage »).
+    perso: { nom: '', apparence: { ...APPARENCE_DE_DEPART }, choisi: false },
     pieces: PIECES_DE_DEPART,
     experience: 0,
     // Commandes en cours : { idClient: { articles: [{ id, n }], pieces, experience } }
@@ -68,6 +71,13 @@ export function completer(donnees) {
   const d = { ...neuf, ...donnees }
   d.inventaire = { ...(donnees.inventaire || {}) }
   d.stats = { ...neuf.stats, ...(donnees.stats || {}) }
+  // Une ancienne partie (sans personnage personnalisé) garde l'apparence de départ.
+  d.perso = {
+    ...neuf.perso,
+    choisi: true, // partie déjà commencée : on ne réaffiche pas la fenêtre de bienvenue
+    ...(donnees.perso || {}),
+    apparence: { ...APPARENCE_DE_DEPART, ...(donnees.perso?.apparence || {}) },
+  }
   d.commandes = { ...(donnees.commandes || {}) }
   d.prochainesCommandes = { ...neuf.prochainesCommandes, ...(donnees.prochainesCommandes || {}) }
   // Parcelles : on garde les anciennes, on ajoute les nouvelles s'il y en a plus.
