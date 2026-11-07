@@ -5,7 +5,7 @@
  * (vers la caméra, côté +z). Les dimensions viennent de src/donnees/ferme.js.
  */
 import * as THREE from 'three'
-import { PALETTE } from './materiaux.js'
+import { PALETTE, MATERIAU_VITRE } from './materiaux.js'
 import { boite, boule, pignon, toitDeuxPans } from './formes.js'
 
 // --- Petites pièces réutilisées ---
@@ -14,7 +14,7 @@ import { boite, boule, pignon, toitDeuxPans } from './formes.js'
 function fenetre(l = 0.9, h = 0.85) {
   const g = new THREE.Group()
   g.add(boite(l + 0.16, h + 0.16, 0.08, PALETTE.blanc, 0, -0.08, 0))
-  g.add(boite(l, h, 0.1, PALETTE.vitre, 0, 0, 0.01))
+  g.add(boite(l, h, 0.1, MATERIAU_VITRE, 0, 0, 0.01)) // la vitre (s'allume le soir)
   g.add(boite(0.06, h, 0.12, PALETTE.blanc, 0, 0, 0.01))
   g.add(boite(l, 0.06, 0.12, PALETTE.blanc, 0, h / 2 - 0.03, 0.01))
   return g

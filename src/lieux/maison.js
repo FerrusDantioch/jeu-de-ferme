@@ -9,6 +9,8 @@ import {
   creerCuisine, creerPlante, creerFenetreInterieure, creerLanterne, creerFauteuil,
 } from '../modeles/mobilier.js'
 import { ajouterSiege } from '../monde/sieges.js'
+import * as THREE from 'three'
+import { MATERIAU_INVISIBLE } from '../modeles/formes.js'
 import { creerPnjDuLieu } from './pnj-du-lieu.js'
 
 export function creerLieu(outils) {
@@ -20,6 +22,12 @@ export function creerLieu(outils) {
   placer(creerLit(), -3.6, -2.8, { obstacle: [1.3, 2.1] })
   placer(creerEtagere(1.4), -1.9, -3.7, { obstacle: [1.4, 0.45] })
   placer(creerCuisine(2.2), 3.4, -3.6, { obstacle: [2.2, 0.6] })
+  // On touche la cuisine pour cuisiner (voir src/donnees/recettes.js).
+  const zoneCuisine = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.6, 1.0), MATERIAU_INVISIBLE)
+  zoneCuisine.position.set(3.4, 0.8, -3.5)
+  zoneCuisine.userData.toucher = { type: 'cuisine', approche: { x: 3.4, z: -2.6 } }
+  piece.groupe.add(zoneCuisine)
+  piece.touchables.push(zoneCuisine)
   accrocherAuFond(creerFenetreInterieure(), -3.6, 1.55)
   accrocherAuFond(creerFenetreInterieure(1.2, 0.9), 3.4, 1.6)
   accrocherSurCote(creerFenetreInterieure(), -1, 0.5, 1.4)

@@ -5,7 +5,8 @@
  *  - x, z : où l'on s'assoit ;
  *  - angle : vers où l'on regarde une fois assis (0 = vers la caméra) ;
  *  - hauteur : hauteur de l'assise, en mètres ;
- *  - devant : l'endroit où l'on se tient juste avant de s'asseoir (et où l'on se relève).
+ *  - devant : l'endroit où l'on se tient juste avant de s'asseoir (et où l'on se relève) ;
+ *  - voisine (bancs seulement) : l'autre place du banc.
  *
  * Chaque siège reçoit une zone invisible qu'on touche pour s'y asseoir.
  */
@@ -21,11 +22,15 @@ import { MATERIAU_INVISIBLE } from '../modeles/formes.js'
 export function placesDeBanc(x, z, angle, hauteur = 0.5) {
   const avant = { x: Math.sin(angle), z: Math.cos(angle) } // direction du regard
   const cote = { x: Math.cos(angle), z: -Math.sin(angle) } // le long du banc
-  return [-0.4, 0.4].map((d) => {
+  const places = [-0.4, 0.4].map((d) => {
     const sx = x + cote.x * d - avant.x * 0.05
     const sz = z + cote.z * d - avant.z * 0.05
     return { x: sx, z: sz, angle, hauteur, devant: { x: sx + avant.x * 0.9, z: sz + avant.z * 0.9 } }
   })
+  // Chaque place connaît sa voisine (le compagnon s'y installe quand on s'assoit).
+  places[0].voisine = places[1]
+  places[1].voisine = places[0]
+  return places
 }
 
 /**

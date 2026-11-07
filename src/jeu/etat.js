@@ -17,6 +17,12 @@ import { ANIMAUX_DE_DEPART } from '../donnees/animaux.js'
 import { POTAGER } from '../donnees/ferme.js'
 import { PIECES_DE_DEPART } from '../donnees/economie.js'
 import { CLIENTS } from '../donnees/commandes.js'
+import { APPARENCE_DE_DEPART } from '../donnees/apparence.js'
+import { FRUITS, FRUITS_MAXIMUM, ARBRES_FRUITIERS } from '../donnees/vergers.js'
+import { infosObjet } from '../donnees/objets.js'
+
+// (Même liste que dans inventaire.js : les catégories notées dans le carnet.)
+const CATEGORIES_DU_CARNET = ['recolte', 'fruit', 'produit', 'poisson', 'plat']
 
 // Numéro de version du format de sauvegarde (à augmenter si on change sa forme).
 export const VERSION_SAUVEGARDE = 1
@@ -24,6 +30,13 @@ export const VERSION_SAUVEGARDE = 1
 /** Une parcelle vide. */
 function parcelleVide() {
   return { culture: null, progression: 0, derniereMaj: 0, humideJusqua: 0 }
+}
+
+/** Les arbres fruitiers au début : déjà pleins de fruits (un cadeau de bienvenue). */
+function arbresDeDepart(maintenant) {
+  return Object.fromEntries(
+    ARBRES_FRUITIERS.map((a) => [a.id, { depuis: maintenant - FRUITS[a.fruit].minutes * 60000 * FRUITS_MAXIMUM }])
+  )
 }
 
 /** Les données d'une toute nouvelle partie. */
@@ -44,6 +57,8 @@ export function nouvellePartie(maintenant = Date.now()) {
       derniereMaj: maintenant,
     })),
     joueur: null, // { lieu, x, z } : rempli à la première sauvegarde
+    // Le prénom et l'apparence du personnage (fenêtre 👤 « Mon personnage »).
+    perso: { nom: '', apparence: { ...APPARENCE_DE_DEPART }, choisi: false },
     pieces: PIECES_DE_DEPART,
     experience: 0,
     // Commandes en cours : { idClient: { articles: [{ id, n }], pieces, experience } }
@@ -55,7 +70,17 @@ export function nouvellePartie(maintenant = Date.now()) {
     quetes: { jour: null, liste: [] },
     // Chasse aux œufs de Pâques : œufs trouvés aujourd'hui.
     oeufsDePaques: { jour: null, trouves: [] },
-    stats: { recoltes: 0, produitsRamasses: 0, commandesLivrees: 0, piecesGagnees: 0, quetesReussies: 0 },
+    // Le verger : depuis quand les fruits poussent sur chaque arbre (voir verger.js).
+    arbres: arbresDeDepart(maintenant),
+    // Le compagnon (chat ou chien), adopté chez Lila : null au début.
+    compagnon: null,
+    // Le carnet de collection : tout ce qu'on a déjà obtenu, et combien ({ id: nombre }).
+    carnet: {},
+    // Les décorations posées dehors : [{ n, type, x, z, angle }].
+    decorations: [],
+    stats: {
+      recoltes: 0, produitsRamasses: 0, commandesLivrees: 0, piecesGagnees: 0, quetesReussies: 0, fruits: 0, plats: 0,
+    },
   }
 }
 
@@ -68,7 +93,23 @@ export function completer(donnees) {
   const d = { ...neuf, ...donnees }
   d.inventaire = { ...(donnees.inventaire || {}) }
   d.stats = { ...neuf.stats, ...(donnees.stats || {}) }
+  // Une ancienne partie (sans personnage personnalisé) garde l'apparence de départ.
+  d.perso = {
+    ...neuf.perso,
+    choisi: true, // partie déjà commencée : on ne réaffiche pas la fenêtre de bienvenue
+    ...(donnees.perso || {}),
+    apparence: { ...APPARENCE_DE_DEPART, ...(donnees.perso?.apparence || {}) },
+  }
   d.commandes = { ...(donnees.commandes || {}) }
+  d.arbres = { ...neuf.arbres, ...(donnees.arbres || {}) }
+  d.decorations = Array.isArray(donnees.decorations) ? donnees.decorations : []
+  // Une partie d'avant le carnet : on y note déjà ce qu'il y a dans le sac.
+  if (!donnees.carnet) {
+    d.carnet = {}
+    for (const [id, n] of Object.entries(d.inventaire)) {
+      if (CATEGORIES_DU_CARNET.includes(infosObjet(id).categorie) && n > 0) d.carnet[id] = n
+    }
+  }
   d.prochainesCommandes = { ...neuf.prochainesCommandes, ...(donnees.prochainesCommandes || {}) }
   // Parcelles : on garde les anciennes, on ajoute les nouvelles s'il y en a plus.
   const parcelles = Array.isArray(donnees.parcelles) ? donnees.parcelles : []

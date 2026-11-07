@@ -3,7 +3,7 @@
  * Chaque fonction renvoie un groupe posé au sol, face vers +z (vers la caméra).
  */
 import * as THREE from 'three'
-import { PALETTE } from './materiaux.js'
+import { PALETTE, MATERIAU_VITRE_INTERIEURE } from './materiaux.js'
 import { boite, boule, cylindre } from './formes.js'
 
 /** Un lit avec couverture et oreiller. Tête de lit vers -z. */
@@ -112,7 +112,7 @@ export function creerPlante(taille = 1) {
 export function creerFenetreInterieure(l = 1.1, h = 1.0) {
   const g = new THREE.Group()
   g.add(boite(l + 0.16, h + 0.16, 0.06, PALETTE.blanc, 0, -0.08, 0))
-  g.add(boite(l, h, 0.08, PALETTE.vitre, 0, 0, 0.01))
+  g.add(boite(l, h, 0.08, MATERIAU_VITRE_INTERIEURE, 0, 0, 0.01)) // bleu nuit le soir
   g.add(boite(0.05, h, 0.1, PALETTE.blanc, 0, 0, 0.01))
   g.add(boite(l, 0.05, 0.1, PALETTE.blanc, 0, h / 2, 0.01))
   // Rideaux.

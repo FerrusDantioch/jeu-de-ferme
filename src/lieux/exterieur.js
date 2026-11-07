@@ -15,11 +15,11 @@ import { creerTerrain, semerFleurs } from '../monde/terrain.js'
 import { obtenirModele } from '../modeles/index.js'
 import { fusionnerParMateriau } from '../modeles/fusion.js'
 import {
-  creerPuits, creerBanc, creerPanneau, creerEtang, creerEnclos, creerReserve, creerTableauCommandes,
+  creerPuits, creerBanc, creerPanneau, creerEtang, creerEnclos, creerReserve, creerTableauCommandes, creerLampadaire,
 } from '../modeles/decor.js'
 import { MATERIAU_INVISIBLE } from '../modeles/formes.js'
 import {
-  BATIMENTS, POINT_DE_DEPART, ENCLOS, ETANG, PUITS, BANCS, PANNEAUX, RESERVES, TABLEAU_COMMANDES,
+  BATIMENTS, POINT_DE_DEPART, ENCLOS, ETANG, PUITS, BANCS, PANNEAUX, RESERVES, TABLEAU_COMMANDES, LAMPADAIRES, POTAGER,
 } from '../donnees/ferme.js'
 import { creerPnjDuLieu } from './pnj-du-lieu.js'
 import { creerAnimauxDuLieu, animerAnimaux } from './animaux-du-lieu.js'
@@ -28,6 +28,16 @@ import { placesDeBanc, ajouterSiege } from '../monde/sieges.js'
 import { creerDecorationsFete } from '../monde/decorations-fetes.js'
 import { feteDuJour } from '../jeu/calendrier.js'
 import { oeufsTrouvesAujourdhui } from '../jeu/fetes.js'
+import { creerLueur } from '../monde/ciel.js'
+import { habillerSaison } from '../monde/saisons.js'
+import { creerChute } from '../monde/chute.js'
+import { creerPetitesBetes } from '../monde/petites-betes.js'
+import { creerVerger } from '../monde/verger.js'
+import { creerDecorationsFerme } from '../monde/decorations-ferme.js'
+import { surChangementDecorations } from '../jeu/decorations.js'
+import { ARBRES_FRUITIERS } from '../donnees/vergers.js'
+import { saisonDuJour } from '../jeu/temps.js'
+import { animationsReduites } from '../jeu/reglages.js'
 
 // Distance entre la façade et le point où l'on se tient pour passer la porte.
 const RECUL_PORTE = 0.9
@@ -41,7 +51,7 @@ export function creerLieu(outils) {
   // Tout ce qui ne bouge jamais (bâtiments, enclos, puits, chemins…) est rangé ici,
   // puis « collé » en un seul bloc à la fin : beaucoup moins de travail pour le téléphone.
   const statique = new THREE.Group()
-  creerTerrain(groupe, grille, statique)
+  const terrain = creerTerrain(groupe, grille, statique)
 
   const portes = []
   const touchables = []
@@ -126,6 +136,12 @@ export function creerLieu(outils) {
   etang.position.set(ETANG.x, 0, ETANG.z)
   statique.add(etang)
   grille.bloquerCercle(ETANG.x, ETANG.z, ETANG.rayon, 0.3)
+  // On touche l'eau pour pêcher.
+  const zoneEtang = new THREE.Mesh(new THREE.CylinderGeometry(ETANG.rayon, ETANG.rayon, 0.5, 16), MATERIAU_INVISIBLE)
+  zoneEtang.position.set(ETANG.x, 0.25, ETANG.z)
+  zoneEtang.userData.toucher = { type: 'etang' }
+  groupe.add(zoneEtang)
+  touchables.push(zoneEtang)
 
   const puits = creerPuits()
   puits.position.set(PUITS.x, 0, PUITS.z)
@@ -141,6 +157,17 @@ export function creerLieu(outils) {
     grille.bloquerRectangle(b.x, b.z, tourne ? 0.5 : 1.6, tourne ? 1.6 : 0.5, 0.1)
     // Deux places pour s'asseoir.
     for (const siege of placesDeBanc(b.x, b.z, b.angle, 0.5)) ajouterSiege({ groupe, touchables }, siege)
+  }
+
+  // Les lampadaires : leur lanterne brille le soir (avec un petit halo de lumière).
+  for (const [x, z] of LAMPADAIRES) {
+    const lampadaire = creerLampadaire()
+    lampadaire.position.set(x, 0, z)
+    statique.add(lampadaire)
+    grille.bloquerCercle(x, z, 0.1, 0.3)
+    const halo = creerLueur(0xffd27a, 2.4)
+    halo.position.set(x + 0.3, 1.55, z)
+    groupe.add(halo)
   }
 
   for (const p of PANNEAUX) {
@@ -167,8 +194,27 @@ export function creerLieu(outils) {
   // On colle tout ce qui ne bouge pas en un seul bloc (une pièce par couleur).
   groupe.add(fusionnerParMateriau(statique))
 
+  // --- Le verger (arbres fruitiers) : son feuillage suit les saisons comme les autres arbres ---
+  const verger = creerVerger({
+    groupe, grille, touchables, feuillage: terrain.feuillages.material, haut: terrain.hauts.material,
+  })
+
   // --- Les fleurs (après les obstacles, pour ne pas en semer dans les murs) ---
-  semerFleurs(groupe, grille)
+  terrain.fleurs = semerFleurs(groupe, grille)
+
+  // --- Les saisons, ce qui tombe du ciel, les papillons et les lucioles ---
+  const chute = creerChute(groupe)
+  const betes = creerPetitesBetes(groupe)
+  let saison = null
+  function verifierSaison(centre) {
+    const s = saisonDuJour()
+    if (s === saison) return
+    saison = s
+    const habit = habillerSaison(s, terrain)
+    chute.regler(habit.chute, centre)
+  }
+  verifierSaison(POINT_DE_DEPART)
+  let compteurSaison = 0
 
   // --- Les villageois qui vivent dehors ---
   const pnj = creerPnjDuLieu('exterieur', { groupe, grille, touchables, bulles: outils.bulles, maisons })
@@ -182,25 +228,52 @@ export function creerLieu(outils) {
     zMax: ENCLOS.z + ENCLOS.profondeur / 2 - m,
   }
   const animaux = creerAnimauxDuLieu('exterieur', () => zoneEnclos, { groupe, touchables, pastilles: outils.pastilles })
-  const animer = animerAnimaux(animaux, () => potager.actualiser())
+  const animer = animerAnimaux(animaux, () => {
+    potager.actualiser()
+    verger.actualiser()
+  })
+
+  // --- Les décorations posées par le joueur (achetées chez Lila) ---
+  // On ne peut rien poser sur le potager, dans l'enclos, sous les arbres du verger, ni devant les portes.
+  const largeurPotager = POTAGER.colonnes * POTAGER.taille + (POTAGER.colonnes - 1) * POTAGER.ecart
+  const profondeurPotager = POTAGER.rangees * POTAGER.taille + (POTAGER.rangees - 1) * POTAGER.ecart
+  const interdits = [
+    { x: POTAGER.x, z: POTAGER.z, l: largeurPotager + 0.6, p: profondeurPotager + 0.6 },
+    { x: ENCLOS.x, z: ENCLOS.z, l: ENCLOS.largeur + 0.4, p: ENCLOS.profondeur + 0.4 },
+    { x: ETANG.x, z: ETANG.z, r: ETANG.rayon + 0.4 },
+    ...ARBRES_FRUITIERS.map((a) => ({ x: a.x, z: a.z, r: 1.0 })),
+    ...Object.values(maisons).map((m) => ({ x: m.x, z: m.z + 0.3, r: 1.2 })),
+  ]
+  const decosFerme = creerDecorationsFerme({ groupe, grille, touchables, interdits })
 
   // --- Décorations de fête (changent selon le calendrier, même en pleine partie) ---
-  // On garde une copie des obstacles « sans décoration » pour pouvoir les retirer proprement.
+  // On garde une copie des obstacles « sans décoration » pour pouvoir les retirer proprement,
+  // et une copie « avec la fête » (les décorations du joueur s'ajoutent par-dessus).
   const obstaclesSansDecor = grille.bloquee.slice()
+  let obstaclesAvecFete = obstaclesSansDecor
   let decorations = null
   function appliquerFete(fete) {
     if (decorations) {
       groupe.remove(decorations.groupe)
       for (const t of decorations.touchables) touchables.splice(touchables.indexOf(t), 1)
-      grille.bloquee.set(obstaclesSansDecor)
       decorations = null
     }
-    if (!fete) return
-    decorations = creerDecorationsFete(fete, grille, oeufsTrouvesAujourdhui())
-    groupe.add(decorations.groupe)
-    touchables.push(...decorations.touchables)
+    grille.bloquee.set(obstaclesSansDecor)
+    if (fete) {
+      decorations = creerDecorationsFete(fete, grille, oeufsTrouvesAujourdhui())
+      groupe.add(decorations.groupe)
+      touchables.push(...decorations.touchables)
+    }
+    obstaclesAvecFete = grille.bloquee.slice()
+    decosFerme.bloquer()
   }
   appliquerFete(feteDuJour())
+  // Une décoration posée, tournée ou rangée : on refait ses obstacles et son dessin.
+  surChangementDecorations(() => {
+    grille.bloquee.set(obstaclesAvecFete)
+    decosFerme.bloquer()
+    decosFerme.construire()
+  })
 
   return {
     id: 'exterieur',
@@ -215,7 +288,25 @@ export function creerLieu(outils) {
     pnj,
     animaux,
     potager,
-    miseAJour: animer,
+    verger,
+    decorations: decosFerme,
+    miseAJour(dt, joueur) {
+      animer(dt)
+      verger.miseAJour(dt)
+      // Une fois par seconde : la saison a-t-elle changé (minuit, mode test, réglages) ?
+      compteurSaison += dt
+      if (compteurSaison > 1) {
+        compteurSaison = 0
+        verifierSaison(joueur.position)
+      }
+      const calme = animationsReduites()
+      chute.miseAJour(dt, joueur.position, calme)
+      betes.miseAJour(dt, { lumieres: outils.ciel?.lumieres ?? 0, saison, calme })
+    },
+    /** La saison affichée en ce moment. */
+    get saison() {
+      return saison
+    },
     appliquerFete,
     /** Cache un œuf de Pâques trouvé. */
     cacherOeuf(numero) {

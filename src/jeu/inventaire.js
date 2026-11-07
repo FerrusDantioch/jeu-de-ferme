@@ -2,6 +2,11 @@
  * inventaire.js — le sac du joueur : ajouter, retirer, compter des objets.
  */
 import { etat } from './etat.js'
+import { infosObjet } from '../donnees/objets.js'
+import { annoncer } from './evenements.js'
+
+// Les catégories d'objets notées dans le 📖 carnet de collection.
+export const CATEGORIES_DU_CARNET = ['recolte', 'fruit', 'produit', 'poisson', 'plat']
 
 // Nombre maximum d'un même objet dans le sac (pour garder des nombres lisibles).
 export const MAXIMUM = 999
@@ -13,6 +18,13 @@ export function quantite(id) {
 export function ajouter(id, n = 1) {
   const inv = etat.d.inventaire
   inv[id] = Math.min(MAXIMUM, (inv[id] || 0) + n)
+  // Le carnet retient tout ce qu'on a obtenu (et combien en tout).
+  if (CATEGORIES_DU_CARNET.includes(infosObjet(id).categorie)) {
+    const carnet = (etat.d.carnet ||= {})
+    const nouveau = !carnet[id]
+    carnet[id] = (carnet[id] || 0) + n
+    if (nouveau) annoncer('decouverte', { id })
+  }
   etat.signaler()
 }
 

@@ -2,7 +2,8 @@
  * reglages.js (interface) — la fenêtre ⚙️ « Réglages ».
  *
  * On y trouve :
- *  - les sons (activés ou coupés, volume) ;
+ *  - les sons et la musique (activés ou coupés, volume) ;
+ *  - le jour et la nuit, la saison ;
  *  - le joystick à l'écran ;
  *  - la taille du texte ;
  *  - réduire les animations ;
@@ -17,9 +18,12 @@ import { creerFenetre, echapper } from './fenetre.js'
 // Les choix proposés : [nom du réglage, titre, [[valeur, texte], …]].
 const CHOIX = [
   ['son', '🔊 Sons', [[true, 'Activés'], [false, 'Coupés']]],
+  ['musique', '🎵 Musique', [[true, 'Oui'], [false, 'Non']]],
   ['volume', '🔉 Volume', [['doux', 'Doux'], ['moyen', 'Moyen'], ['fort', 'Fort']]],
   ['joystick', '🕹️ Joystick à l’écran', [[false, 'Non'], [true, 'Oui']]],
   ['tailleTexte', '🔠 Taille du texte', [['normale', 'Normale'], ['grande', 'Grande'], ['tresGrande', 'Très grande']]],
+  ['cycleJour', '🌙 Jour et nuit', [['auto', 'Selon l’heure'], ['jour', 'Toujours le jour'], ['nuit', 'Toujours la nuit']]],
+  ['saison', '🍂 Saison', [['auto', 'Selon la date'], ['printemps', '🌸 Printemps'], ['ete', '☀️ Été'], ['automne', '🍂 Automne'], ['hiver', '❄️ Hiver']]],
   ['animationsReduites', '🌀 Animations', [[false, 'Normales'], [true, 'Réduites']]],
   ['ombres', '🌗 Ombres', [[true, 'Oui'], [false, 'Non']]],
   ['economie', '🔋 Mode économie', [[false, 'Non'], [true, 'Oui']]],
@@ -33,8 +37,16 @@ const GUIDE = `
     <li>🌱 <strong>Potager</strong> : touchez une parcelle pour planter, arroser (facultatif) et récolter. Les plantes poussent même quand le jeu est fermé.</li>
     <li>🐔 <strong>Animaux</strong> : touchez-les pour les nourrir, les caresser et ramasser œufs, lait et laine. Le foin et le grain sont gratuits dans les réserves.</li>
     <li>📋 <strong>Commandes</strong> : les villageois avec un 📋 attendent quelque chose. Livrez-les (ou passez par le tableau des commandes). Pas de limite de temps !</li>
-    <li>🧺 <strong>Boutique</strong> : touchez Lila pour acheter des graines, adopter des animaux ou vendre.</li>
+    <li>🧺 <strong>Boutique</strong> : touchez Lila pour acheter des graines et des décorations, adopter des animaux, un chat ou un chien (gratuit), ou vendre.</li>
+    <li>🍎 <strong>Verger</strong> : à droite de l’étable, touchez un arbre pour le secouer et cueillir ses fruits.</li>
+    <li>🍳 <strong>Cuisine</strong> : dans la maison, touchez la cuisine pour préparer de bons plats.</li>
+    <li>🎣 <strong>Pêche</strong> : touchez l’étang. Quand ça mord, le poisson attend : remontez la ligne quand vous voulez.</li>
+    <li>🌼 <strong>Décorer</strong> : dans 🎒 Mon sac, « Décorer la ferme », puis touchez l’herbe là où poser la décoration.</li>
+    <li>📖 <strong>Carnet</strong> : tout ce que vous avez récolté, pêché et cuisiné (dans 🎒 Mon sac).</li>
+    <li>👤 <strong>Mon personnage</strong> : prénom, coiffure, tenue… et votre compagnon.</li>
+    <li>🪑 <strong>S’asseoir</strong> : touchez un banc ou une chaise.</li>
     <li>📜 <strong>Quêtes</strong> : 3 petites missions chaque jour, renouvelées à minuit.</li>
+    <li>🌙 Le jour, la nuit et les saisons suivent l’heure et la date du téléphone (réglables ci-dessus).</li>
     <li>💾 La partie est <strong>sauvegardée toute seule</strong>.</li>
   </ul>
   <p class="discret">Rien ne presse, rien ne se perd : prenez votre temps. 🌷</p>`
@@ -120,7 +132,7 @@ export function creerReglages({ barre, ouvrirAPropos, avantExport }) {
       if (nom === 'animationsReduites' && (actuelle === null || actuelle === undefined)) {
         actuelle = window.matchMedia('(prefers-reduced-motion: reduce)').matches
       }
-      const desactive = nom === 'volume' && !reglages.get('son')
+      const desactive = nom === 'volume' && !reglages.get('son') && !reglages.get('musique')
       const boutons = options
         .map(([valeur, texte]) => {
           const choisi = actuelle === valeur

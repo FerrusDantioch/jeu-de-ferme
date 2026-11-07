@@ -91,9 +91,14 @@ export const BANCS = [
   { x: 7.2, z: 3.0, angle: Math.PI / 2 }, // pour regarder les animaux de l'enclos
   { x: 4.5, z: 18.4, angle: Math.PI }, // au bord de la route du village
 ]
+// Les lampadaires le long des chemins (ils s'allument le soir) : [x, z].
+export const LAMPADAIRES = [
+  [1.5, 3.0], [-1.5, 11.5], [-1.5, -5.3], [-8.5, 5.3], [7, 14.9], [-12.6, -1.0],
+]
 export const PANNEAUX = [
   { x: -8.7, z: -0.3, texte: 'Potager', largeur: 1.3 },
   { x: 2.2, z: 18.2, texte: 'Bienvenue !', largeur: 1.6 },
+  { x: 11.6, z: -5.6, texte: 'Verger', largeur: 1.2 },
 ]
 
 // Arbres : [x, z].

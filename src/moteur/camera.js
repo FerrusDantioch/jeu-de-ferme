@@ -21,6 +21,10 @@ export function creerCamera() {
 
   const cible = new THREE.Vector3()
   const positionVoulue = new THREE.Vector3()
+  const regard = new THREE.Vector3()
+  // Zoom : 1 = vue normale ; plus petit = la caméra se rapproche (ex. : 👤 « Mon personnage »).
+  let zoom = 1
+  let zoomVoulu = 1
 
   /**
    * Place immédiatement la caméra sur le personnage (au démarrage).
@@ -39,9 +43,17 @@ export function creerCamera() {
     // Facteur de rapprochement indépendant de la vitesse de l'appareil.
     const t = 1 - Math.exp(-DOUCEUR * dt)
     cible.lerp(position, t)
-    positionVoulue.copy(cible).add(DECALAGE)
+    zoom += (zoomVoulu - zoom) * t
+    // De près, on regarde un peu plus haut (le corps plutôt que les pieds).
+    regard.copy(cible).y += (1 - zoom) * 1.1
+    positionVoulue.copy(regard).addScaledVector(DECALAGE, zoom)
     camera.position.copy(positionVoulue)
-    camera.lookAt(cible)
+    camera.lookAt(regard)
+  }
+
+  /** Rapproche (ex. : 0.4) ou remet (1) la caméra, en douceur. */
+  function zoomer(facteur) {
+    zoomVoulu = facteur
   }
 
   /**
@@ -54,5 +66,5 @@ export function creerCamera() {
     camera.updateProjectionMatrix()
   }
 
-  return { camera, placerSur, suivre, adapterTaille }
+  return { camera, placerSur, suivre, adapterTaille, zoomer }
 }

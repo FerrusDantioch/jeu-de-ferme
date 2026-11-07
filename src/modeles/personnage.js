@@ -23,10 +23,34 @@ const APPARENCE_JOUEUR = {
   chaussures: PALETTE.chaussures,
   salopette: true, // ajoute une bavette sur la poitrine
   tablier: null, // couleur d'un tablier (ou null = pas de tablier)
-  coiffure: 'court', // 'court' ou 'chignon'
-  chapeau: 'paille', // 'paille', 'casquette' ou 'aucun'
+  robe: false, // ajoute une jupe (le « haut » devient une robe)
+  coiffure: 'court', // 'court', 'long', 'queue', 'couettes', 'chignon' ou 'boucles'
+  chapeau: 'paille', // 'paille', 'casquette', 'foulard', 'fleur' ou 'aucun'
   couleurChapeau: PALETTE.rubanChapeau, // ruban du chapeau de paille ou couleur de la casquette
   taille: 1, // 1 = adulte, 0.8 = enfant
+}
+
+/** Ajoute à la tête ce qui dépasse des cheveux selon la coiffure (queue, couettes…). */
+function ajouterCoiffure(tete, a) {
+  const c = a.cheveux
+  if (a.coiffure === 'chignon') tete.add(piece(FORMES.chignon, c, 0, 0.27, -0.12))
+  if (a.coiffure === 'long') tete.add(piece(FORMES.cheveuxLongs, c, 0, -0.17, -0.02))
+  if (a.coiffure === 'queue') {
+    tete.add(piece(FORMES.couette, c, 0, 0.1, -0.27))
+    const queue = piece(FORMES.queue, c, 0, -0.08, -0.33)
+    queue.rotation.x = Math.PI + 0.35
+    tete.add(queue)
+  }
+  if (a.coiffure === 'couettes') {
+    for (const cote of [-1, 1]) tete.add(piece(FORMES.couette, c, 0.27 * cote, -0.04, -0.08))
+  }
+  if (a.coiffure === 'boucles') {
+    // Des petites boucles tout autour, en couronne.
+    for (let k = 0; k < 9; k++) {
+      const angle = Math.PI * (-0.1 + (k / 8) * 1.2) // d'un côté à l'autre, en passant par derrière
+      tete.add(piece(FORMES.boucle, c, Math.cos(angle) * 0.27, 0.0 + (k % 2) * 0.08, -Math.sin(angle) * 0.24))
+    }
+  }
 }
 
 // Petite aide : crée une pièce, la place, et active les ombres.
@@ -50,6 +74,14 @@ const FORMES = {
   tete: new THREE.IcosahedronGeometry(0.27, 1),
   cheveux: new THREE.SphereGeometry(0.285, 8, 6, 0, Math.PI * 2, 0, Math.PI * 0.55),
   chignon: new THREE.IcosahedronGeometry(0.13, 0),
+  cheveuxLongs: new THREE.CylinderGeometry(0.25, 0.28, 0.42, 10, 1, false, Math.PI * 0.35, Math.PI * 1.3),
+  queue: new THREE.ConeGeometry(0.08, 0.36, 6),
+  couette: new THREE.IcosahedronGeometry(0.1, 0),
+  boucle: new THREE.IcosahedronGeometry(0.09, 0),
+  jupe: new THREE.CylinderGeometry(0.26, 0.36, 0.3, 8),
+  foulard: new THREE.SphereGeometry(0.3, 10, 6, 0, Math.PI * 2, 0, Math.PI * 0.4),
+  noeud: new THREE.IcosahedronGeometry(0.07, 0),
+  petale: new THREE.IcosahedronGeometry(0.055, 0),
   oeil: new THREE.SphereGeometry(0.035, 6, 4),
   joue: new THREE.CircleGeometry(0.045, 8),
   bordChapeau: new THREE.CylinderGeometry(0.46, 0.46, 0.03, 12),
@@ -94,6 +126,7 @@ export function creerModelePersonnage(options = {}) {
   corps.add(piece(FORMES.tronc, a.haut, 0, 0.66, 0))
   corps.add(piece(FORMES.ceinture, a.bas, 0, 0.54, 0))
   if (a.salopette) corps.add(piece(FORMES.bavette, a.bas, 0, 0.7, 0.2))
+  if (a.robe) corps.add(piece(FORMES.jupe, a.haut, 0, 0.42, 0))
   if (a.tablier) corps.add(piece(FORMES.tablier, a.tablier, 0, 0.6, 0.235))
 
   // --- Bras (accrochés à l'épaule) ---
@@ -117,7 +150,7 @@ export function creerModelePersonnage(options = {}) {
   const cheveux = piece(FORMES.cheveux, a.cheveux, 0, 0.02, -0.03)
   cheveux.rotation.x = -0.35
   tete.add(cheveux)
-  if (a.coiffure === 'chignon') tete.add(piece(FORMES.chignon, a.cheveux, 0, 0.27, -0.12))
+  ajouterCoiffure(tete, a)
   // Yeux et joues (petites formes, sans ombre pour économiser).
   for (const cote of [-1, 1]) {
     const oeil = new THREE.Mesh(FORMES.oeil, materiau(PALETTE.noir))
@@ -143,6 +176,23 @@ export function creerModelePersonnage(options = {}) {
     casquette.rotation.x = -0.15
     tete.add(casquette)
     tete.add(piece(FORMES.visiere, a.couleurChapeau, 0, 0.12, 0.3))
+  } else if (a.chapeau === 'foulard') {
+    // Un foulard noué sur la tête, avec un petit nœud derrière.
+    const foulard = piece(FORMES.foulard, a.couleurChapeau, 0, 0.05, -0.02)
+    foulard.rotation.x = -0.3
+    tete.add(foulard)
+    tete.add(piece(FORMES.noeud, a.couleurChapeau, 0, 0.08, -0.29))
+  } else if (a.chapeau === 'fleur') {
+    // Une fleur piquée dans les cheveux, sur le côté.
+    const fleur = new THREE.Group()
+    fleur.position.set(0.2, 0.17, 0.1)
+    for (let k = 0; k < 5; k++) {
+      const angle = (k / 5) * Math.PI * 2
+      fleur.add(piece(FORMES.petale, a.couleurChapeau, Math.cos(angle) * 0.06, Math.sin(angle) * 0.06, 0))
+    }
+    fleur.add(piece(FORMES.petale, PALETTE.fleurJaune, 0, 0, 0.02))
+    fleur.rotation.y = 0.9
+    tete.add(fleur)
   }
 
   // Optimisation : la tête (avec chapeau, yeux, joues), le tronc, chaque bras et chaque

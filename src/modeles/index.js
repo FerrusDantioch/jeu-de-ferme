@@ -12,6 +12,7 @@ import { creerMaison, creerEtable, creerBoutique, creerChaumiere } from './batim
 import { creerPoule, creerVache, creerMouton } from './animaux.js'
 import { creerPlante } from './plantes.js'
 import { PALETTE } from './materiaux.js'
+import { creerCompagnon } from './compagnons.js'
 
 // Modèles fabriqués par code. « options » permet de les personnaliser (couleurs, tailles…).
 const FABRIQUES = {
@@ -26,6 +27,8 @@ const FABRIQUES = {
   mouton: () => creerMouton(),
   // options : { modele: 'carotte', stade: 0 à 3 }
   plante: (options) => creerPlante(options.modele, options.stade),
+  // options : { espece: 'chat' ou 'chien', pelage: { couleur, couleur2 } }
+  compagnon: (options) => creerCompagnon(options.espece, options.pelage),
 }
 
 // Modèles à charger depuis un fichier .glb (vide pour l'instant).

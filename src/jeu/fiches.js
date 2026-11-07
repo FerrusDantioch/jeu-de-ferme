@@ -16,6 +16,11 @@ import * as potager from './potager.js'
 import * as elevage from './elevage.js'
 import * as commandes from './commandes.js'
 import { gagnerExperience } from './economie.js'
+import { annoncer } from './evenements.js'
+import { ESPECES_COMPAGNONS } from '../donnees/compagnons.js'
+import { RECETTES } from '../donnees/recettes.js'
+import * as verger from './verger.js'
+import * as cuisine from './cuisine.js'
 
 /** Affiche « +3 ⭐ » un peu après une action (le temps de lire le premier texte). */
 function montrerExperience(bulles, objet, n, hauteur, delai = 900) {
@@ -119,7 +124,7 @@ export function ficheParcelle(n, { bulles, objet, actualiser }) {
  * @param {Animal} animal  l'animal dans le monde (voir entites/animal.js)
  * @param {object} o       { bulles, joueur }
  */
-export function ficheAnimal(animal, { bulles, joueur, lieuReserve }) {
+export function ficheAnimal(animal, { bulles, joueur, lieuReserve, renommer }) {
   const espece = ESPECES[animal.espece]
   const produit = infosObjet(espece.produit)
   const regarder = () => animal.regarder(joueur.position.x, joueur.position.z)
@@ -184,6 +189,13 @@ export function ficheAnimal(animal, { bulles, joueur, lieuReserve }) {
         regarder()
       },
     })
+    if (renommer) {
+      actions.push({
+        icone: '✏️',
+        texte: 'Changer son nom',
+        faire: () => renommer(a),
+      })
+    }
     if (quantite(espece.nourritures[0]) === 0) {
       lignes.push({ texte: `🌾 Il y a du foin et du grain gratuits dans la réserve ${lieuReserve}.`, discret: true })
     }
@@ -285,5 +297,173 @@ export function ficheCommandes({ bulles, joueur, idClient = null }) {
     }
     lignes.push({ texte: 'Pas de limite de temps : livrez quand vous voulez.', discret: true })
     return { icone: '📋', titre: 'Tableau des commandes', lignes, actions }
+  }
+}
+
+// --- Le compagnon (chat ou chien) ---
+
+/**
+ * Fiche du compagnon : le caresser, jouer avec lui, changer son nom.
+ * @param {object} o { bulles, joueur, compagnon (l'entité), renommer }
+ */
+export function ficheCompagnon({ bulles, joueur, compagnon, renommer }) {
+  const auHasard = (liste) => liste[Math.floor(Math.random() * liste.length)]
+  return () => {
+    const c = etat.d.compagnon
+    if (!c) return null
+    const e = ESPECES_COMPAGNONS[c.espece]
+    return {
+      icone: e.icone,
+      titre: c.nom,
+      lignes: [{ texte: `${c.nom} vous suit partout et s’assoit à côté de vous sur les bancs 💕`, discret: true }],
+      actions: [
+        {
+          icone: '🤚',
+          texte: 'Caresser',
+          principal: true,
+          faire: () => {
+            compagnon.rejouir(joueur)
+            joueur.regarderVers(compagnon.position.x, compagnon.position.z)
+            bulles.flotter(compagnon.modele, '💕', 0.8)
+            bulles.dire(compagnon.modele, auHasard(e.caresses), { nom: c.nom, hauteur: 0.9 })
+            annoncer('caresser', { espece: c.espece })
+          },
+        },
+        {
+          icone: c.espece === 'chat' ? '🧶' : '🎾',
+          texte: 'Jouer',
+          faire: () => {
+            compagnon.rejouir(joueur)
+            compagnon.joie = 2.5 // il sautille plus longtemps
+            bulles.dire(compagnon.modele, auHasard(e.jeux), { nom: c.nom, hauteur: 0.9 })
+            annoncer('caresser', { espece: c.espece })
+          },
+        },
+        { icone: '✏️', texte: 'Changer son nom', faire: () => renommer() },
+      ],
+    }
+  }
+}
+
+// --- Le verger ---
+
+/**
+ * Fiche d'un arbre fruitier : combien de fruits, et le bouton pour secouer l'arbre.
+ * @param {object} arbre  voir src/donnees/vergers.js
+ * @param {object} o      { bulles, joueur, objet (l'arbre en 3D), surSecousse }
+ */
+export function ficheArbre(arbre, { bulles, joueur, objet, surSecousse }) {
+  return () => {
+    const vue = verger.observerArbre(arbre)
+    const f = vue.fruit
+    const lignes = [
+      vue.fruits > 0
+        ? { texte: `${f.icone} ${vue.fruits} ${vue.fruits > 1 ? f.nomPluriel : f.nom.toLowerCase()} à cueillir !` }
+        : { texte: `Pas encore de fruit mûr. Le prochain arrive dans ${potager.texteDuree(vue.prochain)}.` },
+    ]
+    if (vue.fruits > 0 && vue.prochain > 0) {
+      lignes.push({ texte: `Le suivant dans ${potager.texteDuree(vue.prochain)}`, discret: true })
+    }
+    lignes.push({ texte: 'Les fruits poussent tout seuls, même quand le jeu est fermé.', discret: true })
+    return {
+      icone: '🌳',
+      titre: f.arbre,
+      lignes,
+      actions: [
+        {
+          icone: '🫳',
+          texte: 'Secouer l’arbre',
+          principal: vue.fruits > 0,
+          desactive: vue.fruits === 0,
+          faire: () => {
+            const r = verger.secouer(arbre)
+            if (surSecousse) surSecousse()
+            if (!r) return
+            bulles.flotter(objet, `+${r.n} ${f.icone}`, 2.6)
+            montrerExperience(bulles, joueur.modele, r.xp, 1.7)
+          },
+        },
+      ],
+    }
+  }
+}
+
+// --- La cuisine ---
+
+/**
+ * Fiche de la cuisine : toutes les recettes, avec ce qu'il manque.
+ * @param {object} o { bulles, joueur }
+ */
+export function ficheCuisine({ bulles, joueur }) {
+  return () => {
+    const actions = Object.entries(RECETTES).map(([id, r]) => {
+      const liste = cuisine.ingredients(id)
+      const pret = liste.every((i) => i.ai >= i.n)
+      return {
+        icone: r.icone,
+        texte: r.nom,
+        detail: liste.map((i) => `${infosObjet(i.id).icone}${Math.min(i.ai, i.n)}/${i.n}`).join(' '),
+        principal: pret,
+        desactive: !pret,
+        faire: () => {
+          const res = cuisine.cuisiner(id)
+          if (!res) return
+          bulles.flotter(joueur.modele, `+1 ${r.icone}`, 1.7)
+          montrerExperience(bulles, joueur.modele, res.xp, 1.7)
+        },
+      }
+    })
+    const possibles = actions.filter((a) => !a.desactive).length
+    return {
+      icone: '🍳',
+      titre: 'La cuisine',
+      lignes: [
+        { texte: possibles ? 'Que voulez-vous préparer ?' : 'Il manque des ingrédients pour l’instant : potager, verger et animaux vous les donneront !' },
+        { texte: 'Les plats se vendent bien chez Lila, et les villageois en demandent parfois.', discret: true },
+      ],
+      actions,
+    }
+  }
+}
+
+// --- La pêche ---
+
+/**
+ * Fiche de l'étang : lancer la ligne, attendre, remonter la ligne (jamais de limite de temps).
+ * @param {object} o { peche (la canne, voir monde/peche.js), lancer(), ranger(), remonter(), dernierePrise() }
+ */
+export function fichePeche({ peche, lancer, ranger, remonter, dernierePrise }) {
+  return () => {
+    const etape = peche.etape
+    const prise = dernierePrise()
+    if (etape === 'mord') {
+      return {
+        icone: '🎣',
+        titre: 'Ça mord !',
+        lignes: [{ texte: 'Un poisson a mordu 🐟 Il attend patiemment : prenez votre temps.' }],
+        actions: [{ icone: '🎣', texte: 'Remonter la ligne', principal: true, faire: remonter }],
+      }
+    }
+    if (etape === 'attente') {
+      return {
+        icone: '🎣',
+        titre: 'L’étang',
+        lignes: [{ texte: 'Le bouchon flotte doucement… on attend que ça morde.' }],
+        actions: [{ icone: '🧺', texte: 'Ranger la canne', faire: ranger }],
+      }
+    }
+    const lignes = []
+    if (prise) {
+      const o = infosObjet(prise.id)
+      lignes.push({ texte: `Vous avez pêché : ${o.icone} ${o.nom} !${prise.nouveau ? ' ✨ Nouveau dans le carnet' : ''}` })
+    } else {
+      lignes.push({ texte: 'Un joli coin pour pêcher. Les poissons changent avec les saisons, et certains ne sortent que la nuit 🌙' })
+    }
+    return {
+      icone: '🎣',
+      titre: 'L’étang',
+      lignes,
+      actions: [{ icone: '🎣', texte: prise ? 'Relancer la ligne' : 'Lancer la ligne', principal: true, faire: lancer }],
+    }
   }
 }

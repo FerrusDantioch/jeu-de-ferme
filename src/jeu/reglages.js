@@ -10,12 +10,15 @@ const CLE = 'jeu-de-ferme:reglages'
 // Valeurs par défaut.
 const DEFAUT = {
   son: true,
+  musique: true, // la petite musique d'ambiance
   volume: 'moyen', // 'doux', 'moyen' ou 'fort'
   joystick: false,
   tailleTexte: 'normale', // 'normale', 'grande' ou 'tresGrande'
   animationsReduites: null, // null = comme le téléphone le demande ; true / false = choix fait ici
   ombres: true,
   economie: false, // image un peu moins fine, mais plus fluide et moins gourmande en batterie
+  cycleJour: 'auto', // 'auto' = selon l'heure du téléphone ; 'jour' ou 'nuit' = toujours pareil
+  saison: 'auto', // 'auto' = selon la date ; ou 'printemps', 'ete', 'automne', 'hiver'
 }
 
 export const TAILLES_TEXTE = { normale: 20, grande: 24, tresGrande: 28 }

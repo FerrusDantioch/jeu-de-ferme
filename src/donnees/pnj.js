@@ -7,7 +7,8 @@
  *  - maison : la chaumière où il rentre de temps en temps (voir src/donnees/ferme.js) ;
  *  - promenade : les endroits où il aime aller se promener [x, z] ;
  *  - fixe : true = il reste à sa place (ex. : la marchande derrière son comptoir) ;
- *  - salutations : ce qu'il dit quand on passe près de lui ;
+ *  - salutations : ce qu'il dit quand on passe près de lui
+ *    ({nom} est remplacé par le prénom du joueur, s'il en a choisi un) ;
  *  - phrases : ce qu'il dit quand on le touche, ou de temps en temps tout seul ;
  *  - demandes : ce qu'il dit quand il a une commande pour nous (voir src/donnees/commandes.js) ;
  *  - marchande : true = toucher ce personnage ouvre la boutique.
@@ -28,13 +29,14 @@ export const PNJ = [
     maison: 'chaumiere-rose',
     depart: [8, 9],
     promenade: [[4, 5.6], [-11.4, -2.2], [-4.5, 0.5], [-4, 9.2], [13, 7], [2, 2]],
-    salutations: ['Bonjour ! 🌷', 'Coucou, quel plaisir de te voir !'],
+    salutations: ['Bonjour {nom} ! 🌷', 'Coucou {nom}, quel plaisir de te voir !'],
     phrases: [
       'Quelle belle journée !',
       'Mes rosiers sont magnifiques cette année 🌹',
       'Prends ton temps, rien ne presse.',
       'J’ai fait une tarte aux pommes ce matin 🥧',
       'J’aime bien m’asseoir près de l’étang.',
+      'Lila a un petit chat et un petit chien qui cherchent une famille 🐱🐶',
       'Il fait bon, aujourd’hui.',
     ],
     demandes: [
@@ -54,7 +56,7 @@ export const PNJ = [
     maison: 'chaumiere-leon',
     depart: [-3, 3],
     promenade: [[7.5, -1], [7, -5.8], [0.5, 12], [-8, 8], [11.5, -6], [-3, 3]],
-    salutations: ['Salut ! 👋', 'Bien le bonjour !'],
+    salutations: ['Salut {nom} ! 👋', 'Bien le bonjour !'],
     phrases: [
       'Ton étable est vraiment jolie.',
       'Il paraît qu’il fera beau demain ☀️',
@@ -79,7 +81,7 @@ export const PNJ = [
     maison: 'chaumiere-leon',
     depart: [2, 9],
     promenade: [[2, 9], [-1.5, 14], [6, 2], [-9, 9], [12, 8.5], [3, -3]],
-    salutations: ['Coucou ! 😄', 'Hé, salut !'],
+    salutations: ['Coucou {nom} ! 😄', 'Hé, salut !'],
     phrases: [
       'On joue à chat ?',
       'J’ai vu un papillon ! 🦋',
@@ -103,7 +105,7 @@ export const PNJ = [
     fixe: true,
     marchande: true,
     depart: [0, -2.6],
-    salutations: ['Bonjour, bienvenue ! 🧺'],
+    salutations: ['Bonjour {nom}, bienvenue ! 🧺'],
     phrases: [
       'Bienvenue dans ma boutique !',
       'J’ai de belles graines toutes fraîches 🌱',

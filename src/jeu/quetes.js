@@ -134,5 +134,6 @@ ecouterActions((type, details) => {
   if (type === 'vendre') avancer('vendre', details.pieces || 0)
   else if (type === 'parler') avancer('parler', 1, details.qui)
   else if (type === 'oeuf') avancer('oeufs', 1)
+  else if (type === 'cueillir') avancer('cueillir', details.n || 1)
   else avancer(type, 1)
 })

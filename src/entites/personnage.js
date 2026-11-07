@@ -11,16 +11,22 @@
 import { obtenirModele } from '../modeles/index.js'
 import { PERSONNAGE } from '../config.js'
 import { Marcheur } from './marcheur.js'
+import { versModele } from '../jeu/perso.js'
 
 export class Personnage extends Marcheur {
   constructor(scene, grille) {
-    super(obtenirModele('personnage'), grille, PERSONNAGE.vitesse)
+    super(obtenirModele('personnage', versModele()), grille, PERSONNAGE.vitesse)
     scene.add(this.modele)
 
     // La porte vers laquelle il marche (si on a touché un bâtiment), sinon null.
     this.porteVisee = null
     // Le siège vers lequel il marche pour s'asseoir, sinon null.
     this.siegeVise = null
+  }
+
+  /** Redessine le personnage avec l'apparence choisie (fenêtre 👤 « Mon personnage »). */
+  actualiserApparence() {
+    this.changerModele(obtenirModele('personnage', versModele()))
   }
 
   /**

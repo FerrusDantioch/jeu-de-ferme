@@ -25,6 +25,9 @@ export const MODELES_QUETES = [
   { type: 'caresser', texte: 'Faire {n} câlin{s} aux animaux', objectif: [3, 6], pieces: [3, 2], experience: [3, 1] },
   { type: 'livrer', texte: 'Livrer {n} commande{s} aux villageois', objectif: [1, 2], pieces: [8, 8], experience: [6, 5] },
   { type: 'vendre', texte: 'Gagner {n} pièces en vendant chez Lila', objectif: [15, 30], pieces: [5, 0.2], experience: [4, 0.1] },
+  { type: 'cueillir', texte: 'Cueillir {n} fruit{s} au verger', objectif: [3, 6], pieces: [4, 2], experience: [3, 1] },
+  { type: 'cuisiner', texte: 'Cuisiner {n} plat{s} dans la maison', objectif: [1, 2], pieces: [6, 6], experience: [5, 4] },
+  { type: 'pecher', texte: 'Pêcher {n} fois à l’étang', objectif: [1, 3], pieces: [4, 3], experience: [3, 2] },
   { type: 'asseoir', texte: 'Se reposer {n} fois sur un banc ou une chaise', objectif: [1, 2], pieces: [3, 2], experience: [2, 2] },
   { type: 'parler', texte: 'Discuter avec {n} villageois différent{s}', objectif: [2, 3], pieces: [3, 2], experience: [3, 2] },
 ]

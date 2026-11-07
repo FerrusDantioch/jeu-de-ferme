@@ -141,7 +141,7 @@ export function creerGestionnaireLieux(ctx) {
     repit = Math.max(0, repit - dt)
     if (!actuel) return
     for (const pnj of actuel.pnj) pnj.miseAJour(dt, personnage)
-    if (actuel.miseAJour) actuel.miseAJour(dt)
+    if (actuel.miseAJour) actuel.miseAJour(dt, personnage)
   }
 
   return {

@@ -22,7 +22,18 @@ import { creerSac } from './ui/sac.js'
 import { etat } from './jeu/etat.js'
 import { chargerPartie, demarrerSauvegardeAuto } from './jeu/sauvegarde.js'
 import { avancerTous } from './jeu/elevage.js'
-import { ficheParcelle, ficheAnimal, ficheReserve, ficheCommandes } from './jeu/fiches.js'
+import {
+  ficheParcelle, ficheAnimal, ficheReserve, ficheCommandes, ficheCompagnon, ficheArbre, ficheCuisine, fichePeche,
+} from './jeu/fiches.js'
+import { creerPeche } from './monde/peche.js'
+import { creerCarnet } from './ui/carnet.js'
+import { creerDecorer } from './ui/decorer.js'
+import { toutFermer } from './ui/fenetre.js'
+import { DECORATIONS } from './donnees/decorations.js'
+import { poserDecoration, tournerDecoration, rangerDecoration } from './jeu/decorations.js'
+import { tirerPrise, prendre } from './jeu/peche.js'
+import { ETANG } from './donnees/ferme.js'
+import { infosObjet } from './donnees/objets.js'
 import * as commandes from './jeu/commandes.js'
 import { creerBoutique } from './ui/boutique.js'
 import { creerProgression } from './ui/progression.js'
@@ -42,6 +53,13 @@ import { creerReglages } from './ui/reglages.js'
 import { ecouterActions } from './jeu/evenements.js'
 import { surNouveauNiveau } from './jeu/economie.js'
 import { activerModeHorsLigne } from './pwa.js'
+import { creerFenetrePerso } from './ui/perso.js'
+import { demanderTexte } from './ui/saisie.js'
+import { surChangementApparence } from './jeu/perso.js'
+import { creerCiel } from './monde/ciel.js'
+import { Compagnon } from './entites/compagnon.js'
+import { compagnon, changerCompagnon, surChangementCompagnon } from './jeu/compagnon.js'
+import { demarrerMusique } from './moteur/musique.js'
 
 // 0) On reprend la partie enregistrée sur le téléphone (ou on en commence une nouvelle).
 const partie = chargerPartie()
@@ -51,8 +69,11 @@ avancerTous() // les animaux ont vécu pendant que le jeu était fermé
 
 // 1) Le dessinateur 3D, la scène et la caméra.
 const conteneur = document.getElementById('scene3d')
-const { renderer, scene, suivreSoleil, changerAmbiance, appliquerQualite } = creerRendu(conteneur)
-const { camera, placerSur, suivre, adapterTaille } = creerCamera()
+const { renderer, scene, soleil, lumiereAmbiante, suivreSoleil, changerAmbiance, appliquerQualite } = creerRendu(conteneur)
+// Le jour et la nuit (selon l'heure du téléphone) : couleurs du ciel, fenêtres et lampadaires allumés le soir.
+const ciel = creerCiel({ scene, soleil, lumiereAmbiante })
+const appliquerCiel = () => lieux?.actuel && ciel.appliquer(lieux.actuel.id === 'exterieur')
+const { camera, placerSur, suivre, adapterTaille, zoomer } = creerCamera()
 adapterTaille(window.innerWidth, window.innerHeight)
 
 // 2) L'interface : boutons, bulles de paroles, fondu entre les lieux,
@@ -63,6 +84,7 @@ const fondu = creerFondu()
 const pastilles = creerPastilles()
 const fiche = creerFiche({ surOuverture: () => interfaceJeu.cacherAide() })
 creerSac(interfaceJeu.barre)
+creerCarnet()
 const joystick = creerJoystick()
 creerProgression(interfaceJeu.compteurs, interfaceJeu.etiquetteLieu)
 // La boutique de Lila. Un animal adopté apparaît tout de suite s'il est dans un lieu déjà construit
@@ -87,6 +109,39 @@ const boutique = creerBoutique({
 const personnage = new Personnage(scene, new GrilleChemin(2, 0.5))
 const marqueur = creerMarqueur(scene)
 
+// La fenêtre 👤 « Mon personnage » : le personnage change en direct, et se tourne vers nous.
+const fenetrePerso = creerFenetrePerso({
+  barre: interfaceJeu.barre,
+  surOuverture: () => {
+    fiche.fermer()
+    if (!personnage.assis) {
+      personnage.arreter()
+      marqueur.cacher()
+      personnage.angleVise = 0
+    }
+  },
+})
+surChangementApparence(() => personnage.actualiserApparence())
+
+// Le compagnon (chat ou chien), s'il a été adopté chez Lila : il suit le personnage partout.
+let animalCompagnon = null
+function actualiserCompagnon() {
+  const f = compagnon()
+  if (!f) return
+  if (animalCompagnon) return animalCompagnon.changerApparence(f)
+  animalCompagnon = new Compagnon(scene, f)
+  if (lieux.actuel) animalCompagnon.placerPres(personnage.position.x, personnage.position.z, lieux.actuel.grille)
+}
+surChangementCompagnon(actualiserCompagnon)
+
+/** Donner un nouveau nom à un animal (depuis sa fiche). */
+async function renommerAnimal(fiche) {
+  const nom = await demanderTexte({ titre: `✏️ Un nouveau nom pour ${fiche.nom} ?`, valeur: fiche.nom, max: 14 })
+  if (!nom || nom === fiche.nom) return
+  fiche.nom = nom
+  etat.signaler()
+}
+
 // La caméra suit le personnage, mais sans sortir des limites du lieu (s'il y en a).
 const cibleCamera = new THREE.Vector3()
 function limiterCamera(position) {
@@ -96,9 +151,10 @@ function limiterCamera(position) {
     cibleCamera.x = Math.min(Math.max(cibleCamera.x, -limites.x), limites.x)
     cibleCamera.z = Math.min(Math.max(cibleCamera.z, -limites.z), limites.z)
   }
-  // Quand la fiche du bas est ouverte, on décale la vue pour que le personnage
-  // reste visible au-dessus d'elle (la caméra glisse doucement).
-  if (fiche.ouverte) cibleCamera.z += window.innerHeight > window.innerWidth ? 2.6 : 1.6
+  // Quand la fiche du bas (ou la fenêtre 👤) est ouverte, on décale la vue pour que
+  // le personnage reste visible au-dessus d'elle (la caméra glisse doucement).
+  if (fenetrePerso.ouverte) cibleCamera.z += window.innerHeight > window.innerWidth ? 1.5 : 0.6
+  else if (fiche.ouverte) cibleCamera.z += window.innerHeight > window.innerWidth ? 2.6 : 1.6
   return cibleCamera
 }
 
@@ -113,12 +169,17 @@ const lieux = creerGestionnaireLieux({
   fondu,
   bulles,
   marqueur,
-  outils: { bulles, pastilles },
+  outils: { bulles, pastilles, ciel },
   surChangement(lieu) {
     if (interfaceJeu.lieuDejaAffiche) jouer('porte')
     interfaceJeu.lieuDejaAffiche = true
     interfaceJeu.montrerLieu(lieu.titre)
+    ciel.appliquer(lieu.id === 'exterieur')
     fiche.fermer()
+    peche.arreter()
+    finirPlacement()
+    // Le compagnon passe la porte avec nous.
+    animalCompagnon?.placerPres(personnage.position.x, personnage.position.z, lieu.grille)
     if (lieu.id !== 'exterieur' && !dejaEntre) {
       dejaEntre = true
       interfaceJeu.cacherAide()
@@ -143,10 +204,13 @@ personnage.surArrivee = () => {
   marqueur.cacher()
   const porte = personnage.porteVisee
   const siege = personnage.siegeVise
+  const action = personnage.quandArrive
   personnage.porteVisee = null
   personnage.siegeVise = null
+  personnage.quandArrive = null
   if (porte && personnage.distanceA(porte) < lieux.DISTANCE_PORTE) lieux.passerPorte(porte)
   else if (siege && personnage.distanceA(siege.devant) < 0.9) sAsseoir(siege)
+  else if (action) action()
 }
 
 /** Le personnage s'assoit (avec, parfois, une petite phrase). */
@@ -156,6 +220,137 @@ function sAsseoir(siege) {
   annoncer('asseoir')
   if (Math.random() < 0.35) bulles.dire(personnage.modele, PHRASES_ASSIS[Math.floor(Math.random() * PHRASES_ASSIS.length)])
 }
+
+// --- La pêche à l'étang ---
+const peche = creerPeche(scene)
+let dernierePrise = null // { id, nouveau } : pour l'afficher dans la fiche
+
+/**
+ * L'endroit où pêcher au bord de l'étang : parmi quelques places bien visibles
+ * (à gauche et au-dessus de l'étang, jamais cachées par la boutique), la plus proche.
+ */
+const PLACES_DE_PECHE = [Math.PI, Math.PI * 0.75, -Math.PI * 0.75, -Math.PI / 2, -Math.PI / 4]
+function bordDeLEtang() {
+  const grille = lieux.actuel.grille
+  let meilleure = null
+  for (const a of PLACES_DE_PECHE) {
+    const x = ETANG.x + Math.cos(a) * (ETANG.rayon + 0.8)
+    const z = ETANG.z + Math.sin(a) * (ETANG.rayon + 0.8)
+    const c = grille.versCase(x, z)
+    if (!grille.estLibre(c.i, c.j)) continue
+    const d = personnage.distanceA({ x, z })
+    if (!meilleure || d < meilleure.d) meilleure = { x, z, a, d }
+  }
+  return meilleure
+}
+
+/** Va au bord de l'étang (si besoin), puis lance la ligne. */
+function allerPecher() {
+  dernierePrise = null
+  const bord = bordDeLEtang()
+  if (!bord) return
+  const commencer = () => {
+    personnage.regarderVers(ETANG.x, ETANG.z)
+    const eau = { x: ETANG.x + Math.cos(bord.a) * (ETANG.rayon - 1.0), z: ETANG.z + Math.sin(bord.a) * (ETANG.rayon - 1.0) }
+    // On attend que le personnage soit tourné vers l'eau avant de lancer.
+    setTimeout(() => {
+      if (personnage.distanceA(bord) > 0.4 || personnage.enRoute) return
+      peche.lancer(personnage, eau, () => {
+        jouer('mord')
+        bulles.dire(personnage.modele, 'Ça mord ! 🐟')
+        fiche.rafraichir()
+      })
+      jouer('lancer')
+      fiche.rafraichir()
+    }, 350)
+  }
+  if (personnage.assis) personnage.seLever()
+  if (personnage.distanceA(bord) < 0.4) commencer()
+  else marcherVers(new THREE.Vector3(bord.x, 0, bord.z), null, null, commencer)
+}
+
+const descriptionPeche = fichePeche({
+  peche,
+  lancer: allerPecher,
+  ranger: () => peche.arreter(),
+  remonter: () => {
+    if (!peche.remonter()) return
+    const id = tirerPrise()
+    const nouveau = !etat.d.carnet?.[id]
+    const r = prendre(id)
+    dernierePrise = { id, nouveau }
+    const o = infosObjet(id)
+    bulles.flotter(personnage.modele, `+1 ${o.icone}`, 1.7)
+    if (r.xp) setTimeout(() => bulles.flotter(personnage.modele, `+${r.xp} ⭐`, 1.7), 900)
+  },
+  dernierePrise: () => dernierePrise,
+})
+
+// --- Décorer la ferme : choisir une décoration, toucher l'herbe, puis « Poser ici » ---
+const placement = { type: null, x: 0, z: 0, angle: 0, possible: false }
+
+function actualiserApercu() {
+  const decos = lieux.actuel?.decorations
+  if (!placement.type || !decos) return
+  placement.possible = decos.montrerApercu(placement.type, placement.x, placement.z, placement.angle)
+  fiche.rafraichir()
+}
+
+function finirPlacement() {
+  placement.type = null
+  lieux.lieuConstruit('exterieur')?.decorations.cacherApercu()
+}
+
+/** Commence à poser une décoration (seulement dehors). */
+function commencerPlacement(type) {
+  if (lieux.actuel.id !== 'exterieur') return
+  toutFermer()
+  if (personnage.assis) personnage.seLever()
+  personnage.arreter()
+  // On propose d'abord une place juste devant le personnage.
+  placement.type = type
+  placement.angle = 0
+  placement.x = personnage.position.x
+  placement.z = personnage.position.z + 1.8
+  fiche.ouvrir(() => {
+    if (!placement.type) return null
+    const d = DECORATIONS[placement.type]
+    return {
+      icone: d.icone,
+      titre: `Poser : ${d.nom}`,
+      lignes: [
+        { texte: 'Touchez l’herbe pour choisir l’endroit.', discret: true },
+        { texte: placement.possible ? '✅ Ici, c’est parfait !' : '🚫 Pas de place ici : choisissez un autre endroit.' },
+      ],
+      actions: [
+        {
+          icone: '✅',
+          texte: 'Poser ici',
+          principal: true,
+          desactive: !placement.possible,
+          faire: () => {
+            if (!poserDecoration(placement.type, placement.x, placement.z, placement.angle)) return
+            jouer('planter')
+            finirPlacement()
+            fiche.fermer()
+            bulles.flotter(personnage.modele, '✨', 1.7)
+          },
+        },
+        {
+          icone: '↻',
+          texte: 'Tourner',
+          faire: () => {
+            placement.angle = (placement.angle + Math.PI / 2) % (Math.PI * 2)
+            actualiserApercu()
+          },
+        },
+        { icone: '✖️', texte: 'Annuler', faire: () => fiche.fermer() },
+      ],
+    }
+  })
+  actualiserApercu()
+}
+creerDecorer({ dehors: () => lieux.actuel?.id === 'exterieur', poser: commencerPlacement })
 
 // 5) Les commandes : toucher le sol pour y aller, toucher un bâtiment pour y entrer,
 //    toucher un villageois pour lui parler.
@@ -173,7 +368,8 @@ function estVisible(objet) {
 
 /** Cherche, parmi les objets touchés par le rayon, le premier qui réagit au toucher. */
 function objetTouche() {
-  const touches = lanceRayon.intersectObjects(lieux.actuel.touchables, true)
+  const liste = animalCompagnon ? [...lieux.actuel.touchables, animalCompagnon.zone] : lieux.actuel.touchables
+  const touches = lanceRayon.intersectObjects(liste, true)
   const trouves = [] // [{ toucher, objet }] dans l'ordre (le plus proche de la caméra d'abord)
   for (const t of touches) {
     if (!estVisible(t.object)) continue
@@ -187,7 +383,7 @@ function objetTouche() {
   if (trouves.length === 0) return null
   // Des animaux ou des villageois serrés les uns contre les autres : on prend celui
   // dont le centre est le plus près de l'endroit exact où le doigt a touché.
-  const vivant = (t) => t.toucher.type === 'animal' || t.toucher.type === 'pnj'
+  const vivant = (t) => ['animal', 'pnj', 'compagnon'].includes(t.toucher.type)
   if (!vivant(trouves[0])) return trouves[0].toucher
   let meilleur = null
   let meilleureDistance = Infinity
@@ -205,10 +401,11 @@ function objetTouche() {
 const centreObjet = new THREE.Vector3()
 
 /** Fait marcher le personnage vers un point ; renvoie vrai si c'est possible. */
-function marcherVers(point, porte = null, siege = null) {
+function marcherVers(point, porte = null, siege = null, quandArrive = null) {
   const destination = personnage.allerVers(point)
   personnage.porteVisee = destination ? porte : null
   personnage.siegeVise = destination ? siege : null
+  personnage.quandArrive = destination ? quandArrive : null
   if (destination) {
     marqueur.montrer(destination)
     apresUnDeplacement()
@@ -228,7 +425,47 @@ entrees.surToucher((x, y) => {
   // … puis on lance un « rayon » depuis la caméra pour voir ce qu'il touche.
   lanceRayon.setFromCamera(pointEcran, camera)
 
+  // En train de poser une décoration : toucher le sol déplace l'aperçu.
+  if (placement.type) {
+    if (lanceRayon.ray.intersectPlane(planDuSol, pointSol)) {
+      placement.x = pointSol.x
+      placement.z = pointSol.z
+      actualiserApercu()
+    }
+    return
+  }
+
   const cible = objetTouche()
+  if (cible?.type === 'deco') {
+    // Une décoration posée : la tourner, la déplacer ou la ranger.
+    const d = cible.deco
+    const info = DECORATIONS[d.type]
+    fiche.ouvrir(() => {
+      if (!lieux.actuel.decorations || !(etat.d.decorations || []).includes(d)) return null
+      return {
+        icone: info.icone,
+        titre: info.nom,
+        lignes: [{ texte: 'Une jolie décoration 🌼', discret: true }],
+        actions: [
+          { icone: '↻', texte: 'Tourner', faire: () => tournerDecoration(d.n) },
+          {
+            icone: '✋',
+            texte: 'Déplacer',
+            faire: () => {
+              rangerDecoration(d.n)
+              commencerPlacement(d.type)
+              placement.x = d.x
+              placement.z = d.z
+              placement.angle = d.angle || 0
+              actualiserApercu()
+            },
+          },
+          { icone: '🎒', texte: 'Ranger dans le sac', faire: () => rangerDecoration(d.n) },
+        ],
+      }
+    })
+    return
+  }
   if (cible?.type === 'porte') {
     // Un bâtiment ou une sortie : on marche jusqu'à la porte, puis on la passe.
     const porte = cible.porte
@@ -272,7 +509,7 @@ entrees.surToucher((x, y) => {
     const animal = cible.animal
     animal.regarder(personnage.position.x, personnage.position.z)
     const lieuReserve = lieux.actuel.id === 'etable' ? 'de l’étable' : 'près de l’enclos'
-    fiche.ouvrir(ficheAnimal(animal, { bulles, joueur: personnage, lieuReserve }))
+    fiche.ouvrir(ficheAnimal(animal, { bulles, joueur: personnage, lieuReserve, renommer: renommerAnimal }))
     // On s'approche jusqu'à environ 1 mètre de l'animal.
     if (personnage.distanceA(animal.position) > 1.8) {
       const vers = new THREE.Vector3().subVectors(personnage.position, animal.position).setY(0).normalize()
@@ -280,6 +517,39 @@ entrees.surToucher((x, y) => {
     } else {
       personnage.regarderVers(animal.position.x, animal.position.z)
     }
+    return
+  }
+  if (cible?.type === 'compagnon') {
+    const c = cible.compagnon
+    fiche.ouvrir(
+      ficheCompagnon({
+        bulles,
+        joueur: personnage,
+        compagnon: c,
+        renommer: async () => {
+          const nom = await demanderTexte({ titre: `✏️ Un nouveau nom pour ${compagnon().nom} ?`, valeur: compagnon().nom, max: 14 })
+          if (nom) changerCompagnon('nom', nom)
+        },
+      })
+    )
+    if (!personnage.assis) personnage.regarderVers(c.position.x, c.position.z)
+    return
+  }
+  if (cible?.type === 'etang') {
+    fiche.ouvrir(descriptionPeche)
+    if (!peche.etape) allerPecher()
+    return
+  }
+  if (cible?.type === 'arbre') {
+    // Un arbre fruitier : la fiche s'ouvre et on s'en approche.
+    const verger = lieux.actuel.verger
+    fiche.ouvrir(ficheArbre(cible.arbre, { bulles, joueur: personnage, objet: cible.objet, surSecousse: () => verger?.secouer(cible.arbre.id) }))
+    allerSiLoin(cible.approche)
+    return
+  }
+  if (cible?.type === 'cuisine') {
+    fiche.ouvrir(ficheCuisine({ bulles, joueur: personnage }))
+    allerSiLoin(cible.approche)
     return
   }
   if (cible?.type === 'reserve') {
@@ -401,8 +671,15 @@ let joystickAffiche = null
 const SON_DE_L_ACTION = {
   planter: 'planter', arroser: 'arroser', recolter: 'recolter', ramasser: 'ramasser',
   nourrir: 'nourrir', caresser: 'caresser', livrer: 'pieces', vendre: 'pieces', oeuf: 'oeuf',
+  cueillir: 'cueillir', cuisiner: 'cuisiner', pecher: 'recolter',
 }
 ecouterActions((type) => SON_DE_L_ACTION[type] && jouer(SON_DE_L_ACTION[type]))
+// Une nouvelle découverte pour le carnet : le personnage le dit (un peu après le « +1 »).
+ecouterActions((type, details) => {
+  if (type !== 'decouverte') return
+  const o = infosObjet(details.id)
+  setTimeout(() => bulles.dire(personnage.modele, `Nouveau dans mon carnet 📖 ${o.icone} ${o.nom} !`), 1500)
+})
 surNouveauNiveau(() => setTimeout(() => jouer('niveau'), 1200))
 // Un petit « tic » pour les boutons de l'interface (ceux de la fiche ont déjà leur son).
 document.addEventListener('click', (e) => {
@@ -418,7 +695,9 @@ function appliquerReglagesImage() {
 appliquerReglagesImage()
 reglages.ecouter((nom) => {
   if (nom === 'ombres' || nom === 'economie') appliquerReglagesImage()
+  if (nom === 'cycleJour') appliquerCiel()
 })
+demarrerMusique()
 
 /** Note où se trouve le personnage dans la partie (avant une sauvegarde ou un export). */
 function noterPosition(d) {
@@ -464,7 +743,7 @@ const image = demarrerBoucle((dt) => {
     joystickAffiche = joystickVisible
     joystick.afficher(joystickVisible)
   }
-  let dir = entrees.directionClavier()
+  let dir = placement.type ? { x: 0, z: 0 } : entrees.directionClavier()
   if (dir.x === 0 && dir.z === 0 && joystickVisible) dir = joystick.direction()
   if ((dir.x !== 0 || dir.z !== 0) && !lieux.enTransition) {
     personnage.deplacerDirection(dir.x, dir.z, dt)
@@ -472,9 +751,14 @@ const image = demarrerBoucle((dt) => {
     apresUnDeplacement()
     lieux.verifierPortesClavier(dir)
   }
+  // La fiche « Poser » a été fermée : on abandonne le placement (la décoration reste dans le sac).
+  if (placement.type && !fiche.ouverte) finirPlacement()
   personnage.miseAJour(dt)
+  peche.miseAJour(dt, personnage)
+  animalCompagnon?.miseAJour(dt, personnage)
   lieux.miseAJour(dt)
   marqueur.miseAJour(dt)
+  zoomer(fenetrePerso.ouverte ? 0.42 : 1) // la caméra s'approche pour bien voir le personnage
   suivre(limiterCamera(personnage.position), dt)
   suivreSoleil(personnage.position)
   renderer.render(scene, camera)
@@ -488,6 +772,7 @@ const image = demarrerBoucle((dt) => {
     avancerTous()
     suivreCommandes()
     verifierCalendrier()
+    appliquerCiel()
   }
 })
 
@@ -496,9 +781,13 @@ const ou = etat.d.joueur
 lieux
   .demarrer(ou ? ou.lieu : 'exterieur', ou ? { x: ou.x, z: ou.z, angle: 0 } : 'depart')
   .then(() => {
+    actualiserCompagnon()
     renderer.setAnimationLoop(image)
     interfaceJeu.finChargement()
     if (partie.message) bulles.dire(personnage.modele, partie.message)
+    // Nouvelle partie : on commence par choisir son prénom et son allure.
+    // (window.__sansAccueil : seulement pour les tests automatiques.)
+    if (!etat.d.perso.choisi && !window.__sansAccueil) setTimeout(() => fenetrePerso.ouvrir({ accueil: true }), 600)
     // La sauvegarde automatique note aussi où se trouve le personnage.
     demarrerSauvegardeAuto(
       noterPosition,
@@ -516,7 +805,10 @@ activerModeHorsLigne()
 
 // Accès pratique pour les tests automatiques (sans effet sur le jeu).
 window.__jeu = {
-  personnage, lieux, camera, bulles, etat, fiche, boutique, verifierCalendrier, renderer, reglages,
+  personnage, lieux, camera, bulles, etat, fiche, boutique, verifierCalendrier, renderer, reglages, fenetrePerso, ciel, appliquerCiel,
+  get compagnon() {
+    return animalCompagnon
+  },
   /** Ce qui se trouve sous un point de l'écran (pour les tests). */
   quoiSous(x, y) {
     pointEcran.set((x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1)
