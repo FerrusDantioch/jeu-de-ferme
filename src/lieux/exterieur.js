@@ -32,6 +32,7 @@ import { creerLueur } from '../monde/ciel.js'
 import { habillerSaison } from '../monde/saisons.js'
 import { creerChute } from '../monde/chute.js'
 import { creerPetitesBetes } from '../monde/petites-betes.js'
+import { creerVerger } from '../monde/verger.js'
 import { saisonDuJour } from '../jeu/temps.js'
 import { animationsReduites } from '../jeu/reglages.js'
 
@@ -184,6 +185,11 @@ export function creerLieu(outils) {
   // On colle tout ce qui ne bouge pas en un seul bloc (une pièce par couleur).
   groupe.add(fusionnerParMateriau(statique))
 
+  // --- Le verger (arbres fruitiers) : son feuillage suit les saisons comme les autres arbres ---
+  const verger = creerVerger({
+    groupe, grille, touchables, feuillage: terrain.feuillages.material, haut: terrain.hauts.material,
+  })
+
   // --- Les fleurs (après les obstacles, pour ne pas en semer dans les murs) ---
   terrain.fleurs = semerFleurs(groupe, grille)
 
@@ -213,7 +219,10 @@ export function creerLieu(outils) {
     zMax: ENCLOS.z + ENCLOS.profondeur / 2 - m,
   }
   const animaux = creerAnimauxDuLieu('exterieur', () => zoneEnclos, { groupe, touchables, pastilles: outils.pastilles })
-  const animer = animerAnimaux(animaux, () => potager.actualiser())
+  const animer = animerAnimaux(animaux, () => {
+    potager.actualiser()
+    verger.actualiser()
+  })
 
   // --- Décorations de fête (changent selon le calendrier, même en pleine partie) ---
   // On garde une copie des obstacles « sans décoration » pour pouvoir les retirer proprement.
@@ -246,8 +255,10 @@ export function creerLieu(outils) {
     pnj,
     animaux,
     potager,
+    verger,
     miseAJour(dt, joueur) {
       animer(dt)
+      verger.miseAJour(dt)
       // Une fois par seconde : la saison a-t-elle changé (minuit, mode test, réglages) ?
       compteurSaison += dt
       if (compteurSaison > 1) {

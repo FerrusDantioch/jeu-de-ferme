@@ -83,6 +83,14 @@ const SONS = {
     note(1318.5, 0, 0.08, { type: 'triangle', force: 0.35 })
     note(1760, 0.07, 0.18, { type: 'triangle', force: 0.35 })
   },
+  cueillir: () => {
+    // Des fruits qui tombent : petites notes qui descendent.
+    for (let k = 0; k < 3; k++) note(MI * 2 - k * 120, k * 0.08, 0.1, { force: 0.3 })
+  },
+  cuisiner: () => {
+    note(SOL, 0, 0.12, { type: 'triangle', force: 0.35 })
+    note(DO2, 0.1, 0.25, { type: 'triangle', force: 0.35 })
+  },
   asseoir: () => note(440, 0, 0.25, { type: 'triangle', glisse: 330, force: 0.3 }),
   porte: () => note(220, 0, 0.35, { type: 'triangle', glisse: 165, force: 0.3 }),
   quete: () => [DO, MI, SOL].forEach((f, k) => note(f, k * 0.1, 0.22, { force: 0.45 })),

@@ -9,6 +9,8 @@
  */
 import { CLIENTS, DELAI_NOUVELLE_COMMANDE, PREMIERE_COMMANDE, RECOMPENSE } from '../donnees/commandes.js'
 import { GRAINES_EN_VENTE, PRIX_DE_VENTE } from '../donnees/economie.js'
+import { FRUITS } from '../donnees/vergers.js'
+import { RECETTES } from '../donnees/recettes.js'
 import { ESPECES } from '../donnees/animaux.js'
 import { etat } from './etat.js'
 import { quantite, retirer } from './inventaire.js'
@@ -24,7 +26,13 @@ function articlesPossibles() {
   const cultures = Object.entries(GRAINES_EN_VENTE).filter(([, g]) => g.niveau <= n).map(([id]) => id)
   const especes = new Set(etat.d.animaux.map((a) => a.espece))
   const produits = [...especes].map((e) => ESPECES[e].produit)
-  return { cultures, produits }
+  const fruits = Object.keys(FRUITS)
+  // Les plats (à partir du niveau 3), seulement si tous leurs ingrédients sont possibles.
+  const possibles = new Set([...cultures, ...produits, ...fruits])
+  const plats = n >= 3
+    ? Object.entries(RECETTES).filter(([, r]) => Object.keys(r.ingredients).every((i) => possibles.has(i))).map(([id]) => id)
+    : []
+  return { cultures, produits, fruits, plats }
 }
 
 /** Calcule la récompense d'une liste d'articles. */
@@ -39,8 +47,9 @@ function recompense(articles) {
 /** Invente une nouvelle commande. */
 function inventerCommande() {
   const n = niveau()
-  const { cultures, produits } = articlesPossibles()
-  const choix = [...cultures, ...produits]
+  const { cultures, produits, fruits, plats } = articlesPossibles()
+  // Un plat est demandé de temps en temps seulement (une commande sur quatre).
+  const choix = [...cultures, ...produits, ...fruits, ...(Math.random() < 0.25 ? plats : [])]
   // 1 article au début, parfois 2 à partir du niveau 3, parfois 3 à partir du niveau 5.
   let nbArticles = 1
   if (n >= 3 && Math.random() < 0.5) nbArticles++
@@ -51,7 +60,9 @@ function inventerCommande() {
     const id = choix[Math.floor(Math.random() * choix.length)]
     if (articles.some((a) => a.id === id)) continue
     const estProduit = produits.includes(id)
-    const max = estProduit ? 1 + (n >= 4 ? 1 : 0) : Math.min(6, 2 + Math.floor(n / 3))
+    let max = estProduit ? 1 + (n >= 4 ? 1 : 0) : Math.min(6, 2 + Math.floor(n / 3))
+    if (fruits.includes(id)) max = Math.min(3, max)
+    if (plats.includes(id)) max = 1
     articles.push({ id, n: entier(1, max) })
   }
   return { articles, ...recompense(articles) }

@@ -22,7 +22,9 @@ import { creerSac } from './ui/sac.js'
 import { etat } from './jeu/etat.js'
 import { chargerPartie, demarrerSauvegardeAuto } from './jeu/sauvegarde.js'
 import { avancerTous } from './jeu/elevage.js'
-import { ficheParcelle, ficheAnimal, ficheReserve, ficheCommandes, ficheCompagnon } from './jeu/fiches.js'
+import {
+  ficheParcelle, ficheAnimal, ficheReserve, ficheCommandes, ficheCompagnon, ficheArbre, ficheCuisine,
+} from './jeu/fiches.js'
 import * as commandes from './jeu/commandes.js'
 import { creerBoutique } from './ui/boutique.js'
 import { creerProgression } from './ui/progression.js'
@@ -346,6 +348,18 @@ entrees.surToucher((x, y) => {
     if (!personnage.assis) personnage.regarderVers(c.position.x, c.position.z)
     return
   }
+  if (cible?.type === 'arbre') {
+    // Un arbre fruitier : la fiche s'ouvre et on s'en approche.
+    const verger = lieux.actuel.verger
+    fiche.ouvrir(ficheArbre(cible.arbre, { bulles, joueur: personnage, objet: cible.objet, surSecousse: () => verger?.secouer(cible.arbre.id) }))
+    allerSiLoin(cible.approche)
+    return
+  }
+  if (cible?.type === 'cuisine') {
+    fiche.ouvrir(ficheCuisine({ bulles, joueur: personnage }))
+    allerSiLoin(cible.approche)
+    return
+  }
   if (cible?.type === 'reserve') {
     fiche.ouvrir(ficheReserve({ bulles, joueur: personnage }))
     allerSiLoin(cible.approche)
@@ -465,6 +479,7 @@ let joystickAffiche = null
 const SON_DE_L_ACTION = {
   planter: 'planter', arroser: 'arroser', recolter: 'recolter', ramasser: 'ramasser',
   nourrir: 'nourrir', caresser: 'caresser', livrer: 'pieces', vendre: 'pieces', oeuf: 'oeuf',
+  cueillir: 'cueillir', cuisiner: 'cuisiner',
 }
 ecouterActions((type) => SON_DE_L_ACTION[type] && jouer(SON_DE_L_ACTION[type]))
 surNouveauNiveau(() => setTimeout(() => jouer('niveau'), 1200))

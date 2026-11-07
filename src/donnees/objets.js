@@ -2,15 +2,19 @@
  * objets.js — tout ce qui peut aller dans le sac (l'inventaire).
  *
  * Pour chaque objet : son nom, son icône (un emoji) et sa catégorie
- * ('graine', 'recolte', 'produit' ou 'nourriture').
+ * ('graine', 'recolte', 'fruit', 'produit', 'plat' ou 'nourriture').
  * Les graines et les récoltes sont créées automatiquement d'après src/donnees/cultures.js.
  */
 import { CULTURES } from './cultures.js'
+import { FRUITS } from './vergers.js'
+import { RECETTES } from './recettes.js'
 
 export const CATEGORIES = [
   { id: 'graine', titre: '🌱 Graines' },
   { id: 'recolte', titre: '🧺 Récoltes' },
+  { id: 'fruit', titre: '🍎 Fruits du verger' },
   { id: 'produit', titre: '🥚 Produits des animaux' },
+  { id: 'plat', titre: '🍽️ Plats cuisinés' },
   { id: 'nourriture', titre: '🌾 Nourriture des animaux' },
 ]
 
@@ -29,6 +33,10 @@ for (const [id, c] of Object.entries(CULTURES)) {
   OBJETS[`graine-${id}`] = { nom: `Graine de ${c.nomCourt}`, icone: c.icone, categorie: 'graine', culture: id }
   OBJETS[id] = { nom: c.nom, icone: c.icone, categorie: 'recolte' }
 }
+
+// Les fruits du verger et les plats cuisinés.
+for (const [id, f] of Object.entries(FRUITS)) OBJETS[id] = { nom: f.nom, icone: f.icone, categorie: 'fruit' }
+for (const [id, r] of Object.entries(RECETTES)) OBJETS[id] = { nom: r.nom, icone: r.icone, categorie: 'plat' }
 
 /** Nom et icône d'un objet (même s'il est inconnu, pour ne jamais planter le jeu). */
 export function infosObjet(id) {

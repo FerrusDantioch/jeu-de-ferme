@@ -5,6 +5,8 @@
  * expérience gagnée, niveau nécessaire pour débloquer une graine ou un animal.
  */
 
+import { RECETTES } from './recettes.js'
+
 // Pièces au début du jeu.
 export const PIECES_DE_DEPART = 30
 
@@ -44,7 +46,14 @@ export const PRIX_DE_VENTE = {
   oeuf: 5,
   lait: 9,
   laine: 14,
+  // Fruits du verger.
+  pomme: 4,
+  poire: 5,
+  cerise: 6,
+  peche: 6,
 }
+// Les plats cuisinés : leur prix est écrit dans src/donnees/recettes.js.
+for (const [id, r] of Object.entries(RECETTES)) PRIX_DE_VENTE[id] = r.prix
 
 // Expérience (⭐) gagnée.
 export const EXPERIENCE = {
@@ -52,6 +61,8 @@ export const EXPERIENCE = {
   recolte: { salade: 2, carotte: 3, fraise: 4, tomate: 6, mais: 8, citrouille: 12 },
   ramasser: 2, // ramasser un œuf, du lait, de la laine
   nourrir: 1, // donner à manger à un animal qui a faim
+  cueillir: 1, // par fruit cueilli
+  cuisiner: 6, // par plat cuisiné
 }
 
 /**

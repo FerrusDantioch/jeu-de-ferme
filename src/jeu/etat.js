@@ -18,6 +18,7 @@ import { POTAGER } from '../donnees/ferme.js'
 import { PIECES_DE_DEPART } from '../donnees/economie.js'
 import { CLIENTS } from '../donnees/commandes.js'
 import { APPARENCE_DE_DEPART } from '../donnees/apparence.js'
+import { FRUITS, FRUITS_MAXIMUM, ARBRES_FRUITIERS } from '../donnees/vergers.js'
 
 // Numéro de version du format de sauvegarde (à augmenter si on change sa forme).
 export const VERSION_SAUVEGARDE = 1
@@ -25,6 +26,13 @@ export const VERSION_SAUVEGARDE = 1
 /** Une parcelle vide. */
 function parcelleVide() {
   return { culture: null, progression: 0, derniereMaj: 0, humideJusqua: 0 }
+}
+
+/** Les arbres fruitiers au début : déjà pleins de fruits (un cadeau de bienvenue). */
+function arbresDeDepart(maintenant) {
+  return Object.fromEntries(
+    ARBRES_FRUITIERS.map((a) => [a.id, { depuis: maintenant - FRUITS[a.fruit].minutes * 60000 * FRUITS_MAXIMUM }])
+  )
 }
 
 /** Les données d'une toute nouvelle partie. */
@@ -58,7 +66,13 @@ export function nouvellePartie(maintenant = Date.now()) {
     quetes: { jour: null, liste: [] },
     // Chasse aux œufs de Pâques : œufs trouvés aujourd'hui.
     oeufsDePaques: { jour: null, trouves: [] },
-    stats: { recoltes: 0, produitsRamasses: 0, commandesLivrees: 0, piecesGagnees: 0, quetesReussies: 0 },
+    // Le verger : depuis quand les fruits poussent sur chaque arbre (voir verger.js).
+    arbres: arbresDeDepart(maintenant),
+    // Le compagnon (chat ou chien), adopté chez Lila : null au début.
+    compagnon: null,
+    stats: {
+      recoltes: 0, produitsRamasses: 0, commandesLivrees: 0, piecesGagnees: 0, quetesReussies: 0, fruits: 0, plats: 0,
+    },
   }
 }
 
@@ -79,6 +93,7 @@ export function completer(donnees) {
     apparence: { ...APPARENCE_DE_DEPART, ...(donnees.perso?.apparence || {}) },
   }
   d.commandes = { ...(donnees.commandes || {}) }
+  d.arbres = { ...neuf.arbres, ...(donnees.arbres || {}) }
   d.prochainesCommandes = { ...neuf.prochainesCommandes, ...(donnees.prochainesCommandes || {}) }
   // Parcelles : on garde les anciennes, on ajoute les nouvelles s'il y en a plus.
   const parcelles = Array.isArray(donnees.parcelles) ? donnees.parcelles : []
