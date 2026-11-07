@@ -37,8 +37,16 @@ const GUIDE = `
     <li>🌱 <strong>Potager</strong> : touchez une parcelle pour planter, arroser (facultatif) et récolter. Les plantes poussent même quand le jeu est fermé.</li>
     <li>🐔 <strong>Animaux</strong> : touchez-les pour les nourrir, les caresser et ramasser œufs, lait et laine. Le foin et le grain sont gratuits dans les réserves.</li>
     <li>📋 <strong>Commandes</strong> : les villageois avec un 📋 attendent quelque chose. Livrez-les (ou passez par le tableau des commandes). Pas de limite de temps !</li>
-    <li>🧺 <strong>Boutique</strong> : touchez Lila pour acheter des graines, adopter des animaux ou vendre.</li>
+    <li>🧺 <strong>Boutique</strong> : touchez Lila pour acheter des graines et des décorations, adopter des animaux, un chat ou un chien (gratuit), ou vendre.</li>
+    <li>🍎 <strong>Verger</strong> : à droite de l’étable, touchez un arbre pour le secouer et cueillir ses fruits.</li>
+    <li>🍳 <strong>Cuisine</strong> : dans la maison, touchez la cuisine pour préparer de bons plats.</li>
+    <li>🎣 <strong>Pêche</strong> : touchez l’étang. Quand ça mord, le poisson attend : remontez la ligne quand vous voulez.</li>
+    <li>🌼 <strong>Décorer</strong> : dans 🎒 Mon sac, « Décorer la ferme », puis touchez l’herbe là où poser la décoration.</li>
+    <li>📖 <strong>Carnet</strong> : tout ce que vous avez récolté, pêché et cuisiné (dans 🎒 Mon sac).</li>
+    <li>👤 <strong>Mon personnage</strong> : prénom, coiffure, tenue… et votre compagnon.</li>
+    <li>🪑 <strong>S’asseoir</strong> : touchez un banc ou une chaise.</li>
     <li>📜 <strong>Quêtes</strong> : 3 petites missions chaque jour, renouvelées à minuit.</li>
+    <li>🌙 Le jour, la nuit et les saisons suivent l’heure et la date du téléphone (réglables ci-dessus).</li>
     <li>💾 La partie est <strong>sauvegardée toute seule</strong>.</li>
   </ul>
   <p class="discret">Rien ne presse, rien ne se perd : prenez votre temps. 🌷</p>`

@@ -311,6 +311,57 @@
 | La place et l'orientation des bancs       | `src/donnees/ferme.js`      |
 | Les phrases dites en s'asseyant           | `src/monde/sieges.js`       |
 
+## ✅ Grande mise à jour — version 1.2.0
+
+### Ce qui est fait
+1. **👤 Mon personnage** (nouveau bouton en haut) : prénom, couleur de peau, couleur des
+   cheveux, 6 coiffures, 4 tenues, couleurs des vêtements, chapeau de paille, casquette,
+   foulard ou fleur, et un bouton 🎲 « Au hasard ». Le personnage change en direct, la caméra
+   s'approche pour bien le voir. La fenêtre s'ouvre toute seule au début d'une nouvelle partie.
+   Les villageois disent bonjour avec le prénom (« Bonjour Camille ! »).
+2. **Prénoms des animaux** : bouton ✏️ « Changer son nom » dans la fiche de chaque animal.
+3. **Saisons selon la vraie date** : arbres en fleurs roses et pétales au printemps, tout vert
+   l'été, feuillage roux et feuilles qui tombent l'automne, neige et flocons l'hiver.
+4. **Jour et nuit selon l'heure du téléphone** : aube rose, coucher de soleil orangé, nuit
+   bleutée (toujours lisible). Le soir, les fenêtres et 6 nouveaux lampadaires s'allument.
+5. **Papillons** le jour et **lucioles** le soir (pas en hiver).
+6. **Musique douce** fabriquée par le code, plus lente le soir (Réglages → Musique).
+7. **Compagnon** : un chat ou un chien, adopté gratuitement chez Lila. Il suit le personnage,
+   passe les portes avec lui, s'assoit sur le banc à côté de lui, et adore les caresses.
+   Nom, pelage et espèce se changent dans 👤.
+8. **Verger** (à droite de l'étable) : pommier, poirier, cerisier, pêcher. Les fruits poussent
+   tout seuls ; on secoue l'arbre pour les cueillir.
+9. **Cuisine** (dans la maison) : 11 recettes (omelette, tarte aux pommes, clafoutis…).
+   Instantané, rien ne brûle. Les plats se vendent bien et les villageois en commandent parfois.
+10. **Pêche** à l'étang : 10 prises (selon la saison et l'heure, dont une très rare). Quand ça
+    mord, le poisson attend : pas de limite de temps, on ne rate jamais.
+11. **📖 Carnet de collection** (dans 🎒 Mon sac et ⭐ Ma progression) : tout ce qu'on a
+    récolté, cueilli, pêché, ramassé et cuisiné, avec des indices pour ce qui manque.
+12. **🌼 Décorer la ferme** : 12 décorations chez Lila (massif de fleurs, rosier, nain de
+    jardin, lanterne qui brille le soir, banc où s'asseoir, arche sous laquelle on passe,
+    fontaine…). On les pose où l'on veut dehors, on peut les tourner, les déplacer, les ranger.
+13. **Nouvelles quêtes du jour** : cueillir, cuisiner, pêcher.
+14. **Nouveaux réglages** : musique, jour et nuit (selon l'heure / toujours le jour / toujours
+    la nuit), saison (selon la date ou au choix).
+
+### Vérifications faites
+- Un test automatique par nouveauté (personnage, saisons et nuit, compagnon, verger et
+  cuisine, pêche et carnet, décorations), dans un téléphone simulé.
+- Tous les anciens tests (jalons 2 à 6, s'asseoir) relancés : tout passe, aucune erreur.
+- Les anciennes parties se chargent sans rien perdre (on y ajoute ce qui manque).
+
+### Où modifier quoi
+| Je veux changer…                                   | Fichier                         |
+|----------------------------------------------------|---------------------------------|
+| Couleurs, coiffures, tenues du personnage          | `src/donnees/apparence.js`      |
+| Chat / chien : noms, pelages, phrases              | `src/donnees/compagnons.js`     |
+| Fruits et place des arbres du verger               | `src/donnees/vergers.js`        |
+| Recettes de cuisine                                | `src/donnees/recettes.js`       |
+| Poissons (chances, saisons, prix)                  | `src/donnees/poissons.js`       |
+| Décorations (prix, niveaux)                        | `src/donnees/decorations.js`    |
+| Couleurs des saisons                               | `src/monde/saisons.js`          |
+| Couleurs du ciel selon l'heure                     | `src/monde/ciel.js`             |
+
 ## 🚀 Mise en ligne (GitHub Pages)
 Le jeu est en ligne : https://ferrusdantioch.github.io/jeu-de-ferme/
 Le fichier `.github/workflows/publication.yml` le republie à chaque mise à jour de `main`.
