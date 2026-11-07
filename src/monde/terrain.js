@@ -55,7 +55,8 @@ export function creerTerrain(groupe, grille, statique = groupe) {
     if (Math.abs(x) > demi + 1 || Math.abs(z) > demi + 1) pos.setY(k, alea() * 0.8)
   }
   geoSol.computeVertexNormals()
-  const sol = new THREE.Mesh(geoSol, materiau(PALETTE.herbe))
+  // (Peinture propre au sol, car sa couleur change avec les saisons.)
+  const sol = new THREE.Mesh(geoSol, materiau(PALETTE.herbe).clone())
   sol.receiveShadow = true
   sol.name = 'sol'
   groupe.add(sol)
@@ -75,8 +76,9 @@ export function creerTerrain(groupe, grille, statique = groupe) {
   const geoFeuillage = new THREE.IcosahedronGeometry(1.1, 0).translate(0, 2.0, 0)
   const geoFeuillageHaut = new THREE.IcosahedronGeometry(0.75, 0).translate(0.15, 2.8, 0.1)
   const troncs = new THREE.InstancedMesh(geoTronc, materiau(PALETTE.tronc), ARBRES.length)
-  const feuillages = new THREE.InstancedMesh(geoFeuillage, materiau(PALETTE.feuillage), ARBRES.length)
-  const hauts = new THREE.InstancedMesh(geoFeuillageHaut, materiau(PALETTE.feuillageClair), ARBRES.length)
+  // Les feuillages ont leur propre peinture : elle change avec les saisons.
+  const feuillages = new THREE.InstancedMesh(geoFeuillage, materiau(PALETTE.feuillage).clone(), ARBRES.length)
+  const hauts = new THREE.InstancedMesh(geoFeuillageHaut, materiau(PALETTE.feuillageClair).clone(), ARBRES.length)
   ARBRES.forEach(([x, z], n) => {
     const e = 0.85 + alea() * 0.4
     q.setFromAxisAngle(axeY, alea() * Math.PI * 2)
@@ -146,7 +148,7 @@ export function creerTerrain(groupe, grille, statique = groupe) {
   // --- Touffes d'herbe (pur décor, pas d'obstacle) ---
   const nbTouffes = 70
   const geoTouffe = new THREE.ConeGeometry(0.12, 0.35, 4).translate(0, 0.17, 0)
-  const touffes = new THREE.InstancedMesh(geoTouffe, materiau(PALETTE.herbeFoncee), nbTouffes)
+  const touffes = new THREE.InstancedMesh(geoTouffe, materiau(PALETTE.herbeFoncee).clone(), nbTouffes)
   for (let n = 0; n < nbTouffes; n++) {
     let x, z
     do {
@@ -161,7 +163,8 @@ export function creerTerrain(groupe, grille, statique = groupe) {
   }
   groupe.add(touffes)
 
-  return sol
+  // Ce qui change de couleur avec les saisons (voir saisons.js).
+  return { sol, feuillages, hauts, touffes }
 }
 
 /**
@@ -187,7 +190,9 @@ export function semerFleurs(groupe, grille) {
     placees++
   }
   const toutes = parCouleur.flat()
+  const fleursEtTiges = [] // renvoyées pour pouvoir les cacher en hiver
   const tiges = new THREE.InstancedMesh(geoTige, materiau(PALETTE.herbeFoncee), toutes.length)
+  fleursEtTiges.push(tiges)
   toutes.forEach(([x, z], n) => {
     tiges.setMatrixAt(n, m.makeTranslation(x, 0, z))
   })
@@ -197,5 +202,7 @@ export function semerFleurs(groupe, grille) {
     const fleurs = new THREE.InstancedMesh(geoFleur, materiau(couleur), liste.length)
     liste.forEach(([x, z], n) => fleurs.setMatrixAt(n, m.makeTranslation(x, 0, z)))
     groupe.add(fleurs)
+    fleursEtTiges.push(fleurs)
   })
+  return fleursEtTiges
 }

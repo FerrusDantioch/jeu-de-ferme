@@ -77,3 +77,17 @@ export const PALETTE = {
   tomate: 0xe8554e,
   chou: 0x9ad07a,
 }
+
+// --- Les vitres : elles ont leur propre peinture, pour pouvoir s'allumer la nuit ---
+// (le soir, les fenêtres des maisons brillent d'une lumière chaude ; vues de l'intérieur,
+// elles deviennent bleu nuit). « aPart » : ces pièces ne sont pas mélangées aux autres
+// lors de l'optimisation (voir fusion.js).
+export const MATERIAU_VITRE = new THREE.MeshLambertMaterial({
+  color: PALETTE.vitre,
+  flatShading: true,
+  emissive: 0xffc46b,
+  emissiveIntensity: 0,
+})
+MATERIAU_VITRE.userData.aPart = true
+export const MATERIAU_VITRE_INTERIEURE = new THREE.MeshLambertMaterial({ color: PALETTE.vitre, flatShading: true })
+MATERIAU_VITRE_INTERIEURE.userData.aPart = true

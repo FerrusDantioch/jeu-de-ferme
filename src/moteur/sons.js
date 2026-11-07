@@ -94,6 +94,11 @@ const SONS = {
   },
 }
 
+/** Le « contexte audio » (null tant que le joueur n'a pas encore touché l'écran). */
+export function contexteAudio() {
+  return contexte
+}
+
 /** Joue un son du catalogue (si les sons sont activés). */
 export function jouer(nom) {
   if (!reglages.get('son') || !contexte || contexte.state !== 'running') return

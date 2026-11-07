@@ -45,6 +45,8 @@ import { activerModeHorsLigne } from './pwa.js'
 import { creerFenetrePerso } from './ui/perso.js'
 import { demanderTexte } from './ui/saisie.js'
 import { surChangementApparence } from './jeu/perso.js'
+import { creerCiel } from './monde/ciel.js'
+import { demarrerMusique } from './moteur/musique.js'
 
 // 0) On reprend la partie enregistrée sur le téléphone (ou on en commence une nouvelle).
 const partie = chargerPartie()
@@ -54,7 +56,10 @@ avancerTous() // les animaux ont vécu pendant que le jeu était fermé
 
 // 1) Le dessinateur 3D, la scène et la caméra.
 const conteneur = document.getElementById('scene3d')
-const { renderer, scene, suivreSoleil, changerAmbiance, appliquerQualite } = creerRendu(conteneur)
+const { renderer, scene, soleil, lumiereAmbiante, suivreSoleil, changerAmbiance, appliquerQualite } = creerRendu(conteneur)
+// Le jour et la nuit (selon l'heure du téléphone) : couleurs du ciel, fenêtres et lampadaires allumés le soir.
+const ciel = creerCiel({ scene, soleil, lumiereAmbiante })
+const appliquerCiel = () => lieux?.actuel && ciel.appliquer(lieux.actuel.id === 'exterieur')
 const { camera, placerSur, suivre, adapterTaille, zoomer } = creerCamera()
 adapterTaille(window.innerWidth, window.innerHeight)
 
@@ -139,11 +144,12 @@ const lieux = creerGestionnaireLieux({
   fondu,
   bulles,
   marqueur,
-  outils: { bulles, pastilles },
+  outils: { bulles, pastilles, ciel },
   surChangement(lieu) {
     if (interfaceJeu.lieuDejaAffiche) jouer('porte')
     interfaceJeu.lieuDejaAffiche = true
     interfaceJeu.montrerLieu(lieu.titre)
+    ciel.appliquer(lieu.id === 'exterieur')
     fiche.fermer()
     if (lieu.id !== 'exterieur' && !dejaEntre) {
       dejaEntre = true
@@ -444,7 +450,9 @@ function appliquerReglagesImage() {
 appliquerReglagesImage()
 reglages.ecouter((nom) => {
   if (nom === 'ombres' || nom === 'economie') appliquerReglagesImage()
+  if (nom === 'cycleJour') appliquerCiel()
 })
+demarrerMusique()
 
 /** Note où se trouve le personnage dans la partie (avant une sauvegarde ou un export). */
 function noterPosition(d) {
@@ -515,6 +523,7 @@ const image = demarrerBoucle((dt) => {
     avancerTous()
     suivreCommandes()
     verifierCalendrier()
+    appliquerCiel()
   }
 })
 
@@ -546,7 +555,7 @@ activerModeHorsLigne()
 
 // Accès pratique pour les tests automatiques (sans effet sur le jeu).
 window.__jeu = {
-  personnage, lieux, camera, bulles, etat, fiche, boutique, verifierCalendrier, renderer, reglages, fenetrePerso,
+  personnage, lieux, camera, bulles, etat, fiche, boutique, verifierCalendrier, renderer, reglages, fenetrePerso, ciel, appliquerCiel,
   /** Ce qui se trouve sous un point de l'écran (pour les tests). */
   quoiSous(x, y) {
     pointEcran.set((x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1)

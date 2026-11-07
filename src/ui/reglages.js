@@ -2,7 +2,8 @@
  * reglages.js (interface) — la fenêtre ⚙️ « Réglages ».
  *
  * On y trouve :
- *  - les sons (activés ou coupés, volume) ;
+ *  - les sons et la musique (activés ou coupés, volume) ;
+ *  - le jour et la nuit, la saison ;
  *  - le joystick à l'écran ;
  *  - la taille du texte ;
  *  - réduire les animations ;
@@ -17,9 +18,12 @@ import { creerFenetre, echapper } from './fenetre.js'
 // Les choix proposés : [nom du réglage, titre, [[valeur, texte], …]].
 const CHOIX = [
   ['son', '🔊 Sons', [[true, 'Activés'], [false, 'Coupés']]],
+  ['musique', '🎵 Musique', [[true, 'Oui'], [false, 'Non']]],
   ['volume', '🔉 Volume', [['doux', 'Doux'], ['moyen', 'Moyen'], ['fort', 'Fort']]],
   ['joystick', '🕹️ Joystick à l’écran', [[false, 'Non'], [true, 'Oui']]],
   ['tailleTexte', '🔠 Taille du texte', [['normale', 'Normale'], ['grande', 'Grande'], ['tresGrande', 'Très grande']]],
+  ['cycleJour', '🌙 Jour et nuit', [['auto', 'Selon l’heure'], ['jour', 'Toujours le jour'], ['nuit', 'Toujours la nuit']]],
+  ['saison', '🍂 Saison', [['auto', 'Selon la date'], ['printemps', '🌸 Printemps'], ['ete', '☀️ Été'], ['automne', '🍂 Automne'], ['hiver', '❄️ Hiver']]],
   ['animationsReduites', '🌀 Animations', [[false, 'Normales'], [true, 'Réduites']]],
   ['ombres', '🌗 Ombres', [[true, 'Oui'], [false, 'Non']]],
   ['economie', '🔋 Mode économie', [[false, 'Non'], [true, 'Oui']]],
@@ -120,7 +124,7 @@ export function creerReglages({ barre, ouvrirAPropos, avantExport }) {
       if (nom === 'animationsReduites' && (actuelle === null || actuelle === undefined)) {
         actuelle = window.matchMedia('(prefers-reduced-motion: reduce)').matches
       }
-      const desactive = nom === 'volume' && !reglages.get('son')
+      const desactive = nom === 'volume' && !reglages.get('son') && !reglages.get('musique')
       const boutons = options
         .map(([valeur, texte]) => {
           const choisi = actuelle === valeur

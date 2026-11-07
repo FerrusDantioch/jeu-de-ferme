@@ -3,7 +3,7 @@
  * puits, banc, panneau, étang, enclos, carré de potager.
  */
 import * as THREE from 'three'
-import { materiau, PALETTE } from './materiaux.js'
+import { materiau, PALETTE, MATERIAU_VITRE } from './materiaux.js'
 import { boite, boule, cylindre, toitDeuxPans } from './formes.js'
 import { panneauTexte } from './batiments.js'
 import { creerBotteDeFoin, creerSac } from './mobilier.js'
@@ -30,6 +30,21 @@ export function creerBanc() {
   for (const x of [-0.65, 0.65]) {
     g.add(boite(0.1, 0.42, 0.4, PALETTE.boisFonce, x, 0, 0))
   }
+  return g
+}
+
+/** Un lampadaire en bois avec une lanterne (elle s'allume le soir). */
+export function creerLampadaire() {
+  const g = new THREE.Group()
+  g.add(cylindre(0.08, 1.9, PALETTE.boisFonce, 0, 0, 0, 6))
+  g.add(boite(0.42, 0.06, 0.06, PALETTE.boisFonce, 0.14, 1.86, 0)) // le bras
+  const lanterne = new THREE.Group()
+  lanterne.position.set(0.3, 1.5, 0)
+  lanterne.add(boite(0.24, 0.3, 0.24, MATERIAU_VITRE, 0, 0, 0)) // la vitre (s'allume le soir)
+  lanterne.add(boite(0.3, 0.05, 0.3, PALETTE.noir, 0, 0.3, 0))
+  lanterne.add(boite(0.28, 0.04, 0.28, PALETTE.noir, 0, -0.02, 0))
+  lanterne.add(boite(0.03, 0.06, 0.03, PALETTE.noir, 0, 0.35, 0))
+  g.add(lanterne)
   return g
 }
 

@@ -97,5 +97,5 @@ export function creerRendu(conteneur) {
     }
   }
 
-  return { renderer, scene, soleil, suivreSoleil, changerAmbiance, appliquerQualite }
+  return { renderer, scene, soleil, lumiereAmbiante, suivreSoleil, changerAmbiance, appliquerQualite }
 }

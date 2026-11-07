@@ -10,7 +10,9 @@ import { materiau } from './materiaux.js'
  * (x, y, z) = position du BAS de la boîte, au centre.
  */
 export function boite(l, h, p, couleur, x = 0, y = 0, z = 0) {
-  const m = new THREE.Mesh(new THREE.BoxGeometry(l, h, p), materiau(couleur))
+  // « couleur » peut aussi être directement une peinture (ex. : celle des vitres).
+  const peinture = couleur?.isMaterial ? couleur : materiau(couleur)
+  const m = new THREE.Mesh(new THREE.BoxGeometry(l, h, p), peinture)
   m.position.set(x, y + h / 2, z)
   m.castShadow = true
   m.receiveShadow = true

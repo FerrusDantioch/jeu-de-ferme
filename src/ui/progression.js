@@ -10,6 +10,7 @@ import { NIVEAU_MAXIMUM } from '../donnees/economie.js'
 import { creerFenetre, echapper } from './fenetre.js'
 import { feteDuJour, texteDate } from '../jeu/calendrier.js'
 import { prenom } from '../jeu/perso.js'
+import { saisonDuJour, SAISONS } from '../jeu/temps.js'
 
 /** « 1 récolte », « 3 récoltes » : met un s quand il faut. */
 const pluriel = (n, mot, mots = `${mot}s`) => `${n} ${n > 1 ? mots : mot}`
@@ -48,7 +49,7 @@ export function creerProgression(zoneCompteurs, declencheur) {
     fenetre.ouvrir(`
       <h2>⭐ Ma progression</h2>
       ${prenom() ? `<p>👤 <strong>${echapper(prenom())}</strong></p>` : ''}
-      <p class="discret">📅 ${echapper(texteDate())}${feteDuJour() ? ` · ${feteDuJour().icone} ${echapper(feteDuJour().nom)}` : ''}</p>
+      <p class="discret">📅 ${echapper(texteDate())} · ${SAISONS[saisonDuJour()].icone} ${SAISONS[saisonDuJour()].nom}${feteDuJour() ? ` · ${feteDuJour().icone} ${echapper(feteDuJour().nom)}` : ''}</p>
       <p><strong>Niveau ${p.niveau}</strong>${p.niveau < NIVEAU_MAXIMUM ? ` — encore ${p.manque} ⭐ pour le niveau ${p.niveau + 1}` : ''}</p>
       ${barre(p.fraction)}
       <p>🪙 <strong>${etat.d.pieces}</strong> pièces</p>

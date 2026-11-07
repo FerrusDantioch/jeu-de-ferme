@@ -18,7 +18,9 @@ const PEINTURE_PAR_SOMMET = new THREE.MeshLambertMaterial({ vertexColors: true, 
 
 /** Vrai si une pièce peut être collée avec les autres (couleur simple, sans image, opaque). */
 function collable(materiau) {
-  return materiau.isMeshLambertMaterial && !materiau.map && !materiau.transparent && !materiau.vertexColors
+  return (
+    materiau.isMeshLambertMaterial && !materiau.map && !materiau.transparent && !materiau.vertexColors && !materiau.userData.aPart
+  )
 }
 
 /**
