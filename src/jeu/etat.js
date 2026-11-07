@@ -76,6 +76,8 @@ export function nouvellePartie(maintenant = Date.now()) {
     compagnon: null,
     // Le carnet de collection : tout ce qu'on a déjà obtenu, et combien ({ id: nombre }).
     carnet: {},
+    // Les décorations posées dehors : [{ n, type, x, z, angle }].
+    decorations: [],
     stats: {
       recoltes: 0, produitsRamasses: 0, commandesLivrees: 0, piecesGagnees: 0, quetesReussies: 0, fruits: 0, plats: 0,
     },
@@ -100,6 +102,7 @@ export function completer(donnees) {
   }
   d.commandes = { ...(donnees.commandes || {}) }
   d.arbres = { ...neuf.arbres, ...(donnees.arbres || {}) }
+  d.decorations = Array.isArray(donnees.decorations) ? donnees.decorations : []
   // Une partie d'avant le carnet : on y note déjà ce qu'il y a dans le sac.
   if (!donnees.carnet) {
     d.carnet = {}

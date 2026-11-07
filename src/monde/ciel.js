@@ -112,6 +112,12 @@ export function creerLueur(couleur = 0xffd27a, taille = 1.6) {
   return lueur
 }
 
+/** Oublie une lueur (quand l'objet qui la portait est retiré). */
+export function oublierLueur(lueur) {
+  lueurs.delete(lueur)
+  lueur.material.dispose()
+}
+
 /**
  * Le « maître du ciel ».
  * @param {object} o { scene, soleil, lumiereAmbiante } (voir moteur/rendu.js)

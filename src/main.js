@@ -27,6 +27,10 @@ import {
 } from './jeu/fiches.js'
 import { creerPeche } from './monde/peche.js'
 import { creerCarnet } from './ui/carnet.js'
+import { creerDecorer } from './ui/decorer.js'
+import { toutFermer } from './ui/fenetre.js'
+import { DECORATIONS } from './donnees/decorations.js'
+import { poserDecoration, tournerDecoration, rangerDecoration } from './jeu/decorations.js'
 import { tirerPrise, prendre } from './jeu/peche.js'
 import { ETANG } from './donnees/ferme.js'
 import { infosObjet } from './donnees/objets.js'
@@ -173,6 +177,7 @@ const lieux = creerGestionnaireLieux({
     ciel.appliquer(lieu.id === 'exterieur')
     fiche.fermer()
     peche.arreter()
+    finirPlacement()
     // Le compagnon passe la porte avec nous.
     animalCompagnon?.placerPres(personnage.position.x, personnage.position.z, lieu.grille)
     if (lieu.id !== 'exterieur' && !dejaEntre) {
@@ -281,6 +286,72 @@ const descriptionPeche = fichePeche({
   dernierePrise: () => dernierePrise,
 })
 
+// --- Décorer la ferme : choisir une décoration, toucher l'herbe, puis « Poser ici » ---
+const placement = { type: null, x: 0, z: 0, angle: 0, possible: false }
+
+function actualiserApercu() {
+  const decos = lieux.actuel?.decorations
+  if (!placement.type || !decos) return
+  placement.possible = decos.montrerApercu(placement.type, placement.x, placement.z, placement.angle)
+  fiche.rafraichir()
+}
+
+function finirPlacement() {
+  placement.type = null
+  lieux.lieuConstruit('exterieur')?.decorations.cacherApercu()
+}
+
+/** Commence à poser une décoration (seulement dehors). */
+function commencerPlacement(type) {
+  if (lieux.actuel.id !== 'exterieur') return
+  toutFermer()
+  if (personnage.assis) personnage.seLever()
+  personnage.arreter()
+  // On propose d'abord une place juste devant le personnage.
+  placement.type = type
+  placement.angle = 0
+  placement.x = personnage.position.x
+  placement.z = personnage.position.z + 1.8
+  fiche.ouvrir(() => {
+    if (!placement.type) return null
+    const d = DECORATIONS[placement.type]
+    return {
+      icone: d.icone,
+      titre: `Poser : ${d.nom}`,
+      lignes: [
+        { texte: 'Touchez l’herbe pour choisir l’endroit.', discret: true },
+        { texte: placement.possible ? '✅ Ici, c’est parfait !' : '🚫 Pas de place ici : choisissez un autre endroit.' },
+      ],
+      actions: [
+        {
+          icone: '✅',
+          texte: 'Poser ici',
+          principal: true,
+          desactive: !placement.possible,
+          faire: () => {
+            if (!poserDecoration(placement.type, placement.x, placement.z, placement.angle)) return
+            jouer('planter')
+            finirPlacement()
+            fiche.fermer()
+            bulles.flotter(personnage.modele, '✨', 1.7)
+          },
+        },
+        {
+          icone: '↻',
+          texte: 'Tourner',
+          faire: () => {
+            placement.angle = (placement.angle + Math.PI / 2) % (Math.PI * 2)
+            actualiserApercu()
+          },
+        },
+        { icone: '✖️', texte: 'Annuler', faire: () => fiche.fermer() },
+      ],
+    }
+  })
+  actualiserApercu()
+}
+creerDecorer({ dehors: () => lieux.actuel?.id === 'exterieur', poser: commencerPlacement })
+
 // 5) Les commandes : toucher le sol pour y aller, toucher un bâtiment pour y entrer,
 //    toucher un villageois pour lui parler.
 const entrees = creerEntrees(renderer.domElement)
@@ -354,7 +425,47 @@ entrees.surToucher((x, y) => {
   // … puis on lance un « rayon » depuis la caméra pour voir ce qu'il touche.
   lanceRayon.setFromCamera(pointEcran, camera)
 
+  // En train de poser une décoration : toucher le sol déplace l'aperçu.
+  if (placement.type) {
+    if (lanceRayon.ray.intersectPlane(planDuSol, pointSol)) {
+      placement.x = pointSol.x
+      placement.z = pointSol.z
+      actualiserApercu()
+    }
+    return
+  }
+
   const cible = objetTouche()
+  if (cible?.type === 'deco') {
+    // Une décoration posée : la tourner, la déplacer ou la ranger.
+    const d = cible.deco
+    const info = DECORATIONS[d.type]
+    fiche.ouvrir(() => {
+      if (!lieux.actuel.decorations || !(etat.d.decorations || []).includes(d)) return null
+      return {
+        icone: info.icone,
+        titre: info.nom,
+        lignes: [{ texte: 'Une jolie décoration 🌼', discret: true }],
+        actions: [
+          { icone: '↻', texte: 'Tourner', faire: () => tournerDecoration(d.n) },
+          {
+            icone: '✋',
+            texte: 'Déplacer',
+            faire: () => {
+              rangerDecoration(d.n)
+              commencerPlacement(d.type)
+              placement.x = d.x
+              placement.z = d.z
+              placement.angle = d.angle || 0
+              actualiserApercu()
+            },
+          },
+          { icone: '🎒', texte: 'Ranger dans le sac', faire: () => rangerDecoration(d.n) },
+        ],
+      }
+    })
+    return
+  }
   if (cible?.type === 'porte') {
     // Un bâtiment ou une sortie : on marche jusqu'à la porte, puis on la passe.
     const porte = cible.porte
@@ -632,7 +743,7 @@ const image = demarrerBoucle((dt) => {
     joystickAffiche = joystickVisible
     joystick.afficher(joystickVisible)
   }
-  let dir = entrees.directionClavier()
+  let dir = placement.type ? { x: 0, z: 0 } : entrees.directionClavier()
   if (dir.x === 0 && dir.z === 0 && joystickVisible) dir = joystick.direction()
   if ((dir.x !== 0 || dir.z !== 0) && !lieux.enTransition) {
     personnage.deplacerDirection(dir.x, dir.z, dt)
@@ -640,6 +751,8 @@ const image = demarrerBoucle((dt) => {
     apresUnDeplacement()
     lieux.verifierPortesClavier(dir)
   }
+  // La fiche « Poser » a été fermée : on abandonne le placement (la décoration reste dans le sac).
+  if (placement.type && !fiche.ouverte) finirPlacement()
   personnage.miseAJour(dt)
   peche.miseAJour(dt, personnage)
   animalCompagnon?.miseAJour(dt, personnage)

@@ -9,6 +9,16 @@ export function echapper(t) {
   return String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c])
 }
 
+// Toutes les fenêtres créées (pour pouvoir tout fermer d'un coup).
+const toutes = new Set()
+
+/** Ferme toutes les fenêtres ouvertes (ex. : avant de poser une décoration). */
+export function toutFermer() {
+  for (const f of toutes) f.fermer()
+  // (et les fenêtres faites à la main, comme le sac)
+  for (const v of document.querySelectorAll('#interface .voile')) v.hidden = true
+}
+
 /**
  * @param {object} o
  *  - classe : classe CSS en plus pour le panneau
@@ -43,7 +53,7 @@ export function creerFenetre({ classe = '', texteFermer = 'Fermer', surClic, sur
     if (surClic) surClic(e.target)
   })
 
-  return {
+  const fenetre = {
     /** Ouvre la fenêtre (le contenu est du HTML déjà préparé). */
     ouvrir(html) {
       if (html !== undefined) contenu.innerHTML = html
@@ -62,4 +72,6 @@ export function creerFenetre({ classe = '', texteFermer = 'Fermer', surClic, sur
     },
     contenu,
   }
+  toutes.add(fenetre)
+  return fenetre
 }

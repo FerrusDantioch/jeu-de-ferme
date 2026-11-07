@@ -9,6 +9,7 @@ import {
 import { CULTURES } from '../donnees/cultures.js'
 import { ESPECES } from '../donnees/animaux.js'
 import { etat } from './etat.js'
+import { DECORATIONS } from '../donnees/decorations.js'
 import { ajouter, retirer, quantite } from './inventaire.js'
 import { annoncer } from './evenements.js'
 
@@ -71,6 +72,9 @@ export function deblocagesDuNiveau(n) {
   }
   for (const [id, a] of Object.entries(ANIMAUX_EN_VENTE)) {
     if (a.niveau === n) liste.push({ icone: ESPECES[id].icone, nom: `${ESPECES[id].nom}s à adopter` })
+  }
+  for (const d of Object.values(DECORATIONS)) {
+    if (d.niveau === n) liste.push({ icone: d.icone, nom: `Décoration : ${d.nom.toLowerCase()}` })
   }
   return liste
 }
