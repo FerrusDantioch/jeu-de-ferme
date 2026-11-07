@@ -133,6 +133,12 @@ export function creerLieu(outils) {
   etang.position.set(ETANG.x, 0, ETANG.z)
   statique.add(etang)
   grille.bloquerCercle(ETANG.x, ETANG.z, ETANG.rayon, 0.3)
+  // On touche l'eau pour pêcher.
+  const zoneEtang = new THREE.Mesh(new THREE.CylinderGeometry(ETANG.rayon, ETANG.rayon, 0.5, 16), MATERIAU_INVISIBLE)
+  zoneEtang.position.set(ETANG.x, 0.25, ETANG.z)
+  zoneEtang.userData.toucher = { type: 'etang' }
+  groupe.add(zoneEtang)
+  touchables.push(zoneEtang)
 
   const puits = creerPuits()
   puits.position.set(PUITS.x, 0, PUITS.z)

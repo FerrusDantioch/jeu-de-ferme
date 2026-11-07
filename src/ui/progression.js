@@ -57,8 +57,9 @@ export function creerProgression(zoneCompteurs, declencheur) {
       <p class="discret">🧺 ${pluriel(s.recoltes, 'récolte')} · 🥚 ${pluriel(s.produitsRamasses, 'produit ramassé', 'produits ramassés')} ·
       📦 ${pluriel(s.commandesLivrees, 'commande livrée', 'commandes livrées')} ·
       📜 ${pluriel(s.quetesReussies || 0, 'quête réussie', 'quêtes réussies')}</p>
-      <p class="discret">Pour gagner des ⭐ : récolter, ramasser les produits des animaux,
-      les nourrir quand ils ont faim, et surtout livrer des commandes 📋.</p>`)
+      <p class="discret">Pour gagner des ⭐ : récolter, cueillir, pêcher, cuisiner, s’occuper des animaux,
+      et surtout livrer des commandes 📋.</p>
+      <div class="reglage-choix"><button class="bouton" data-ouvrir-carnet>📖 Mon carnet de collection</button></div>`)
   }
 
   declencheur.addEventListener('click', ouvrirProgression)

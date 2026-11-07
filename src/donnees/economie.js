@@ -6,6 +6,7 @@
  */
 
 import { RECETTES } from './recettes.js'
+import { POISSONS } from './poissons.js'
 
 // Pièces au début du jeu.
 export const PIECES_DE_DEPART = 30
@@ -54,6 +55,8 @@ export const PRIX_DE_VENTE = {
 }
 // Les plats cuisinés : leur prix est écrit dans src/donnees/recettes.js.
 for (const [id, r] of Object.entries(RECETTES)) PRIX_DE_VENTE[id] = r.prix
+// Les poissons : leur prix est écrit dans src/donnees/poissons.js.
+for (const [id, p] of Object.entries(POISSONS)) PRIX_DE_VENTE[id] = p.prix
 
 // Expérience (⭐) gagnée.
 export const EXPERIENCE = {
@@ -63,6 +66,7 @@ export const EXPERIENCE = {
   nourrir: 1, // donner à manger à un animal qui a faim
   cueillir: 1, // par fruit cueilli
   cuisiner: 6, // par plat cuisiné
+  pecher: 3, // par prise
 }
 
 /**

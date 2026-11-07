@@ -425,3 +425,45 @@ export function ficheCuisine({ bulles, joueur }) {
     }
   }
 }
+
+// --- La pêche ---
+
+/**
+ * Fiche de l'étang : lancer la ligne, attendre, remonter la ligne (jamais de limite de temps).
+ * @param {object} o { peche (la canne, voir monde/peche.js), lancer(), ranger(), remonter(), dernierePrise() }
+ */
+export function fichePeche({ peche, lancer, ranger, remonter, dernierePrise }) {
+  return () => {
+    const etape = peche.etape
+    const prise = dernierePrise()
+    if (etape === 'mord') {
+      return {
+        icone: '🎣',
+        titre: 'Ça mord !',
+        lignes: [{ texte: 'Un poisson a mordu 🐟 Il attend patiemment : prenez votre temps.' }],
+        actions: [{ icone: '🎣', texte: 'Remonter la ligne', principal: true, faire: remonter }],
+      }
+    }
+    if (etape === 'attente') {
+      return {
+        icone: '🎣',
+        titre: 'L’étang',
+        lignes: [{ texte: 'Le bouchon flotte doucement… on attend que ça morde.' }],
+        actions: [{ icone: '🧺', texte: 'Ranger la canne', faire: ranger }],
+      }
+    }
+    const lignes = []
+    if (prise) {
+      const o = infosObjet(prise.id)
+      lignes.push({ texte: `Vous avez pêché : ${o.icone} ${o.nom} !${prise.nouveau ? ' ✨ Nouveau dans le carnet' : ''}` })
+    } else {
+      lignes.push({ texte: 'Un joli coin pour pêcher. Les poissons changent avec les saisons, et certains ne sortent que la nuit 🌙' })
+    }
+    return {
+      icone: '🎣',
+      titre: 'L’étang',
+      lignes,
+      actions: [{ icone: '🎣', texte: prise ? 'Relancer la ligne' : 'Lancer la ligne', principal: true, faire: lancer }],
+    }
+  }
+}

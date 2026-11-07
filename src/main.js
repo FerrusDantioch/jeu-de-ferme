@@ -23,8 +23,13 @@ import { etat } from './jeu/etat.js'
 import { chargerPartie, demarrerSauvegardeAuto } from './jeu/sauvegarde.js'
 import { avancerTous } from './jeu/elevage.js'
 import {
-  ficheParcelle, ficheAnimal, ficheReserve, ficheCommandes, ficheCompagnon, ficheArbre, ficheCuisine,
+  ficheParcelle, ficheAnimal, ficheReserve, ficheCommandes, ficheCompagnon, ficheArbre, ficheCuisine, fichePeche,
 } from './jeu/fiches.js'
+import { creerPeche } from './monde/peche.js'
+import { creerCarnet } from './ui/carnet.js'
+import { tirerPrise, prendre } from './jeu/peche.js'
+import { ETANG } from './donnees/ferme.js'
+import { infosObjet } from './donnees/objets.js'
 import * as commandes from './jeu/commandes.js'
 import { creerBoutique } from './ui/boutique.js'
 import { creerProgression } from './ui/progression.js'
@@ -75,6 +80,7 @@ const fondu = creerFondu()
 const pastilles = creerPastilles()
 const fiche = creerFiche({ surOuverture: () => interfaceJeu.cacherAide() })
 creerSac(interfaceJeu.barre)
+creerCarnet()
 const joystick = creerJoystick()
 creerProgression(interfaceJeu.compteurs, interfaceJeu.etiquetteLieu)
 // La boutique de Lila. Un animal adopté apparaît tout de suite s'il est dans un lieu déjà construit
@@ -166,6 +172,7 @@ const lieux = creerGestionnaireLieux({
     interfaceJeu.montrerLieu(lieu.titre)
     ciel.appliquer(lieu.id === 'exterieur')
     fiche.fermer()
+    peche.arreter()
     // Le compagnon passe la porte avec nous.
     animalCompagnon?.placerPres(personnage.position.x, personnage.position.z, lieu.grille)
     if (lieu.id !== 'exterieur' && !dejaEntre) {
@@ -192,10 +199,13 @@ personnage.surArrivee = () => {
   marqueur.cacher()
   const porte = personnage.porteVisee
   const siege = personnage.siegeVise
+  const action = personnage.quandArrive
   personnage.porteVisee = null
   personnage.siegeVise = null
+  personnage.quandArrive = null
   if (porte && personnage.distanceA(porte) < lieux.DISTANCE_PORTE) lieux.passerPorte(porte)
   else if (siege && personnage.distanceA(siege.devant) < 0.9) sAsseoir(siege)
+  else if (action) action()
 }
 
 /** Le personnage s'assoit (avec, parfois, une petite phrase). */
@@ -205,6 +215,71 @@ function sAsseoir(siege) {
   annoncer('asseoir')
   if (Math.random() < 0.35) bulles.dire(personnage.modele, PHRASES_ASSIS[Math.floor(Math.random() * PHRASES_ASSIS.length)])
 }
+
+// --- La pêche à l'étang ---
+const peche = creerPeche(scene)
+let dernierePrise = null // { id, nouveau } : pour l'afficher dans la fiche
+
+/**
+ * L'endroit où pêcher au bord de l'étang : parmi quelques places bien visibles
+ * (à gauche et au-dessus de l'étang, jamais cachées par la boutique), la plus proche.
+ */
+const PLACES_DE_PECHE = [Math.PI, Math.PI * 0.75, -Math.PI * 0.75, -Math.PI / 2, -Math.PI / 4]
+function bordDeLEtang() {
+  const grille = lieux.actuel.grille
+  let meilleure = null
+  for (const a of PLACES_DE_PECHE) {
+    const x = ETANG.x + Math.cos(a) * (ETANG.rayon + 0.8)
+    const z = ETANG.z + Math.sin(a) * (ETANG.rayon + 0.8)
+    const c = grille.versCase(x, z)
+    if (!grille.estLibre(c.i, c.j)) continue
+    const d = personnage.distanceA({ x, z })
+    if (!meilleure || d < meilleure.d) meilleure = { x, z, a, d }
+  }
+  return meilleure
+}
+
+/** Va au bord de l'étang (si besoin), puis lance la ligne. */
+function allerPecher() {
+  dernierePrise = null
+  const bord = bordDeLEtang()
+  if (!bord) return
+  const commencer = () => {
+    personnage.regarderVers(ETANG.x, ETANG.z)
+    const eau = { x: ETANG.x + Math.cos(bord.a) * (ETANG.rayon - 1.0), z: ETANG.z + Math.sin(bord.a) * (ETANG.rayon - 1.0) }
+    // On attend que le personnage soit tourné vers l'eau avant de lancer.
+    setTimeout(() => {
+      if (personnage.distanceA(bord) > 0.4 || personnage.enRoute) return
+      peche.lancer(personnage, eau, () => {
+        jouer('mord')
+        bulles.dire(personnage.modele, 'Ça mord ! 🐟')
+        fiche.rafraichir()
+      })
+      jouer('lancer')
+      fiche.rafraichir()
+    }, 350)
+  }
+  if (personnage.assis) personnage.seLever()
+  if (personnage.distanceA(bord) < 0.4) commencer()
+  else marcherVers(new THREE.Vector3(bord.x, 0, bord.z), null, null, commencer)
+}
+
+const descriptionPeche = fichePeche({
+  peche,
+  lancer: allerPecher,
+  ranger: () => peche.arreter(),
+  remonter: () => {
+    if (!peche.remonter()) return
+    const id = tirerPrise()
+    const nouveau = !etat.d.carnet?.[id]
+    const r = prendre(id)
+    dernierePrise = { id, nouveau }
+    const o = infosObjet(id)
+    bulles.flotter(personnage.modele, `+1 ${o.icone}`, 1.7)
+    if (r.xp) setTimeout(() => bulles.flotter(personnage.modele, `+${r.xp} ⭐`, 1.7), 900)
+  },
+  dernierePrise: () => dernierePrise,
+})
 
 // 5) Les commandes : toucher le sol pour y aller, toucher un bâtiment pour y entrer,
 //    toucher un villageois pour lui parler.
@@ -255,10 +330,11 @@ function objetTouche() {
 const centreObjet = new THREE.Vector3()
 
 /** Fait marcher le personnage vers un point ; renvoie vrai si c'est possible. */
-function marcherVers(point, porte = null, siege = null) {
+function marcherVers(point, porte = null, siege = null, quandArrive = null) {
   const destination = personnage.allerVers(point)
   personnage.porteVisee = destination ? porte : null
   personnage.siegeVise = destination ? siege : null
+  personnage.quandArrive = destination ? quandArrive : null
   if (destination) {
     marqueur.montrer(destination)
     apresUnDeplacement()
@@ -346,6 +422,11 @@ entrees.surToucher((x, y) => {
       })
     )
     if (!personnage.assis) personnage.regarderVers(c.position.x, c.position.z)
+    return
+  }
+  if (cible?.type === 'etang') {
+    fiche.ouvrir(descriptionPeche)
+    if (!peche.etape) allerPecher()
     return
   }
   if (cible?.type === 'arbre') {
@@ -479,9 +560,15 @@ let joystickAffiche = null
 const SON_DE_L_ACTION = {
   planter: 'planter', arroser: 'arroser', recolter: 'recolter', ramasser: 'ramasser',
   nourrir: 'nourrir', caresser: 'caresser', livrer: 'pieces', vendre: 'pieces', oeuf: 'oeuf',
-  cueillir: 'cueillir', cuisiner: 'cuisiner',
+  cueillir: 'cueillir', cuisiner: 'cuisiner', pecher: 'recolter',
 }
 ecouterActions((type) => SON_DE_L_ACTION[type] && jouer(SON_DE_L_ACTION[type]))
+// Une nouvelle découverte pour le carnet : le personnage le dit (un peu après le « +1 »).
+ecouterActions((type, details) => {
+  if (type !== 'decouverte') return
+  const o = infosObjet(details.id)
+  setTimeout(() => bulles.dire(personnage.modele, `Nouveau dans mon carnet 📖 ${o.icone} ${o.nom} !`), 1500)
+})
 surNouveauNiveau(() => setTimeout(() => jouer('niveau'), 1200))
 // Un petit « tic » pour les boutons de l'interface (ceux de la fiche ont déjà leur son).
 document.addEventListener('click', (e) => {
@@ -554,6 +641,7 @@ const image = demarrerBoucle((dt) => {
     lieux.verifierPortesClavier(dir)
   }
   personnage.miseAJour(dt)
+  peche.miseAJour(dt, personnage)
   animalCompagnon?.miseAJour(dt, personnage)
   lieux.miseAJour(dt)
   marqueur.miseAJour(dt)

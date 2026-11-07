@@ -27,6 +27,7 @@ export function creerSac(barre) {
     <div class="panneau panneau-sac" role="dialog" aria-modal="true" aria-labelledby="titre-sac">
       <h2 id="titre-sac">🎒 Mon sac</h2>
       <div class="sac-contenu"></div>
+      <div class="reglage-choix perso-hasard"><button class="bouton" data-ouvrir-carnet>📖 Mon carnet de collection</button></div>
       <div class="actions">
         <button class="bouton bouton-principal" data-fermer>
           <span class="icone" aria-hidden="true">✔️</span><span>Fermer</span>

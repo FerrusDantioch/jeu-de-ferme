@@ -16,5 +16,6 @@ export const RECETTES = {
   tarte: { nom: 'Tarte aux pommes', icone: '🥧', ingredients: { pomme: 3, oeuf: 1, lait: 1 }, prix: 42 },
   clafoutis: { nom: 'Clafoutis aux cerises', icone: '🍮', ingredients: { cerise: 4, oeuf: 2, lait: 1 }, prix: 56 },
   gateau: { nom: 'Gâteau à la carotte', icone: '🍰', ingredients: { carotte: 3, oeuf: 2, lait: 1 }, prix: 46 },
+  poissonGrille: { nom: 'Poisson grillé aux herbes', icone: '🍤', ingredients: { gardon: 2, salade: 1 }, prix: 26 },
   veloute: { nom: 'Velouté de citrouille', icone: '🥣', ingredients: { citrouille: 1, lait: 1 }, prix: 62 },
 }

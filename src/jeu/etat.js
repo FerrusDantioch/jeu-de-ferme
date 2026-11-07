@@ -19,6 +19,10 @@ import { PIECES_DE_DEPART } from '../donnees/economie.js'
 import { CLIENTS } from '../donnees/commandes.js'
 import { APPARENCE_DE_DEPART } from '../donnees/apparence.js'
 import { FRUITS, FRUITS_MAXIMUM, ARBRES_FRUITIERS } from '../donnees/vergers.js'
+import { infosObjet } from '../donnees/objets.js'
+
+// (Même liste que dans inventaire.js : les catégories notées dans le carnet.)
+const CATEGORIES_DU_CARNET = ['recolte', 'fruit', 'produit', 'poisson', 'plat']
 
 // Numéro de version du format de sauvegarde (à augmenter si on change sa forme).
 export const VERSION_SAUVEGARDE = 1
@@ -70,6 +74,8 @@ export function nouvellePartie(maintenant = Date.now()) {
     arbres: arbresDeDepart(maintenant),
     // Le compagnon (chat ou chien), adopté chez Lila : null au début.
     compagnon: null,
+    // Le carnet de collection : tout ce qu'on a déjà obtenu, et combien ({ id: nombre }).
+    carnet: {},
     stats: {
       recoltes: 0, produitsRamasses: 0, commandesLivrees: 0, piecesGagnees: 0, quetesReussies: 0, fruits: 0, plats: 0,
     },
@@ -94,6 +100,13 @@ export function completer(donnees) {
   }
   d.commandes = { ...(donnees.commandes || {}) }
   d.arbres = { ...neuf.arbres, ...(donnees.arbres || {}) }
+  // Une partie d'avant le carnet : on y note déjà ce qu'il y a dans le sac.
+  if (!donnees.carnet) {
+    d.carnet = {}
+    for (const [id, n] of Object.entries(d.inventaire)) {
+      if (CATEGORIES_DU_CARNET.includes(infosObjet(id).categorie) && n > 0) d.carnet[id] = n
+    }
+  }
   d.prochainesCommandes = { ...neuf.prochainesCommandes, ...(donnees.prochainesCommandes || {}) }
   // Parcelles : on garde les anciennes, on ajoute les nouvelles s'il y en a plus.
   const parcelles = Array.isArray(donnees.parcelles) ? donnees.parcelles : []

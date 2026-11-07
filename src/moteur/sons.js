@@ -91,6 +91,12 @@ const SONS = {
     note(SOL, 0, 0.12, { type: 'triangle', force: 0.35 })
     note(DO2, 0.1, 0.25, { type: 'triangle', force: 0.35 })
   },
+  lancer: () => note(520, 0, 0.3, { type: 'triangle', glisse: 260, force: 0.25 }),
+  mord: () => {
+    // « Plouf » : deux petites gouttes.
+    note(900, 0, 0.08, { glisse: 400, force: 0.35 })
+    note(700, 0.12, 0.1, { glisse: 350, force: 0.3 })
+  },
   asseoir: () => note(440, 0, 0.25, { type: 'triangle', glisse: 330, force: 0.3 }),
   porte: () => note(220, 0, 0.35, { type: 'triangle', glisse: 165, force: 0.3 }),
   quete: () => [DO, MI, SOL].forEach((f, k) => note(f, k * 0.1, 0.22, { force: 0.45 })),

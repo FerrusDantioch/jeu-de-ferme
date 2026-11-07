@@ -793,3 +793,18 @@ body {
 .perso-hasard {
   margin-top: 12px;
 }
+
+/* --- 📖 Le carnet de collection --- */
+.carnet-manque {
+  opacity: 0.6;
+  border: 2px dashed #e2d6bf;
+  background: transparent;
+}
+.carnet-indice {
+  font-size: 0.75em;
+  text-align: center;
+  line-height: 1.25;
+}
+.panneau h3 .discret {
+  font-weight: normal;
+}
