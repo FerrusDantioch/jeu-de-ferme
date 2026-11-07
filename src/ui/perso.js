@@ -9,6 +9,8 @@ import { creerFenetre, echapper } from './fenetre.js'
 import { LISTES, apparence, prenom, changerPrenom, changer, auHasard } from '../jeu/perso.js'
 import { LONGUEUR_PRENOM } from '../donnees/apparence.js'
 import { etat } from '../jeu/etat.js'
+import { compagnon, changerCompagnon } from '../jeu/compagnon.js'
+import { ESPECES_COMPAGNONS, PELAGES } from '../donnees/compagnons.js'
 
 /** « 0xf28b82 » → « #f28b82 » (pour colorer les pastilles). */
 const versHex = (n) => '#' + n.toString(16).padStart(6, '0')
@@ -34,6 +36,7 @@ export function creerFenetrePerso({ barre, surOuverture }) {
       const b = el.closest('button')
       if (!b) return
       if (b.dataset.partie) changer(b.dataset.partie, b.dataset.choix)
+      else if (b.dataset.compagnon) changerCompagnon(b.dataset.compagnon, b.dataset.choix)
       else if (b.dataset.action === 'hasard') auHasard()
       else return
       dessiner()
@@ -52,10 +55,11 @@ export function creerFenetrePerso({ barre, surOuverture }) {
   // Le prénom s'enregistre au fur et à mesure qu'on l'écrit.
   fenetre.contenu.addEventListener('input', (e) => {
     if (e.target.name === 'prenom') changerPrenom(e.target.value)
+    if (e.target.name === 'nomCompagnon' && e.target.value.trim()) changerCompagnon('nom', e.target.value)
   })
   // « Entrée » ferme le clavier du téléphone.
   fenetre.contenu.addEventListener('keydown', (e) => {
-    if (e.target.name === 'prenom' && e.key === 'Enter') e.target.blur()
+    if (e.target.tagName === 'INPUT' && e.key === 'Enter') e.target.blur()
   })
 
   /** Une rangée de choix (pastilles de couleur ou boutons avec du texte). */
@@ -100,7 +104,28 @@ export function creerFenetrePerso({ barre, surOuverture }) {
       ${a.chapeau !== 'aucun' ? rangee(a.chapeau === 'paille' ? '🎀 Couleur du ruban' : '🎨 Couleur', 'couleurChapeau', a) : ''}
       <div class="reglage-choix perso-hasard">
         <button class="bouton" data-action="hasard">🎲 Au hasard</button>
-      </div>`)
+      </div>
+      ${partieCompagnon()}`)
+  }
+
+  /** La partie « Mon compagnon » (seulement s'il a été adopté chez Lila). */
+  function partieCompagnon() {
+    const c = compagnon()
+    if (!c) return ''
+    const especes = Object.entries(ESPECES_COMPAGNONS)
+      .map(([id, e]) => `<button class="bouton${c.espece === id ? ' bouton-principal' : ''}" data-compagnon="espece" data-choix="${id}"
+        aria-pressed="${c.espece === id}">${e.icone} ${echapper(e.nom)}</button>`)
+      .join('')
+    const pelages = PELAGES.map((p) => {
+      const choisi = c.pelage === p.id
+      return `<button class="bouton pastille-couleur${choisi ? ' choisie' : ''}" style="--c:${versHex(p.couleur)}"
+        data-compagnon="pelage" data-choix="${p.id}" aria-pressed="${choisi}" aria-label="${echapper(p.nom)}" title="${echapper(p.nom)}"></button>`
+    }).join('')
+    return `<h3 class="perso-compagnon">🐾 Mon compagnon</h3>
+      <label class="perso-prenom"><span class="reglage-titre">✏️ Son nom</span>
+        <input name="nomCompagnon" type="text" maxlength="14" autocomplete="off" enterkeyhint="done" value="${echapper(c.nom)}"></label>
+      <div class="ligne-reglage"><div class="reglage-titre">🐾 Chat ou chien</div><div class="reglage-choix">${especes}</div></div>
+      <div class="ligne-reglage"><div class="reglage-titre">🎨 Pelage</div><div class="reglage-choix choix-couleurs">${pelages}</div></div>`
   }
 
   function ouvrir({ accueil = false } = {}) {

@@ -15,6 +15,8 @@ import { quantite } from '../jeu/inventaire.js'
 import { niveau, acheterGraines, adopterAnimal, nombreAnimaux, aVendre, vendre } from '../jeu/economie.js'
 import { quantiteDemandee } from '../jeu/commandes.js'
 import { creerFenetre, echapper } from './fenetre.js'
+import { ESPECES_COMPAGNONS } from '../donnees/compagnons.js'
+import { compagnon, adopterCompagnon } from '../jeu/compagnon.js'
 
 /**
  * @param {function} surAdoption  appelée avec la fiche d'un animal adopté (pour l'ajouter au monde)
@@ -76,7 +78,24 @@ export function creerBoutique({ surAdoption } = {}) {
           <span class="discret">🪙 ${a.prix} · ${nb} / ${a.maximum} ${ou} · donne : ${infosObjet(e.produit).icone}</span></span>
         <span class="lb-actions">${actions}</span></div>`
     })
-    return `<h3>🌱 Graines</h3>${graines.join('')}<h3>🐾 Animaux</h3>${animaux.join('')}`
+    return `<h3>🌱 Graines</h3>${graines.join('')}<h3>🐾 Animaux</h3>${animaux.join('')}
+      <h3>💕 Un compagnon</h3>${pageCompagnon()}`
+  }
+
+  /** Le chat ou le chien qui suit le joueur partout (gratuit, un seul). */
+  function pageCompagnon() {
+    const c = compagnon()
+    if (c) {
+      const e = ESPECES_COMPAGNONS[c.espece]
+      return `<div class="ligne-boutique"><span class="lb-icone" aria-hidden="true">${e.icone}</span>
+        <span class="lb-texte"><strong>${echapper(c.nom)} vous accompagne 💕</strong>
+        <span class="discret">Son nom et son pelage se changent dans 👤 « Mon personnage ».</span></span></div>`
+    }
+    return Object.entries(ESPECES_COMPAGNONS)
+      .map(([id, e]) => `<div class="ligne-boutique"><span class="lb-icone" aria-hidden="true">${e.icone}</span>
+        <span class="lb-texte"><strong>${echapper(e.nom)}</strong><span class="discret">Gratuit · il vous suit partout</span></span>
+        <span class="lb-actions">${bouton('compagnon', id, 'Adopter')}</span></div>`)
+      .join('')
   }
 
   function pageVendre() {
@@ -130,6 +149,9 @@ export function creerBoutique({ surAdoption } = {}) {
         message = `${fiche.nom} vous attend ${id === 'vache' ? 'dans l’étable' : 'dans l’enclos'} ! ${ESPECES[id].icone}💕`
         if (surAdoption) surAdoption(fiche)
       } else message = 'Impossible pour l’instant.'
+    } else if (action === 'compagnon') {
+      const c = adopterCompagnon(id)
+      if (c) message = `${c.nom} vous suivra partout ! ${ESPECES_COMPAGNONS[id].icone}💕`
     } else if (action === 'vendre') {
       const gain = vendre(id, n)
       message = gain ? `Vendu ! +${gain} 🪙` : ''

@@ -36,6 +36,7 @@ export const PNJ = [
       'Prends ton temps, rien ne presse.',
       'J’ai fait une tarte aux pommes ce matin 🥧',
       'J’aime bien m’asseoir près de l’étang.',
+      'Lila a un petit chat et un petit chien qui cherchent une famille 🐱🐶',
       'Il fait bon, aujourd’hui.',
     ],
     demandes: [

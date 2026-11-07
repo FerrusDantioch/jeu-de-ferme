@@ -22,7 +22,7 @@ import { creerSac } from './ui/sac.js'
 import { etat } from './jeu/etat.js'
 import { chargerPartie, demarrerSauvegardeAuto } from './jeu/sauvegarde.js'
 import { avancerTous } from './jeu/elevage.js'
-import { ficheParcelle, ficheAnimal, ficheReserve, ficheCommandes } from './jeu/fiches.js'
+import { ficheParcelle, ficheAnimal, ficheReserve, ficheCommandes, ficheCompagnon } from './jeu/fiches.js'
 import * as commandes from './jeu/commandes.js'
 import { creerBoutique } from './ui/boutique.js'
 import { creerProgression } from './ui/progression.js'
@@ -46,6 +46,8 @@ import { creerFenetrePerso } from './ui/perso.js'
 import { demanderTexte } from './ui/saisie.js'
 import { surChangementApparence } from './jeu/perso.js'
 import { creerCiel } from './monde/ciel.js'
+import { Compagnon } from './entites/compagnon.js'
+import { compagnon, changerCompagnon, surChangementCompagnon } from './jeu/compagnon.js'
 import { demarrerMusique } from './moteur/musique.js'
 
 // 0) On reprend la partie enregistrée sur le téléphone (ou on en commence une nouvelle).
@@ -109,6 +111,17 @@ const fenetrePerso = creerFenetrePerso({
 })
 surChangementApparence(() => personnage.actualiserApparence())
 
+// Le compagnon (chat ou chien), s'il a été adopté chez Lila : il suit le personnage partout.
+let animalCompagnon = null
+function actualiserCompagnon() {
+  const f = compagnon()
+  if (!f) return
+  if (animalCompagnon) return animalCompagnon.changerApparence(f)
+  animalCompagnon = new Compagnon(scene, f)
+  if (lieux.actuel) animalCompagnon.placerPres(personnage.position.x, personnage.position.z, lieux.actuel.grille)
+}
+surChangementCompagnon(actualiserCompagnon)
+
 /** Donner un nouveau nom à un animal (depuis sa fiche). */
 async function renommerAnimal(fiche) {
   const nom = await demanderTexte({ titre: `✏️ Un nouveau nom pour ${fiche.nom} ?`, valeur: fiche.nom, max: 14 })
@@ -151,6 +164,8 @@ const lieux = creerGestionnaireLieux({
     interfaceJeu.montrerLieu(lieu.titre)
     ciel.appliquer(lieu.id === 'exterieur')
     fiche.fermer()
+    // Le compagnon passe la porte avec nous.
+    animalCompagnon?.placerPres(personnage.position.x, personnage.position.z, lieu.grille)
     if (lieu.id !== 'exterieur' && !dejaEntre) {
       dejaEntre = true
       interfaceJeu.cacherAide()
@@ -205,7 +220,8 @@ function estVisible(objet) {
 
 /** Cherche, parmi les objets touchés par le rayon, le premier qui réagit au toucher. */
 function objetTouche() {
-  const touches = lanceRayon.intersectObjects(lieux.actuel.touchables, true)
+  const liste = animalCompagnon ? [...lieux.actuel.touchables, animalCompagnon.zone] : lieux.actuel.touchables
+  const touches = lanceRayon.intersectObjects(liste, true)
   const trouves = [] // [{ toucher, objet }] dans l'ordre (le plus proche de la caméra d'abord)
   for (const t of touches) {
     if (!estVisible(t.object)) continue
@@ -219,7 +235,7 @@ function objetTouche() {
   if (trouves.length === 0) return null
   // Des animaux ou des villageois serrés les uns contre les autres : on prend celui
   // dont le centre est le plus près de l'endroit exact où le doigt a touché.
-  const vivant = (t) => t.toucher.type === 'animal' || t.toucher.type === 'pnj'
+  const vivant = (t) => ['animal', 'pnj', 'compagnon'].includes(t.toucher.type)
   if (!vivant(trouves[0])) return trouves[0].toucher
   let meilleur = null
   let meilleureDistance = Infinity
@@ -312,6 +328,22 @@ entrees.surToucher((x, y) => {
     } else {
       personnage.regarderVers(animal.position.x, animal.position.z)
     }
+    return
+  }
+  if (cible?.type === 'compagnon') {
+    const c = cible.compagnon
+    fiche.ouvrir(
+      ficheCompagnon({
+        bulles,
+        joueur: personnage,
+        compagnon: c,
+        renommer: async () => {
+          const nom = await demanderTexte({ titre: `✏️ Un nouveau nom pour ${compagnon().nom} ?`, valeur: compagnon().nom, max: 14 })
+          if (nom) changerCompagnon('nom', nom)
+        },
+      })
+    )
+    if (!personnage.assis) personnage.regarderVers(c.position.x, c.position.z)
     return
   }
   if (cible?.type === 'reserve') {
@@ -507,6 +539,7 @@ const image = demarrerBoucle((dt) => {
     lieux.verifierPortesClavier(dir)
   }
   personnage.miseAJour(dt)
+  animalCompagnon?.miseAJour(dt, personnage)
   lieux.miseAJour(dt)
   marqueur.miseAJour(dt)
   zoomer(fenetrePerso.ouverte ? 0.42 : 1) // la caméra s'approche pour bien voir le personnage
@@ -532,6 +565,7 @@ const ou = etat.d.joueur
 lieux
   .demarrer(ou ? ou.lieu : 'exterieur', ou ? { x: ou.x, z: ou.z, angle: 0 } : 'depart')
   .then(() => {
+    actualiserCompagnon()
     renderer.setAnimationLoop(image)
     interfaceJeu.finChargement()
     if (partie.message) bulles.dire(personnage.modele, partie.message)
@@ -556,6 +590,9 @@ activerModeHorsLigne()
 // Accès pratique pour les tests automatiques (sans effet sur le jeu).
 window.__jeu = {
   personnage, lieux, camera, bulles, etat, fiche, boutique, verifierCalendrier, renderer, reglages, fenetrePerso, ciel, appliquerCiel,
+  get compagnon() {
+    return animalCompagnon
+  },
   /** Ce qui se trouve sous un point de l'écran (pour les tests). */
   quoiSous(x, y) {
     pointEcran.set((x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1)

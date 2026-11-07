@@ -16,6 +16,8 @@ import * as potager from './potager.js'
 import * as elevage from './elevage.js'
 import * as commandes from './commandes.js'
 import { gagnerExperience } from './economie.js'
+import { annoncer } from './evenements.js'
+import { ESPECES_COMPAGNONS } from '../donnees/compagnons.js'
 
 /** Affiche « +3 ⭐ » un peu après une action (le temps de lire le premier texte). */
 function montrerExperience(bulles, objet, n, hauteur, delai = 900) {
@@ -292,5 +294,50 @@ export function ficheCommandes({ bulles, joueur, idClient = null }) {
     }
     lignes.push({ texte: 'Pas de limite de temps : livrez quand vous voulez.', discret: true })
     return { icone: '📋', titre: 'Tableau des commandes', lignes, actions }
+  }
+}
+
+// --- Le compagnon (chat ou chien) ---
+
+/**
+ * Fiche du compagnon : le caresser, jouer avec lui, changer son nom.
+ * @param {object} o { bulles, joueur, compagnon (l'entité), renommer }
+ */
+export function ficheCompagnon({ bulles, joueur, compagnon, renommer }) {
+  const auHasard = (liste) => liste[Math.floor(Math.random() * liste.length)]
+  return () => {
+    const c = etat.d.compagnon
+    if (!c) return null
+    const e = ESPECES_COMPAGNONS[c.espece]
+    return {
+      icone: e.icone,
+      titre: c.nom,
+      lignes: [{ texte: `${c.nom} vous suit partout et s’assoit à côté de vous sur les bancs 💕`, discret: true }],
+      actions: [
+        {
+          icone: '🤚',
+          texte: 'Caresser',
+          principal: true,
+          faire: () => {
+            compagnon.rejouir(joueur)
+            joueur.regarderVers(compagnon.position.x, compagnon.position.z)
+            bulles.flotter(compagnon.modele, '💕', 0.8)
+            bulles.dire(compagnon.modele, auHasard(e.caresses), { nom: c.nom, hauteur: 0.9 })
+            annoncer('caresser', { espece: c.espece })
+          },
+        },
+        {
+          icone: c.espece === 'chat' ? '🧶' : '🎾',
+          texte: 'Jouer',
+          faire: () => {
+            compagnon.rejouir(joueur)
+            compagnon.joie = 2.5 // il sautille plus longtemps
+            bulles.dire(compagnon.modele, auHasard(e.jeux), { nom: c.nom, hauteur: 0.9 })
+            annoncer('caresser', { espece: c.espece })
+          },
+        },
+        { icone: '✏️', texte: 'Changer son nom', faire: () => renommer() },
+      ],
+    }
   }
 }
