@@ -6,8 +6,9 @@ import { creerPiece } from './piece.js'
 import { PALETTE } from '../modeles/materiaux.js'
 import {
   creerLit, creerTable, creerChaise, creerTapis, creerEtagere, creerCheminee,
-  creerCuisine, creerPlante, creerFenetreInterieure, creerLanterne,
+  creerCuisine, creerPlante, creerFenetreInterieure, creerLanterne, creerFauteuil,
 } from '../modeles/mobilier.js'
+import { ajouterSiege } from '../monde/sieges.js'
 import { creerPnjDuLieu } from './pnj-du-lieu.js'
 
 export function creerLieu(outils) {
@@ -30,6 +31,13 @@ export function creerLieu(outils) {
   placer(creerChaise(), 1.45, 0.2, { angle: Math.PI / 2, obstacle: [0.45, 0.45] })
   placer(creerChaise(), 3.35, 0.2, { angle: -Math.PI / 2, obstacle: [0.45, 0.45] })
   placer(creerLanterne(), 2.4, 0.2, { y: 0.8 })
+  // On peut s'asseoir sur les deux chaises (en regardant la table).
+  ajouterSiege(piece, { x: 1.45, z: 0.2, angle: Math.PI / 2, hauteur: 0.5, devant: { x: 0.45, z: 0.2 } }, { largeur: 0.6, profondeur: 0.6 })
+  ajouterSiege(piece, { x: 3.35, z: 0.2, angle: -Math.PI / 2, hauteur: 0.5, devant: { x: 4.1, z: 0.2 } }, { largeur: 0.6, profondeur: 0.6 })
+
+  // Un fauteuil près de la cheminée, pour se reposer.
+  placer(creerFauteuil(), -1.3, -2.3, { obstacle: [0.8, 0.8] })
+  ajouterSiege(piece, { x: -1.3, z: -2.25, angle: 0, hauteur: 0.47, devant: { x: -1.3, z: -1.35 } }, { largeur: 0.9, profondeur: 0.9 })
 
   // Des plantes dans les coins.
   placer(creerPlante(1.1), -4.4, 3.2, { obstacle: 0.25 })

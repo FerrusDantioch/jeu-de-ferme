@@ -281,10 +281,40 @@
 | Les réglages par défaut                  | `src/jeu/reglages.js`       |
 | Le texte de « Comment jouer »            | `src/ui/reglages.js`        |
 
+## ✅ Après le jalon 6 — S'asseoir (version 1.1.0)
+
+### Ce qui est fait
+- **On peut s'asseoir** : on touche un banc, une chaise, un fauteuil ou une botte de foin.
+  Le personnage y marche, se tourne, s'assoit les jambes pendantes, et dit parfois une
+  petite phrase (« Ahh, on est bien ici 😌 »).
+- **Pour se relever** : toucher le sol ailleurs, ou bouger au clavier ou au joystick.
+- **Où s'asseoir** :
+  - dehors, 4 bancs : près de l'allée, face à l'étang, au bord de l'enclos (pour regarder
+    les animaux) et au bord de la route du village ;
+  - dans la maison, les 2 chaises de la table et un nouveau fauteuil près de la cheminée ;
+  - dans l'étable, la botte de foin de droite.
+- Nouvelle quête du jour possible : « Se reposer sur un banc ou une chaise ».
+- **Corrigé en route** :
+  - les zones à toucher des bâtiments suivent mieux leur forme (murs, puis toit plus
+    étroit) et ne « volent » plus les touchers des objets derrière eux ;
+  - un personnage coincé contre un obstacle peut toujours en sortir au clavier.
+- **Publication** : seule la branche `main` met à jour le jeu en ligne.
+
+### Vérifications faites
+- Test automatique : s'asseoir sur chaque type de siège, puis se relever en touchant le sol
+  et au clavier ; la quête « se reposer » avance.
+- Tests des jalons 2 à 6 relancés : tout passe, y compris hors ligne. Aucune erreur.
+
+### Où modifier quoi
+| Je veux changer…                          | Fichier                     |
+|-------------------------------------------|-----------------------------|
+| La place et l'orientation des bancs       | `src/donnees/ferme.js`      |
+| Les phrases dites en s'asseyant           | `src/monde/sieges.js`       |
+
 ## 🚀 Mise en ligne (GitHub Pages)
-Le dépôt n'a pas de branche `main` : sa branche principale est `claude/sweet-newton-ef19ch`.
-Le fichier `.github/workflows/publication.yml` publie donc le jeu à chaque mise à jour de
-cette branche (et de `main`, si on la crée un jour).
+Le jeu est en ligne : https://ferrusdantioch.github.io/jeu-de-ferme/
+Le fichier `.github/workflows/publication.yml` le republie à chaque mise à jour de `main`.
+Les nouveautés sont préparées sur une branche à part, puis fusionnées dans `main`.
 
 **À faire une seule fois, dans GitHub :** Settings → Pages → « Build and deployment » →
 Source : **GitHub Actions**. Tant que ce n'est pas fait, la publication échoue (croix rouge

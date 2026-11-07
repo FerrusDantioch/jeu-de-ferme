@@ -83,7 +83,14 @@ export const TABLEAU_COMMANDES = { x: 2.6, z: 7.6 }
 // Autres décors.
 export const ETANG = { x: -15, z: -3, rayon: 2.2 }
 export const PUITS = { x: 4, z: 4 }
-export const BANCS = [{ x: -4, z: 8, angle: 0 }]
+// Les bancs (on peut s'y asseoir). angle : vers où l'on regarde une fois assis
+// (0 = vers la caméra, Math.PI / 2 = vers la droite, -Math.PI / 2 = vers la gauche, Math.PI = vers le fond).
+export const BANCS = [
+  { x: -4, z: 8, angle: 0 }, // près de la grande allée
+  { x: -11.3, z: -4.2, angle: -Math.PI / 2 }, // face à l'étang
+  { x: 7.2, z: 3.0, angle: Math.PI / 2 }, // pour regarder les animaux de l'enclos
+  { x: 4.5, z: 18.4, angle: Math.PI }, // au bord de la route du village
+]
 export const PANNEAUX = [
   { x: -8.7, z: -0.3, texte: 'Potager', largeur: 1.3 },
   { x: 2.2, z: 18.2, texte: 'Bienvenue !', largeur: 1.6 },

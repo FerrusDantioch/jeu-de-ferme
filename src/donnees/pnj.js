@@ -27,7 +27,7 @@ export const PNJ = [
     vitesse: 1.6,
     maison: 'chaumiere-rose',
     depart: [8, 9],
-    promenade: [[4, 5.6], [-11.8, -3], [-4.5, 0.5], [-4, 9.2], [13, 7], [2, 2]],
+    promenade: [[4, 5.6], [-11.4, -2.2], [-4.5, 0.5], [-4, 9.2], [13, 7], [2, 2]],
     salutations: ['Bonjour ! 🌷', 'Coucou, quel plaisir de te voir !'],
     phrases: [
       'Quelle belle journée !',

@@ -11,6 +11,7 @@ import * as THREE from 'three'
 import { MATERIAU_INVISIBLE } from '../modeles/formes.js'
 import { creerPnjDuLieu } from './pnj-du-lieu.js'
 import { creerAnimauxDuLieu, animerAnimaux } from './animaux-du-lieu.js'
+import { ajouterSiege } from '../monde/sieges.js'
 
 // Position (x) des trois stalles, de gauche à droite (places 0, 1 et 2).
 const STALLES = [-3, 0, 3]
@@ -55,6 +56,8 @@ export function creerLieu(outils) {
 
   // Seaux, caisses et foin à droite.
   placer(creerBotteDeFoin(), 5.2, 0.8, { angle: Math.PI / 2, obstacle: [1.0, 0.6] })
+  // On peut s'asseoir sur cette botte de foin (en regardant les vaches).
+  ajouterSiege(piece, { x: 5.2, z: 0.8, angle: -Math.PI / 2 - 0.5, hauteur: 0.58, devant: { x: 4.35, z: 0.8 } }, { largeur: 1.0, profondeur: 0.8 })
   placer(creerSeau(), 3.8, 1.4, { obstacle: 0.2 })
   placer(creerSeau(), 4.3, 1.9, { obstacle: 0.2 })
   placer(creerCaisse(), 5.0, 3.2, { obstacle: [0.6, 0.6] })
