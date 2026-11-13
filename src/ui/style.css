@@ -18,6 +18,9 @@
   --rayon: 18px;
   --ombre: 0 4px 14px rgba(0, 0, 0, 0.18);
   --taille-tactile: 56px;
+  --couleur-titre: #3d6b3b;
+  --couleur-trait: #efe5d2;
+  --couleur-lien: #2f6f2d;
 }
 
 * {
@@ -173,7 +176,9 @@ body {
   opacity: 0;
 }
 
-/* --- Fenêtre (panneau) au centre de l'écran --- */
+/* --- Fenêtre (panneau) au centre de l'écran ---
+   Le panneau est une colonne : une croix en haut à droite, le contenu qui défile
+   au milieu, et le bouton « Fermer » en bas, TOUJOURS visible. */
 .voile {
   position: absolute;
   inset: 0;
@@ -187,31 +192,133 @@ body {
   display: none;
 }
 .panneau {
+  position: relative;
+  display: flex;
+  flex-direction: column;
   width: min(480px, 100%);
   max-height: 100%;
-  overflow-y: auto;
+  overflow: hidden;
   background: var(--couleur-panneau);
   border-radius: 24px;
   box-shadow: var(--ombre);
-  padding: 24px;
   line-height: 1.45;
+}
+.fenetre-contenu {
+  flex: 1 1 auto;
+  min-height: 0; /* nécessaire pour que le contenu défile au lieu de déborder */
+  overflow-y: auto;
+  padding: 24px 24px 12px;
+}
+/* La croix : toujours au même endroit, en haut à droite. */
+.fenetre-croix {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1;
+  padding: 0;
 }
 .panneau h2 {
   margin: 0 0 12px;
+  padding-right: 56px; /* la place de la croix */
+  min-height: 44px;
   font-size: 1.4em;
-  color: #3d6b3b;
+  color: var(--couleur-titre);
 }
 .panneau p {
   margin: 0 0 12px;
 }
 .panneau .actions {
+  flex: none;
   display: flex;
   justify-content: flex-end;
-  margin-top: 20px;
+  padding: 12px 24px 16px;
+  border-top: 1px solid var(--couleur-trait);
 }
 .panneau .discret {
   opacity: 0.75;
   font-size: 0.85em;
+}
+/* Sur tablette, il y a de la place : les fenêtres sont plus larges. */
+@media (min-width: 700px) {
+  .panneau {
+    width: min(640px, 100%);
+  }
+  .panneau.panneau-boutique {
+    width: min(720px, 100%);
+  }
+}
+
+/* --- Fenêtre « À propos » : une vraie fenêtre <dialog> (structure commune aux
+   applications de l'Omni-système, écrite dans index.html) --- */
+dialog {
+  width: min(480px, calc(100% - 32px));
+  max-height: calc(100% - 32px);
+  padding: 0;
+  border: none;
+  border-radius: 24px;
+  background: var(--couleur-panneau);
+  color: var(--couleur-texte);
+  box-shadow: var(--ombre);
+  line-height: 1.45;
+  /* Le texte de cette fenêtre peut être sélectionné (pour copier l'adresse de contact). */
+  user-select: text;
+  -webkit-user-select: text;
+}
+dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+dialog::backdrop {
+  background: rgba(30, 40, 30, 0.35);
+}
+.fenetre-corps {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 24px;
+}
+.fenetre-actions {
+  flex: none;
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 24px 16px;
+  border-top: 1px solid var(--couleur-trait);
+}
+.a-propos {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  padding-top: 28px;
+  text-align: center;
+}
+.a-propos img {
+  width: 104px;
+  height: 104px;
+  border-radius: var(--rayon);
+}
+.a-propos .nom-application {
+  margin: 0;
+  font-size: 1.5em;
+  font-weight: 800;
+  color: var(--couleur-titre);
+}
+.a-propos .version {
+  opacity: 0.75;
+  font-size: 0.9em;
+  /* Une zone confortable à toucher (5 touchers ouvrent le mode test caché). */
+  padding: 8px 16px;
+}
+.a-propos p {
+  margin: 0;
+  max-width: 40ch;
+}
+.a-propos a {
+  color: var(--couleur-lien);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  /* Un lien facile à toucher. */
+  display: inline-block;
+  padding: 6px 0;
 }
 
 /* --- Étiquette du lieu, en haut à gauche (« 🌳 La ferme ») --- */
@@ -746,15 +853,11 @@ body {
   padding-bottom: max(12px, env(safe-area-inset-bottom));
 }
 .panneau-perso {
-  max-height: 52vh;
-  padding: 18px 20px;
+  /* Assez bas pour voir le personnage au-dessus, mais jamais trop petit (téléphone couché). */
+  max-height: max(52vh, 280px);
 }
-.panneau-perso .actions {
-  position: sticky;
-  bottom: -18px;
-  margin: 12px -20px -18px;
-  padding: 10px 20px 14px;
-  background: var(--couleur-panneau);
+.panneau-perso .fenetre-contenu {
+  padding: 18px 20px 10px;
 }
 .perso-prenom {
   display: block;

@@ -97,7 +97,7 @@ export function creerBoutique({ surAdoption } = {}) {
       return `<div class="ligne-boutique${bloque ? ' bloquee' : ''}">
         <span class="lb-icone" aria-hidden="true">${d.icone}</span>
         <span class="lb-texte"><strong>${echapper(d.nom)}</strong>
-          <span class="discret">🪙 ${d.prix}${nb ? ` · vous en avez ${nb}` : ''}</span></span>
+          <span class="discret">🪙 ${d.prix}${nb ? ` · tu en as ${nb}` : ''}</span></span>
         <span class="lb-actions">${actions}</span></div>`
     })
     return `${lignes.join('')}<div class="reglage-choix"><button class="bouton" data-ouvrir-decorer>🌼 Poser mes décorations</button></div>`
@@ -109,12 +109,12 @@ export function creerBoutique({ surAdoption } = {}) {
     if (c) {
       const e = ESPECES_COMPAGNONS[c.espece]
       return `<div class="ligne-boutique"><span class="lb-icone" aria-hidden="true">${e.icone}</span>
-        <span class="lb-texte"><strong>${echapper(c.nom)} vous accompagne 💕</strong>
+        <span class="lb-texte"><strong>${echapper(c.nom)} t’accompagne 💕</strong>
         <span class="discret">Son nom et son pelage se changent dans 👤 « Mon personnage ».</span></span></div>`
     }
     return Object.entries(ESPECES_COMPAGNONS)
       .map(([id, e]) => `<div class="ligne-boutique"><span class="lb-icone" aria-hidden="true">${e.icone}</span>
-        <span class="lb-texte"><strong>${echapper(e.nom)}</strong><span class="discret">Gratuit · il vous suit partout</span></span>
+        <span class="lb-texte"><strong>${echapper(e.nom)}</strong><span class="discret">Gratuit · il te suit partout</span></span>
         <span class="lb-actions">${bouton('compagnon', id, 'Adopter')}</span></div>`)
       .join('')
   }
@@ -122,7 +122,7 @@ export function creerBoutique({ surAdoption } = {}) {
   function pageVendre() {
     const liste = aVendre()
     if (liste.length === 0) {
-      return '<p>Rien à vendre pour l’instant : récoltez le potager et ramassez les œufs, le lait et la laine !</p>'
+      return '<p>Rien à vendre pour l’instant : récolte le potager et ramasse les œufs, le lait et la laine !</p>'
     }
     const lignes = liste.map(([id, n, prix]) => {
       const o = infosObjet(id)
@@ -133,7 +133,7 @@ export function creerBoutique({ surAdoption } = {}) {
           <span class="discret">🪙 ${prix} pièce${prix > 1 ? 's' : ''} chacun${demande ? ` · 📋 ${demande} demandé${demande > 1 ? 's' : ''} en commande` : ''}</span></span>
         <span class="lb-actions">${bouton('vendre', id, 'Vendre 1')}${n > 1 ? bouton('vendre', id, `Tout (🪙 ${prix * n})`, { n }) : ''}</span></div>`
     })
-    return `${lignes.join('')}<p class="discret">📋 Pensez à garder ce qu’il faut pour les commandes des villageois : elles rapportent plus !</p>`
+    return `${lignes.join('')}<p class="discret">📋 Pense à garder ce qu’il faut pour les commandes des villageois : elles rapportent plus !</p>`
   }
 
   function dessiner() {
@@ -156,7 +156,7 @@ export function creerBoutique({ surAdoption } = {}) {
       confirmation = null
     } else if (action === 'graine') {
       message = acheterGraines(id, n)
-        ? `Merci ! ${n} graine${n > 1 ? 's' : ''} de ${CULTURES[id].nomCourt} dans votre sac 🌱`
+        ? `Merci ! ${n} graine${n > 1 ? 's' : ''} de ${CULTURES[id].nomCourt} dans ton sac 🌱`
         : 'Pas assez de pièces pour l’instant.'
     } else if (action === 'demander') {
       confirmation = id
@@ -167,16 +167,16 @@ export function creerBoutique({ surAdoption } = {}) {
       const fiche = adopterAnimal(id)
       confirmation = null
       if (fiche) {
-        message = `${fiche.nom} vous attend ${id === 'vache' ? 'dans l’étable' : 'dans l’enclos'} ! ${ESPECES[id].icone}💕`
+        message = `${fiche.nom} t’attend ${id === 'vache' ? 'dans l’étable' : 'dans l’enclos'} ! ${ESPECES[id].icone}💕`
         if (surAdoption) surAdoption(fiche)
       } else message = 'Impossible pour l’instant.'
     } else if (action === 'deco') {
       message = acheterDecoration(id)
-        ? `Merci ! ${DECORATIONS[id].icone} ${DECORATIONS[id].nom} dans votre sac. Posez-la dehors avec 🌼 Décorer.`
+        ? `Merci ! ${DECORATIONS[id].icone} ${DECORATIONS[id].nom} dans ton sac. Pose-la dehors avec 🌼 Décorer.`
         : 'Pas assez de pièces pour l’instant.'
     } else if (action === 'compagnon') {
       const c = adopterCompagnon(id)
-      if (c) message = `${c.nom} vous suivra partout ! ${ESPECES_COMPAGNONS[id].icone}💕`
+      if (c) message = `${c.nom} te suivra partout ! ${ESPECES_COMPAGNONS[id].icone}💕`
     } else if (action === 'vendre') {
       const gain = vendre(id, n)
       message = gain ? `Vendu ! +${gain} 🪙` : ''

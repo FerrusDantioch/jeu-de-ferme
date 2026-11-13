@@ -54,7 +54,7 @@ export function ficheParcelle(n, { bulles, objet, actualiser }) {
         icone: '🟫',
         titre: 'Parcelle libre',
         lignes: graines.length
-          ? [{ texte: 'Que voulez-vous planter ?', discret: true }]
+          ? [{ texte: 'Que veux-tu planter ?', discret: true }]
           : [{ texte: 'Plus de graines dans le sac… La boutique en vendra bientôt !' }],
         actions: [
           ...graines.map(([id, nb]) => {
@@ -295,7 +295,7 @@ export function ficheCommandes({ bulles, joueur, idClient = null }) {
       lignes.push(...lignesCommande(c))
       actions.push(actionLivrer(id, c, { bulles, joueur, avecNom: true }))
     }
-    lignes.push({ texte: 'Pas de limite de temps : livrez quand vous voulez.', discret: true })
+    lignes.push({ texte: 'Pas de limite de temps : livre quand tu veux.', discret: true })
     return { icone: '📋', titre: 'Tableau des commandes', lignes, actions }
   }
 }
@@ -315,7 +315,7 @@ export function ficheCompagnon({ bulles, joueur, compagnon, renommer }) {
     return {
       icone: e.icone,
       titre: c.nom,
-      lignes: [{ texte: `${c.nom} vous suit partout et s’assoit à côté de vous sur les bancs 💕`, discret: true }],
+      lignes: [{ texte: `${c.nom} te suit partout et s’assoit à côté de toi sur les bancs 💕`, discret: true }],
       actions: [
         {
           icone: '🤚',
@@ -418,7 +418,7 @@ export function ficheCuisine({ bulles, joueur }) {
       icone: '🍳',
       titre: 'La cuisine',
       lignes: [
-        { texte: possibles ? 'Que voulez-vous préparer ?' : 'Il manque des ingrédients pour l’instant : potager, verger et animaux vous les donneront !' },
+        { texte: possibles ? 'Que veux-tu préparer ?' : 'Il manque des ingrédients pour l’instant : potager, verger et animaux te les donneront !' },
         { texte: 'Les plats se vendent bien chez Lila, et les villageois en demandent parfois.', discret: true },
       ],
       actions,
@@ -440,7 +440,7 @@ export function fichePeche({ peche, lancer, ranger, remonter, dernierePrise }) {
       return {
         icone: '🎣',
         titre: 'Ça mord !',
-        lignes: [{ texte: 'Un poisson a mordu 🐟 Il attend patiemment : prenez votre temps.' }],
+        lignes: [{ texte: 'Un poisson a mordu 🐟 Il attend patiemment : prends ton temps.' }],
         actions: [{ icone: '🎣', texte: 'Remonter la ligne', principal: true, faire: remonter }],
       }
     }
@@ -455,7 +455,7 @@ export function fichePeche({ peche, lancer, ranger, remonter, dernierePrise }) {
     const lignes = []
     if (prise) {
       const o = infosObjet(prise.id)
-      lignes.push({ texte: `Vous avez pêché : ${o.icone} ${o.nom} !${prise.nouveau ? ' ✨ Nouveau dans le carnet' : ''}` })
+      lignes.push({ texte: `Tu as pêché : ${o.icone} ${o.nom} !${prise.nouveau ? ' ✨ Nouveau dans le carnet' : ''}` })
     } else {
       lignes.push({ texte: 'Un joli coin pour pêcher. Les poissons changent avec les saisons, et certains ne sortent que la nuit 🌙' })
     }

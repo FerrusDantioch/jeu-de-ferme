@@ -15,6 +15,10 @@ export const NOM_COURT = 'Petite Ferme'
 // Auteur affiché dans l'écran « À propos » (pseudonyme uniquement).
 export const AUTEUR = 'Ferrus Dantioch'
 
+// Adresse de contact et site de l'Omni-système (affichés dans « À propos »).
+export const CONTACT = 'omni-systeme.choking513@passmail.net'
+export const SITE_OMNI = 'https://ferrusdantioch.github.io/omni-systeme/'
+
 // Couleurs principales (utilisées aussi pour l'icône et la barre du téléphone).
 export const COULEUR_THEME = '#7cc47a'
 export const COULEUR_FOND = '#cdeaf7'

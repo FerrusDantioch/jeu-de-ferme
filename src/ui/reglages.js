@@ -32,24 +32,24 @@ const CHOIX = [
 const GUIDE = `
   <h2>❓ Comment jouer</h2>
   <ul class="guide">
-    <li>👆 <strong>Marcher</strong> : touchez le sol. (Au clavier : flèches ou Z Q S D. Un joystick est disponible dans les Réglages.)</li>
-    <li>🚪 <strong>Entrer</strong> dans un bâtiment : touchez-le. Pour sortir : touchez la porte.</li>
-    <li>🌱 <strong>Potager</strong> : touchez une parcelle pour planter, arroser (facultatif) et récolter. Les plantes poussent même quand le jeu est fermé.</li>
-    <li>🐔 <strong>Animaux</strong> : touchez-les pour les nourrir, les caresser et ramasser œufs, lait et laine. Le foin et le grain sont gratuits dans les réserves.</li>
-    <li>📋 <strong>Commandes</strong> : les villageois avec un 📋 attendent quelque chose. Livrez-les (ou passez par le tableau des commandes). Pas de limite de temps !</li>
-    <li>🧺 <strong>Boutique</strong> : touchez Lila pour acheter des graines et des décorations, adopter des animaux, un chat ou un chien (gratuit), ou vendre.</li>
-    <li>🍎 <strong>Verger</strong> : à droite de l’étable, touchez un arbre pour le secouer et cueillir ses fruits.</li>
-    <li>🍳 <strong>Cuisine</strong> : dans la maison, touchez la cuisine pour préparer de bons plats.</li>
-    <li>🎣 <strong>Pêche</strong> : touchez l’étang. Quand ça mord, le poisson attend : remontez la ligne quand vous voulez.</li>
-    <li>🌼 <strong>Décorer</strong> : dans 🎒 Mon sac, « Décorer la ferme », puis touchez l’herbe là où poser la décoration.</li>
-    <li>📖 <strong>Carnet</strong> : tout ce que vous avez récolté, pêché et cuisiné (dans 🎒 Mon sac).</li>
-    <li>👤 <strong>Mon personnage</strong> : prénom, coiffure, tenue… et votre compagnon.</li>
-    <li>🪑 <strong>S’asseoir</strong> : touchez un banc ou une chaise.</li>
+    <li>👆 <strong>Marcher</strong> : touche le sol. (Au clavier : flèches ou Z Q S D. Un joystick est disponible dans les Réglages.)</li>
+    <li>🚪 <strong>Entrer</strong> dans un bâtiment : touche-le. Pour sortir : touche la porte.</li>
+    <li>🌱 <strong>Potager</strong> : touche une parcelle pour planter, arroser (facultatif) et récolter. Les plantes poussent même quand le jeu est fermé.</li>
+    <li>🐔 <strong>Animaux</strong> : touche-les pour les nourrir, les caresser et ramasser œufs, lait et laine. Le foin et le grain sont gratuits dans les réserves.</li>
+    <li>📋 <strong>Commandes</strong> : les villageois avec un 📋 attendent quelque chose. Livre-les (ou passe par le tableau des commandes). Pas de limite de temps !</li>
+    <li>🧺 <strong>Boutique</strong> : touche Lila pour acheter des graines et des décorations, adopter des animaux, un chat ou un chien (gratuit), ou vendre.</li>
+    <li>🍎 <strong>Verger</strong> : à droite de l’étable, touche un arbre pour le secouer et cueillir ses fruits.</li>
+    <li>🍳 <strong>Cuisine</strong> : dans la maison, touche la cuisine pour préparer de bons plats.</li>
+    <li>🎣 <strong>Pêche</strong> : touche l’étang. Quand ça mord, le poisson attend : remonte la ligne quand tu veux.</li>
+    <li>🌼 <strong>Décorer</strong> : dans 🎒 Mon sac, « Décorer la ferme », puis touche l’herbe là où poser la décoration.</li>
+    <li>📖 <strong>Carnet</strong> : tout ce que tu as récolté, pêché et cuisiné (dans 🎒 Mon sac).</li>
+    <li>👤 <strong>Mon personnage</strong> : prénom, coiffure, tenue… et ton compagnon.</li>
+    <li>🪑 <strong>S’asseoir</strong> : touche un banc ou une chaise.</li>
     <li>📜 <strong>Quêtes</strong> : 3 petites missions chaque jour, renouvelées à minuit.</li>
     <li>🌙 Le jour, la nuit et les saisons suivent l’heure et la date du téléphone (réglables ci-dessus).</li>
     <li>💾 La partie est <strong>sauvegardée toute seule</strong>.</li>
   </ul>
-  <p class="discret">Rien ne presse, rien ne se perd : prenez votre temps. 🌷</p>`
+  <p class="discret">Rien ne presse, rien ne se perd : prends ton temps. 🌷</p>`
 
 /**
  * @param {object} o
@@ -149,11 +149,11 @@ export function creerReglages({ barre, ouvrirAPropos, avantExport }) {
         <button class="bouton" data-action="annuler">Annuler</button></div>`
     } else if (attente?.type === 'recommencer') {
       sauvegarde = `<p><strong>Tout effacer et recommencer une nouvelle partie ?</strong><br>
-        <span class="discret">La partie actuelle sera perdue. Pensez à l’exporter d’abord si vous voulez la garder.</span></p>
+        <span class="discret">La partie actuelle sera perdue. Pense à l’exporter d’abord si tu veux la garder.</span></p>
         <div class="reglage-choix"><button class="bouton" data-action="annuler">Non, garder ma partie</button>
         <button class="bouton bouton-attention" data-action="confirmer-recommencer">Oui, tout effacer</button></div>`
     } else {
-      sauvegarde = `<p class="discret">La partie est sauvegardée toute seule sur cet appareil. Vous pouvez aussi la garder dans un fichier.</p>
+      sauvegarde = `<p class="discret">La partie est sauvegardée toute seule sur cet appareil. Tu peux aussi la garder dans un fichier.</p>
         <div class="reglage-choix">
           <button class="bouton" data-action="exporter">📤 Exporter</button>
           <button class="bouton" data-action="importer">📥 Importer</button>

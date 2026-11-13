@@ -362,6 +362,27 @@
 | Couleurs des saisons                               | `src/monde/saisons.js`          |
 | Couleurs du ciel selon l'heure                     | `src/monde/ciel.js`             |
 
+## ✅ Version 1.3.0 — Confort et contrôle
+
+### Ce qui est fait
+- **Tutoiement** : tous les textes du jeu disent « tu ».
+- **À propos** : une vraie fenêtre `<dialog>`, avec la même structure que les autres
+  applications de l'Omni-système (logo, version, auteur, licence, confidentialité, contact,
+  lien vers l'Omni-système). Fichier `LICENSE` ajouté (CC BY-NC-ND 4.0).
+- **Bouton « 🔄 Mettre à jour »** : le jeu ne se recharge plus tout seul quand une nouvelle
+  version arrive. Le bouton apparaît en haut ; la partie est sauvegardée avant de relancer.
+- **Fenêtres plus confortables** : croix en haut à droite, bouton « Fermer » toujours visible
+  en bas, fenêtres plus larges sur tablette. Le sac utilise la même fenêtre que les autres.
+
+### Où modifier quoi
+| Je veux changer…                              | Fichier                          |
+|-----------------------------------------------|----------------------------------|
+| L'adresse de contact, le lien Omni-système    | `src/config.js`                  |
+| Le texte de « À propos »                      | `index.html`                     |
+| Le numéro de version                          | `package.json`                   |
+| La façon dont les mises à jour sont proposées | `src/pwa.js`                     |
+| L'allure des fenêtres                         | `src/ui/fenetre.js`, `src/ui/style.css` |
+
 ## 🚀 Mise en ligne (GitHub Pages)
 Le jeu est en ligne : https://ferrusdantioch.github.io/jeu-de-ferme/
 Le fichier `.github/workflows/publication.yml` le republie à chaque mise à jour de `main`.

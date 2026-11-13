@@ -53,7 +53,7 @@ export function creerProgression(zoneCompteurs, declencheur) {
       <p><strong>Niveau ${p.niveau}</strong>${p.niveau < NIVEAU_MAXIMUM ? ` — encore ${p.manque} ⭐ pour le niveau ${p.niveau + 1}` : ''}</p>
       ${barre(p.fraction)}
       <p>🪙 <strong>${etat.d.pieces}</strong> pièces</p>
-      ${prochain ? `<p>Au niveau ${prochain}, vous débloquerez :</p>${listeDeblocages(prochain)}` : ''}
+      ${prochain ? `<p>Au niveau ${prochain}, tu débloqueras :</p>${listeDeblocages(prochain)}` : ''}
       <p class="discret">🧺 ${pluriel(s.recoltes, 'récolte')} · 🥚 ${pluriel(s.produitsRamasses, 'produit ramassé', 'produits ramassés')} ·
       📦 ${pluriel(s.commandesLivrees, 'commande livrée', 'commandes livrées')} ·
       📜 ${pluriel(s.quetesReussies || 0, 'quête réussie', 'quêtes réussies')}</p>
@@ -71,7 +71,7 @@ export function creerProgression(zoneCompteurs, declencheur) {
     setTimeout(() => {
       fete.ouvrir(`
         <h2>🎉 Niveau ${n} !</h2>
-        <p>Bravo, votre ferme grandit !</p>
+        <p>Bravo, ta ferme grandit !</p>
         ${deblocagesDuNiveau(n).length ? `<p>Nouveau chez Lila :</p>${listeDeblocages(n)}` : ''}`)
     }, 1200)
   })

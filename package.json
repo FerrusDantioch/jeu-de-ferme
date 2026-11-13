@@ -1,7 +1,7 @@
 {
   "name": "jeu-de-ferme",
   "private": true,
-  "version": "1.2.0",
+  "version": "1.3.0",
   "type": "module",
   "description": "Un jeu de ferme 3D calme et mignon, jouable sur téléphone et ordinateur (PWA).",
   "author": "Ferrus Dantioch",

@@ -2,14 +2,15 @@
  * interface.js — les boutons et fenêtres posés par-dessus la 3D.
  *
  *  - le nom du lieu où l'on se trouve, en haut à gauche ;
- *  - une bulle d'aide (« Touchez le sol pour marcher », puis « Touchez un bâtiment… ») ;
- *  - un bouton « À propos » (nom du jeu, auteur, version) ;
+ *  - une bulle d'aide (« Touche le sol pour marcher », puis « Touche un bâtiment… ») ;
+ *  - la fenêtre « À propos » (ouverte depuis ⚙️ Réglages) ;
+ *  - un bouton « Mettre à jour » qui apparaît quand une nouvelle version est prête ;
  *  - un bouton « Installer » qui apparaît quand le téléphone permet d'installer le jeu.
  */
-import { NOM_DU_JEU, AUTEUR } from '../config.js'
+import { NOM_DU_JEU, CONTACT, SITE_OMNI } from '../config.js'
 
 // Numéro de version du jeu (lu automatiquement dans package.json par Vite).
-const VERSION = import.meta.env.VITE_VERSION || '1.2.0'
+const VERSION = import.meta.env.VITE_VERSION
 
 // Petite aide pour créer un élément HTML.
 function creer(balise, classes = '', html = '') {
@@ -43,58 +44,43 @@ export function creerInterface({ aideAuDemarrage = true } = {}) {
   boutonInstaller.hidden = true
   barre.appendChild(boutonInstaller)
 
-  const boutonAPropos = creer(
+  // Bouton « Mettre à jour » : caché, il n'apparaît que lorsqu'une nouvelle version
+  // du jeu a été téléchargée. Rien ne change tant qu'on ne le touche pas.
+  const boutonMiseAJour = creer(
     'button',
-    'bouton',
-    '<span class="icone" aria-hidden="true">ℹ️</span><span class="texte-facultatif">À propos</span>'
+    'bouton bouton-principal',
+    '<span class="icone" aria-hidden="true">🔄</span><span>Mettre à jour</span>'
   )
-  // Le bouton « À propos » reste dans la barre (pour garder sa place), mais caché :
-  // on y accède maintenant par ⚙️ Réglages.
-  boutonAPropos.hidden = true
-  barre.appendChild(boutonAPropos)
+  boutonMiseAJour.hidden = true
+  barre.appendChild(boutonMiseAJour)
 
   // --- Bulle d'aide ---
   const estTactile = window.matchMedia('(pointer: coarse)').matches
   const AIDES = {
     marcher: estTactile
-      ? '👆 Touchez le sol pour marcher'
-      : '🖱️ Cliquez sur le sol pour marcher<br><span class="discret">ou utilisez les flèches / Z Q S D</span>',
+      ? '👆 Touche le sol pour marcher'
+      : '🖱️ Clique sur le sol pour marcher<br><span class="discret">ou utilise les flèches / Z Q S D</span>',
     entrer: estTactile
-      ? '🚪 Touchez un bâtiment pour y entrer<br><span class="discret">et un villageois pour lui parler</span>'
-      : '🚪 Cliquez sur un bâtiment pour y entrer<br><span class="discret">et sur un villageois pour lui parler</span>',
+      ? '🚪 Touche un bâtiment pour y entrer<br><span class="discret">et un villageois pour lui parler</span>'
+      : '🚪 Clique sur un bâtiment pour y entrer<br><span class="discret">et sur un villageois pour lui parler</span>',
   }
   const bulle = creer('div', 'bulle-aide', AIDES.marcher)
   if (!aideAuDemarrage) bulle.classList.add('cache') // partie déjà commencée : pas besoin
   racine.appendChild(bulle)
 
   // --- Fenêtre « À propos » ---
-  const voile = creer('div', 'voile')
-  voile.hidden = true
-  voile.innerHTML = `
-    <div class="panneau" role="dialog" aria-modal="true" aria-labelledby="titre-apropos">
-      <h2 id="titre-apropos">${NOM_DU_JEU}</h2>
-      <p>Un jeu de ferme tout doux : prenez votre temps, rien ne presse. 🌱</p>
-      <p>Créé par <strong>${AUTEUR}</strong>.</p>
-      <p class="discret"><span data-version>Version ${VERSION}</span><br>
-      Sans publicité, sans achat, sans collecte de données.<br>
-      Fonctionne sans Internet une fois installé.</p>
-      <div class="actions">
-        <button class="bouton bouton-principal" data-action="fermer">
-          <span class="icone" aria-hidden="true">✔️</span><span>Fermer</span>
-        </button>
-      </div>
-    </div>`
-  racine.appendChild(voile)
-
-  const boutonFermer = voile.querySelector('[data-action="fermer"]')
-  boutonAPropos.addEventListener('click', () => {
-    voile.hidden = false
-    boutonFermer.focus()
-  })
-  boutonFermer.addEventListener('click', () => (voile.hidden = true))
-  // Toucher en dehors de la fenêtre la ferme aussi.
-  voile.addEventListener('click', (e) => {
-    if (e.target === voile) voile.hidden = true
+  // Sa structure est écrite dans index.html (une vraie fenêtre <dialog>, la même que
+  // dans les autres applications de l'Omni-système). Ici, on la remplit avec config.js.
+  const aPropos = document.getElementById('fenetre-a-propos')
+  aPropos.querySelector('.nom-application').textContent = NOM_DU_JEU
+  aPropos.querySelector('.version').textContent = `Version ${VERSION}`
+  const contact = aPropos.querySelector('.contact')
+  contact.href = `mailto:${CONTACT}`
+  contact.textContent = CONTACT
+  aPropos.querySelector('.lien-omni').href = SITE_OMNI
+  aPropos.addEventListener('click', (e) => {
+    // Le bouton « Fermer », ou un toucher en dehors de la fenêtre (sur le voile), la ferme.
+    if (e.target === aPropos || e.target.closest('[data-fermer]')) aPropos.close()
   })
 
   // --- Installation de l'appli (Android / ordinateur avec Chrome ou Edge) ---
@@ -120,7 +106,18 @@ export function creerInterface({ aideAuDemarrage = true } = {}) {
     barre,
     /** Ouvre la fenêtre « À propos ». */
     ouvrirAPropos() {
-      boutonAPropos.click()
+      if (!aPropos.open) aPropos.showModal()
+    },
+    /**
+     * Affiche le bouton « Mettre à jour ». `appliquer` installe la nouvelle version
+     * et relance le jeu (la partie est sauvegardée juste avant).
+     */
+    proposerMiseAJour(appliquer) {
+      boutonMiseAJour.hidden = false
+      boutonMiseAJour.onclick = () => {
+        boutonMiseAJour.disabled = true
+        appliquer()
+      }
     },
     /** Cache la bulle d'aide (après le premier déplacement). */
     cacherAide() {

@@ -51,7 +51,7 @@ export const FETES = [
     id: 'paques',
     nom: 'Pâques',
     icone: '🐣',
-    message: 'Joyeuses Pâques ! Des œufs colorés sont cachés dans la ferme… À vous de les trouver !',
+    message: 'Joyeuses Pâques ! Des œufs colorés sont cachés dans la ferme… À toi de les trouver !',
     // Du samedi au lundi de Pâques.
     quand: { type: 'paques', debut: -1, fin: 1 },
     decor: 'oeufs',

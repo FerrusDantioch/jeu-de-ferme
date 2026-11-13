@@ -26,6 +26,26 @@
       <div class="chargement-texte">Chargement…</div>
     </div>
 
+    <!-- À propos (même structure que dans les autres applications de l'Omni-système).
+         Le nom, la version, le contact et le lien sont remplis par src/ui/interface.js. -->
+    <dialog id="fenetre-a-propos" aria-labelledby="titre-a-propos">
+      <div class="fenetre-corps a-propos">
+        <img src="./images/logo-omni-systeme.webp" width="104" height="104" alt="Logo de l'Omni-système : un dé à vingt faces violet entouré d'un anneau lumineux">
+        <h2 id="titre-a-propos" class="nom-application"></h2>
+        <!-- (Toucher 5 fois le numéro de version ouvre le mode test caché.) -->
+        <p class="version chiffres" data-version></p>
+        <p>Application réalisée par Ferrus Dantioch, avec l'aide de l'intelligence artificielle.</p>
+        <!-- Licence du code : texte complet dans le fichier LICENSE du dépôt. -->
+        <p>© 2026 Ferrus Dantioch — <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.fr" target="_blank" rel="noopener noreferrer">Creative Commons BY-NC-ND 4.0</a> : partage autorisé en citant l'auteur, sans usage commercial ni modification.</p>
+        <p>Tes données restent sur cet appareil. Aucun compte, aucune donnée envoyée.</p>
+        <p>Une idée, une remarque, un souci ? Tes retours sont les bienvenus : <a class="contact" href="mailto:"></a></p>
+        <p><a class="lien-omni" href="#" target="_blank" rel="noopener">Découvrir l'Omni-système</a></p>
+      </div>
+      <div class="fenetre-actions">
+        <button class="bouton bouton-principal" type="button" data-fermer>Fermer</button>
+      </div>
+    </dialog>
+
     <!-- Message affiché si JavaScript est désactivé -->
     <noscript>Ce jeu a besoin de JavaScript pour fonctionner.</noscript>
 
