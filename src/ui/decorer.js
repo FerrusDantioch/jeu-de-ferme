@@ -47,8 +47,8 @@ export function creerDecorer({ dehors, poser }) {
         .join('')
     }
     let avertissement = ''
-    if (!dehors()) avertissement = '<p class="reglage-message">🌳 Les décorations se posent dehors : sortez pour décorer la ferme !</p>'
-    else if (!placeRestante()) avertissement = `<p class="reglage-message">La ferme est bien décorée ! (${DECORATIONS_MAXIMUM} décorations au plus.) Rangez-en une pour en poser une autre.</p>`
+    if (!dehors()) avertissement = '<p class="reglage-message">🌳 Les décorations se posent dehors : sors pour décorer la ferme !</p>'
+    else if (!placeRestante()) avertissement = `<p class="reglage-message">La ferme est bien décorée ! (${DECORATIONS_MAXIMUM} décorations au plus.) Range-en une pour en poser une autre.</p>`
     const dansLaFerme = posees.length
       ? posees
           .map((p) => {
@@ -61,7 +61,7 @@ export function creerDecorer({ dehors, poser }) {
       : '<p class="discret">Rien de posé pour l’instant.</p>'
     fenetre.remplir(`
       <h2>🌼 Décorer la ferme</h2>
-      <p class="discret">Choisissez une décoration, puis touchez l’herbe à l’endroit voulu. Vous pourrez toujours la ranger ou la déplacer.</p>
+      <p class="discret">Choisis une décoration, puis touche l’herbe à l’endroit voulu. Tu pourras toujours la ranger ou la déplacer.</p>
       ${avertissement}
       <h3>🎒 Dans le sac</h3>${aPoser}
       <h3>🌳 Dans la ferme</h3>${dansLaFerme}`)

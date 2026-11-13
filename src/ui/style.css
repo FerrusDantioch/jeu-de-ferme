@@ -5,19 +5,17 @@
  *  - boutons d'au moins 56 pixels de haut, bien espacés ;
  *  - texte grand et bien contrasté ;
  *  - animations douces (et supprimées si le téléphone demande « moins d'animations »).
+ *
+ * Les couleurs ne sont PAS ici : elles sont dans themes.css (thèmes clair, sombre, violet nuit).
  */
 
 :root {
   /* Taille de base du texte : tout le reste en dépend (réglable plus tard). */
   --taille-texte: 20px;
-  --couleur-texte: #2f3a2f;
-  --couleur-panneau: #fffaf0;
-  --couleur-bouton: #ffffff;
-  --couleur-accent: #5a9e58;
-  --couleur-accent-texte: #ffffff;
   --rayon: 18px;
-  --ombre: 0 4px 14px rgba(0, 0, 0, 0.18);
   --taille-tactile: 56px;
+  /* Luminosité (réglable) : 0 = normale ; 0.3 = écran assombri de 30 %. */
+  --assombrir: 0;
 }
 
 * {
@@ -35,7 +33,7 @@ body {
   margin: 0;
   height: 100%;
   overflow: hidden;
-  background: #cdeaf7;
+  background: var(--couleur-chargement);
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   font-size: var(--taille-texte);
   color: var(--couleur-texte);
@@ -77,7 +75,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  background: #cdeaf7;
+  background: var(--couleur-chargement);
   transition: opacity 0.6s ease;
   z-index: 10;
 }
@@ -88,7 +86,7 @@ body {
 .chargement-titre {
   font-size: 2em;
   font-weight: 700;
-  color: #3d6b3b;
+  color: var(--couleur-titre);
 }
 
 /* --- Boutons --- */
@@ -113,7 +111,7 @@ body {
   transform: scale(0.97);
 }
 .bouton:focus-visible {
-  outline: 4px solid #2c6fbf;
+  outline: 4px solid var(--couleur-focus);
   outline-offset: 2px;
 }
 .bouton-principal {
@@ -173,11 +171,13 @@ body {
   opacity: 0;
 }
 
-/* --- Fenêtre (panneau) au centre de l'écran --- */
+/* --- Fenêtre (panneau) au centre de l'écran ---
+   Le panneau est une colonne : une croix en haut à droite, le contenu qui défile
+   au milieu, et le bouton « Fermer » en bas, TOUJOURS visible. */
 .voile {
   position: absolute;
   inset: 0;
-  background: rgba(30, 40, 30, 0.35);
+  background: var(--couleur-voile);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -187,31 +187,133 @@ body {
   display: none;
 }
 .panneau {
+  position: relative;
+  display: flex;
+  flex-direction: column;
   width: min(480px, 100%);
   max-height: 100%;
-  overflow-y: auto;
+  overflow: hidden;
   background: var(--couleur-panneau);
   border-radius: 24px;
   box-shadow: var(--ombre);
-  padding: 24px;
   line-height: 1.45;
+}
+.fenetre-contenu {
+  flex: 1 1 auto;
+  min-height: 0; /* nécessaire pour que le contenu défile au lieu de déborder */
+  overflow-y: auto;
+  padding: 24px 24px 12px;
+}
+/* La croix : toujours au même endroit, en haut à droite. */
+.fenetre-croix {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1;
+  padding: 0;
 }
 .panneau h2 {
   margin: 0 0 12px;
+  padding-right: 56px; /* la place de la croix */
+  min-height: 44px;
   font-size: 1.4em;
-  color: #3d6b3b;
+  color: var(--couleur-titre);
 }
 .panneau p {
   margin: 0 0 12px;
 }
 .panneau .actions {
+  flex: none;
   display: flex;
   justify-content: flex-end;
-  margin-top: 20px;
+  padding: 12px 24px 16px;
+  border-top: 1px solid var(--couleur-trait);
 }
 .panneau .discret {
   opacity: 0.75;
   font-size: 0.85em;
+}
+/* Sur tablette, il y a de la place : les fenêtres sont plus larges. */
+@media (min-width: 700px) {
+  .panneau {
+    width: min(640px, 100%);
+  }
+  .panneau.panneau-boutique {
+    width: min(720px, 100%);
+  }
+}
+
+/* --- Fenêtre « À propos » : une vraie fenêtre <dialog> (structure commune aux
+   applications de l'Omni-système, écrite dans index.html) --- */
+dialog {
+  width: min(480px, calc(100% - 32px));
+  max-height: calc(100% - 32px);
+  padding: 0;
+  border: none;
+  border-radius: 24px;
+  background: var(--couleur-panneau);
+  color: var(--couleur-texte);
+  box-shadow: var(--ombre);
+  line-height: 1.45;
+  /* Le texte de cette fenêtre peut être sélectionné (pour copier l'adresse de contact). */
+  user-select: text;
+  -webkit-user-select: text;
+}
+dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+dialog::backdrop {
+  background: var(--couleur-voile);
+}
+.fenetre-corps {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 24px;
+}
+.fenetre-actions {
+  flex: none;
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 24px 16px;
+  border-top: 1px solid var(--couleur-trait);
+}
+.a-propos {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  padding-top: 28px;
+  text-align: center;
+}
+.a-propos img {
+  width: 104px;
+  height: 104px;
+  border-radius: var(--rayon);
+}
+.a-propos .nom-application {
+  margin: 0;
+  font-size: 1.5em;
+  font-weight: 800;
+  color: var(--couleur-titre);
+}
+.a-propos .version {
+  opacity: 0.75;
+  font-size: 0.9em;
+  /* Une zone confortable à toucher (5 touchers ouvrent le mode test caché). */
+  padding: 8px 16px;
+}
+.a-propos p {
+  margin: 0;
+  max-width: 40ch;
+}
+.a-propos a {
+  color: var(--couleur-lien);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  /* Un lien facile à toucher. */
+  display: inline-block;
+  padding: 6px 0;
 }
 
 /* --- Étiquette du lieu, en haut à gauche (« 🌳 La ferme ») --- */
@@ -226,18 +328,18 @@ body {
   padding: 4px 16px;
   border: none;
   border-radius: var(--rayon);
-  background: rgba(255, 250, 240, 0.92);
+  background: var(--couleur-etiquette);
   box-shadow: var(--ombre);
   font: inherit;
   font-weight: 700;
-  color: #3d6b3b;
+  color: var(--couleur-titre);
   line-height: 1.2;
   cursor: pointer;
   pointer-events: auto;
 }
 .lieu-compteurs {
   font-size: 0.8em;
-  color: #6b4a35;
+  color: var(--couleur-secondaire);
 }
 
 /* --- Bulles de paroles au-dessus des personnages --- */
@@ -249,7 +351,7 @@ body {
   padding: 10px 16px 12px;
   margin-top: -14px; /* place pour la petite pointe */
   border-radius: var(--rayon);
-  background: #ffffff;
+  background: var(--couleur-carte);
   box-shadow: var(--ombre);
   line-height: 1.3;
   text-align: center;
@@ -266,7 +368,7 @@ body {
   transform: translateX(-50%);
   border: 10px solid transparent;
   border-bottom: 0;
-  border-top-color: #ffffff;
+  border-top-color: var(--couleur-carte);
 }
 .bulle-parole.cache {
   opacity: 0;
@@ -274,7 +376,7 @@ body {
 .bulle-nom {
   font-size: 0.75em;
   font-weight: 700;
-  color: #5a9e58;
+  color: var(--couleur-titre);
   margin-bottom: 2px;
 }
 
@@ -285,7 +387,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f6ead6;
+  background: var(--couleur-fondu);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.45s ease;
@@ -298,7 +400,7 @@ body {
 .fondu-titre {
   font-size: 1.6em;
   font-weight: 700;
-  color: #6b4a35;
+  color: var(--couleur-fondu-texte);
 }
 
 /* --- Bouton désactivé (ex. : « Déjà arrosée ») --- */
@@ -335,7 +437,7 @@ body {
 .fiche-titre {
   font-size: 1.15em;
   font-weight: 700;
-  color: #3d6b3b;
+  color: var(--couleur-titre);
 }
 .fiche-fermer {
   flex: none;
@@ -355,13 +457,13 @@ body {
   height: 14px;
   margin-top: 4px;
   border-radius: 7px;
-  background: #e8e0cf;
+  background: var(--couleur-jauge-fond);
   overflow: hidden;
 }
 .barre-plein {
   height: 100%;
   border-radius: 7px;
-  background: linear-gradient(90deg, #9fd67f, #6dbb5e);
+  background: linear-gradient(90deg, var(--couleur-jauge-debut), var(--couleur-jauge-fin));
   transition: width 0.6s ease;
 }
 .fiche-actions {
@@ -409,7 +511,7 @@ body {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.92);
+  background: var(--couleur-pastille);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
   font-size: 24px;
   pointer-events: none !important;
@@ -432,7 +534,7 @@ body {
 .panneau-sac h3 {
   margin: 14px 0 8px;
   font-size: 1em;
-  color: #6b4a35;
+  color: var(--couleur-secondaire);
 }
 .sac-grille {
   display: grid;
@@ -445,8 +547,8 @@ body {
   align-items: center;
   padding: 8px 6px;
   border-radius: 14px;
-  background: #ffffff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  background: var(--couleur-carte);
+  box-shadow: var(--ombre-carte);
   text-align: center;
 }
 .sac-icone {
@@ -464,7 +566,7 @@ body {
 .panneau h3 {
   margin: 14px 0 8px;
   font-size: 1em;
-  color: #6b4a35;
+  color: var(--couleur-secondaire);
 }
 .panneau .barre {
   margin: 4px 0 14px;
@@ -500,7 +602,7 @@ body {
 }
 .boutique-message {
   font-size: 0.85em;
-  color: #3d6b3b;
+  color: var(--couleur-titre);
 }
 .onglets {
   display: flex;
@@ -516,10 +618,10 @@ body {
   flex-wrap: wrap;
   gap: 8px 10px;
   padding: 10px 0;
-  border-bottom: 1px solid #efe5d2;
+  border-bottom: 1px solid var(--couleur-trait);
 }
 .ligne-boutique.bloquee {
-  opacity: 0.6;
+  opacity: 0.8; /* un peu estompé, mais toujours bien lisible */
 }
 .lb-icone {
   font-size: 1.8em;
@@ -562,8 +664,8 @@ body {
   height: 26px;
   padding: 0 6px;
   border-radius: 13px;
-  background: #e8834e;
-  color: #ffffff;
+  background: var(--couleur-attention);
+  color: var(--couleur-attention-texte);
   font-size: 0.75em;
   font-weight: 800;
   line-height: 26px;
@@ -576,11 +678,11 @@ body {
   margin: 10px 0;
   padding: 12px 14px;
   border-radius: 16px;
-  background: #ffffff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  background: var(--couleur-carte);
+  box-shadow: var(--ombre-carte);
 }
 .carte-quete.finie {
-  background: #f1f9ec;
+  background: var(--couleur-carte-reussie);
 }
 .quete-texte {
   font-weight: 600;
@@ -601,7 +703,7 @@ body {
 .quete-recue {
   display: block;
   margin-top: 6px;
-  color: #3d6b3b;
+  color: var(--couleur-titre);
   font-weight: 600;
 }
 
@@ -612,7 +714,7 @@ body {
 
 /* --- Mode test (caché) --- */
 .etiquette-test {
-  background: #fff3c4;
+  background: var(--couleur-test);
   font-size: 0.85em;
 }
 .etiquette-test[hidden] {
@@ -630,7 +732,7 @@ body {
   font: inherit;
   padding: 0 8px;
   border-radius: 12px;
-  border: 2px solid #d8cdb8;
+  border: 2px solid var(--couleur-bord-champ);
 }
 .test-raccourcis {
   display: grid;
@@ -643,7 +745,7 @@ body {
 /* --- Réglages --- */
 .ligne-reglage {
   padding: 10px 0;
-  border-bottom: 1px solid #efe5d2;
+  border-bottom: 1px solid var(--couleur-trait);
 }
 .reglage-titre {
   font-weight: 600;
@@ -660,12 +762,12 @@ body {
 .reglage-message {
   padding: 10px 12px;
   border-radius: 12px;
-  background: #f1f9ec;
+  background: var(--couleur-carte-reussie);
   font-size: 0.9em;
 }
 .bouton-attention {
-  background: #e8834e;
-  color: #ffffff;
+  background: var(--couleur-attention);
+  color: var(--couleur-attention-texte);
 }
 .guide {
   padding-left: 0;
@@ -742,39 +844,35 @@ body {
 /* --- Fenêtre 👤 « Mon personnage » (en bas, pour voir le personnage changer au-dessus) --- */
 .voile-bas {
   align-items: flex-end;
-  background: rgba(30, 40, 30, 0.08);
+  background: var(--couleur-voile-leger);
   padding-bottom: max(12px, env(safe-area-inset-bottom));
 }
 .panneau-perso {
-  max-height: 52vh;
-  padding: 18px 20px;
+  /* Assez bas pour voir le personnage au-dessus, mais jamais trop petit (téléphone couché). */
+  max-height: max(52vh, 280px);
 }
-.panneau-perso .actions {
-  position: sticky;
-  bottom: -18px;
-  margin: 12px -20px -18px;
-  padding: 10px 20px 14px;
-  background: var(--couleur-panneau);
+.panneau-perso .fenetre-contenu {
+  padding: 18px 20px 10px;
 }
 .perso-prenom {
   display: block;
   padding-bottom: 10px;
-  border-bottom: 1px solid #efe5d2;
+  border-bottom: 1px solid var(--couleur-trait);
 }
 .perso-prenom input,
 .champ-texte {
   width: 100%;
   min-height: var(--taille-tactile);
   padding: 0 16px;
-  border: 2px solid #e2d6bf;
+  border: 2px solid var(--couleur-bord-champ);
   border-radius: var(--rayon);
-  background: #fff;
+  background: var(--couleur-carte);
   color: var(--couleur-texte);
   font: inherit;
 }
 .perso-prenom input:focus-visible,
 .champ-texte:focus-visible {
-  outline: 4px solid #2c6fbf;
+  outline: 4px solid var(--couleur-focus);
   outline-offset: 2px;
 }
 .choix-couleurs .bouton {
@@ -787,7 +885,7 @@ body {
   border-radius: 50%;
 }
 .pastille-couleur.choisie {
-  outline: 4px solid #3d6b3b;
+  outline: 4px solid var(--couleur-titre);
   outline-offset: 1px;
 }
 .perso-hasard {
@@ -797,7 +895,7 @@ body {
 /* --- 📖 Le carnet de collection --- */
 .carnet-manque {
   opacity: 0.6;
-  border: 2px dashed #e2d6bf;
+  border: 2px dashed var(--couleur-bord-champ);
   background: transparent;
 }
 .carnet-indice {
@@ -807,4 +905,89 @@ body {
 }
 .panneau h3 .discret {
   font-weight: normal;
+}
+
+/* --- Champ de date du mode test : mêmes couleurs que les autres champs --- */
+.test-ligne input[type='date'] {
+  background: var(--couleur-carte);
+  color: var(--couleur-texte);
+}
+
+/* --- Luminosité (⚙️ Réglages) ---
+   Un voile noir, plus ou moins transparent, posé par-dessus tout le jeu.
+   Il laisse passer tous les touchers. La fenêtre « À propos » (qui s'affiche
+   au-dessus de tout) est assombrie à part, de la même quantité. */
+#voile-luminosite {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  opacity: var(--assombrir);
+  pointer-events: none;
+  z-index: 20;
+}
+dialog {
+  filter: brightness(calc(1 - var(--assombrir)));
+}
+
+/* --- Choix du thème : une pastille montre les couleurs de chaque thème --- */
+.apercu-theme {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border-radius: 50%;
+  /* (Chaque pastille porte son propre data-theme : elle prend donc SES couleurs.) */
+  background: linear-gradient(135deg, var(--couleur-panneau) 50%, var(--couleur-accent) 50%);
+  border: 2px solid var(--couleur-bord-champ);
+}
+
+/* --- 🛟 Copies de secours (dans les Réglages) --- */
+.liste-copies {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.liste-copies .bouton,
+.secours-actions .bouton {
+  justify-content: flex-start;
+  padding: 8px 14px;
+  text-align: left;
+}
+
+/* --- Écran de secours (si le jeu n'a pas pu démarrer) : voir src/ui/secours.js --- */
+#secours {
+  position: fixed;
+  inset: 0;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: var(--couleur-chargement);
+  overflow-y: auto;
+}
+.secours-panneau {
+  width: min(560px, 100%);
+  max-height: 100%;
+  overflow-y: auto;
+  padding: 24px;
+  border-radius: 24px;
+  background: var(--couleur-panneau);
+  box-shadow: var(--ombre);
+  line-height: 1.45;
+}
+.secours-panneau h2 {
+  margin: 0 0 12px;
+  font-size: 1.4em;
+  color: var(--couleur-titre);
+}
+.secours-panneau p {
+  margin: 0 0 12px;
+}
+.secours-panneau .discret {
+  opacity: 0.75;
+  font-size: 0.85em;
+}
+.secours-actions {
+  display: grid;
+  gap: 10px;
 }

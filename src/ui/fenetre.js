@@ -2,7 +2,8 @@
  * fenetre.js — une fenêtre au centre de l'écran (sur un voile léger), réutilisable :
  * progression, nouveau niveau, boutique…
  *
- * Elle se ferme avec son bouton, ou en touchant à côté. Jamais toute seule.
+ * Elle se ferme avec la croix en haut à droite, avec le bouton du bas (toujours
+ * visible : seul le contenu défile), ou en touchant à côté. Jamais toute seule.
  */
 
 export function echapper(t) {
@@ -32,6 +33,7 @@ export function creerFenetre({ classe = '', texteFermer = 'Fermer', surClic, sur
   voile.hidden = true
   voile.innerHTML = `
     <div class="panneau ${classe}" role="dialog" aria-modal="true">
+      <button class="bouton fenetre-croix" data-fermer aria-label="Fermer">✖️</button>
       <div class="fenetre-contenu"></div>
       <div class="actions">
         <button class="bouton bouton-principal" data-fermer>
@@ -60,7 +62,7 @@ export function creerFenetre({ classe = '', texteFermer = 'Fermer', surClic, sur
       // On la remet tout au-dessus des autres fenêtres (ex. : « Comment jouer » ouvert depuis les Réglages).
       voile.parentElement.appendChild(voile)
       voile.hidden = false
-      voile.querySelector('[data-fermer]').focus({ preventScroll: true })
+      voile.querySelector('.actions [data-fermer]').focus({ preventScroll: true })
     },
     /** Change le contenu sans fermer. */
     remplir(html) {

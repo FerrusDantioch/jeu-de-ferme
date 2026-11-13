@@ -99,6 +99,8 @@ export function creerModeTest(barre, surChangement) {
     touchers++
     if (touchers >= 5) {
       touchers = 0
+      // On ferme « À propos » d'abord : sinon elle resterait par-dessus ce panneau.
+      document.getElementById('fenetre-a-propos')?.close()
       ouvrir()
     }
   })

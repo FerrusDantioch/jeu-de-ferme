@@ -44,9 +44,10 @@ export default defineConfig({
     // et le « service worker » (petit programme qui garde le jeu en mémoire
     // sur le téléphone pour qu'il marche sans Internet).
     VitePWA({
-      // Mise à jour automatique du jeu quand une nouvelle version est publiée.
-      registerType: 'autoUpdate',
-      includeAssets: ['icones/icone.svg', 'icones/apple-touch-icon.png'],
+      // « prompt » : une nouvelle version est téléchargée en arrière-plan, mais elle
+      // n'est installée que lorsque la personne touche « Mettre à jour » (voir src/pwa.js).
+      registerType: 'prompt',
+      includeAssets: ['icones/icone.svg', 'icones/apple-touch-icon.png', 'images/logo-omni-systeme.webp'],
       manifest: {
         name: NOM_DU_JEU,
         short_name: NOM_COURT,
@@ -70,8 +71,11 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // Dès la toute première visite, le service worker s'occupe de la page ouverte
+        // (le jeu marche alors hors ligne sans attendre un deuxième lancement).
+        clientsClaim: true,
         // Tout ce qui compose le jeu est mis en mémoire pour le mode hors ligne.
-        globPatterns: ['**/*.{js,css,html,svg,png,ico,webmanifest}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,webp,ico,webmanifest}'],
         // Three.js est un gros fichier : on autorise jusqu'à 5 Mo par fichier.
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
       },

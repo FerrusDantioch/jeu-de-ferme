@@ -88,11 +88,11 @@ export function creerFenetrePerso({ barre, surOuverture }) {
     const titreHaut = a.tenue === 'robe' ? '👗 Couleur de la robe' : '👕 Couleur du haut'
     fenetre.remplir(`
       <h2>${bienvenue ? '🌷 Bienvenue à la ferme !' : '👤 Mon personnage'}</h2>
-      ${bienvenue ? '<p class="discret">Choisissez votre prénom et votre allure. Vous pourrez tout changer plus tard avec le bouton 👤.</p>' : ''}
+      ${bienvenue ? '<p class="discret">Choisis ton prénom et ton allure. Tu pourras tout changer plus tard avec le bouton 👤.</p>' : ''}
       <label class="perso-prenom">
         <span class="reglage-titre">✏️ Prénom</span>
         <input name="prenom" type="text" maxlength="${LONGUEUR_PRENOM}" autocomplete="off" enterkeyhint="done"
-          placeholder="Votre prénom" value="${echapper(prenom())}">
+          placeholder="Ton prénom" value="${echapper(prenom())}">
       </label>
       ${rangee('🙂 Peau', 'peau', a)}
       ${rangee('💇 Couleur des cheveux', 'cheveux', a)}

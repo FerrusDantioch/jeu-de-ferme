@@ -3,7 +3,9 @@
  * la 3D, les lieux (dehors, maison, étable, boutique), le personnage, la caméra,
  * les commandes, l'interface et la sauvegarde.
  */
+import { montrerSecours, jeuBienDemarre } from './ui/secours.js' // en premier : le filet de sécurité
 import * as THREE from 'three'
+import './ui/themes.css' // les couleurs (thèmes clair, sombre, violet nuit)
 import './ui/style.css'
 import { creerRendu } from './moteur/rendu.js'
 import { creerCamera } from './moteur/camera.js'
@@ -20,7 +22,7 @@ import { creerFiche } from './ui/fiche.js'
 import { creerPastilles } from './ui/pastilles.js'
 import { creerSac } from './ui/sac.js'
 import { etat } from './jeu/etat.js'
-import { chargerPartie, demarrerSauvegardeAuto } from './jeu/sauvegarde.js'
+import { chargerPartie, demarrerSauvegardeAuto, enregistrer, garderCopieDuJour } from './jeu/sauvegarde.js'
 import { avancerTous } from './jeu/elevage.js'
 import {
   ficheParcelle, ficheAnimal, ficheReserve, ficheCommandes, ficheCompagnon, ficheArbre, ficheCuisine, fichePeche,
@@ -319,8 +321,8 @@ function commencerPlacement(type) {
       icone: d.icone,
       titre: `Poser : ${d.nom}`,
       lignes: [
-        { texte: 'Touchez l’herbe pour choisir l’endroit.', discret: true },
-        { texte: placement.possible ? '✅ Ici, c’est parfait !' : '🚫 Pas de place ici : choisissez un autre endroit.' },
+        { texte: 'Touche l’herbe pour choisir l’endroit.', discret: true },
+        { texte: placement.possible ? '✅ Ici, c’est parfait !' : '🚫 Pas de place ici : choisis un autre endroit.' },
       ],
       actions: [
         {
@@ -638,14 +640,14 @@ function verifierCalendrier() {
     etat.signaler()
     jouer('fete')
     fenetreFete.ouvrir(`<h2>${fete.icone} ${echapper(fete.nom)}</h2><p>${echapper(fete.message)}</p>
-      ${fete.quete ? '<p class="discret">📜 Une quête spéciale vous attend aujourd’hui !</p>' : ''}`)
+      ${fete.quete ? '<p class="discret">📜 Une quête spéciale t’attend aujourd’hui !</p>' : ''}`)
   }
 }
 
 // Quand une quête est terminée, le personnage le dit (et le bouton 📜 affiche un nombre).
 quetes.surQueteTerminee(() => {
   jouer('quete')
-  bulles.dire(personnage.modele, 'Quête terminée ! 📜 Touchez « Quêtes » pour recevoir la récompense.')
+  bulles.dire(personnage.modele, 'Quête terminée ! 📜 Touche « Quêtes » pour recevoir la récompense.')
   panneauQuetes.actualiser()
 })
 
@@ -726,7 +728,7 @@ function surveillerFluidite(dt) {
     dejaPropose = !!localStorage.getItem('jeu-de-ferme:economie-proposee')
     if (parSeconde < 24 && !reglages.get('economie') && !dejaPropose) {
       localStorage.setItem('jeu-de-ferme:economie-proposee', '1')
-      bulles.dire(personnage.modele, 'Le jeu semble un peu lent sur cet appareil : essayez le « Mode économie » dans ⚙️ Réglages.')
+      bulles.dire(personnage.modele, 'Le jeu semble un peu lent sur cet appareil : essaie le « Mode économie » dans ⚙️ Réglages.')
     }
   } catch {
     /* pas grave */
@@ -779,11 +781,15 @@ const image = demarrerBoucle((dt) => {
 // 8) On ouvre le lieu où l'on s'était arrêté (ou la ferme), puis on retire l'écran de chargement.
 const ou = etat.d.joueur
 lieux
-  .demarrer(ou ? ou.lieu : 'exterieur', ou ? { x: ou.x, z: ou.z, angle: 0 } : 'depart')
+  // (« aReplacer » : la position enregistrée était illisible, on repart du point de départ.)
+  .demarrer(ou ? ou.lieu : 'exterieur', ou && !ou.aReplacer ? { x: ou.x, z: ou.z, angle: 0 } : 'depart')
   .then(() => {
     actualiserCompagnon()
     renderer.setAnimationLoop(image)
     interfaceJeu.finChargement()
+    // Le jeu a bien démarré : cette sauvegarde fonctionne, on en garde une copie de secours (une par jour).
+    jeuBienDemarre()
+    garderCopieDuJour()
     if (partie.message) bulles.dire(personnage.modele, partie.message)
     // Nouvelle partie : on commence par choisir son prénom et son allure.
     // (window.__sansAccueil : seulement pour les tests automatiques.)
@@ -796,12 +802,17 @@ lieux
     etat.signaler() // première sauvegarde rapide
     verifierCalendrier()
   })
-  .catch((erreur) => {
-    console.error(erreur)
-    const texte = document.querySelector('#chargement .chargement-texte')
-    if (texte) texte.textContent = 'Oups, le jeu n’a pas pu démarrer. Fermez-le et rouvrez-le.'
-  })
-activerModeHorsLigne()
+  // Le jeu n'a pas pu démarrer : on affiche l'écran de secours (réessayer, copies de secours…).
+  .catch((erreur) => montrerSecours(erreur))
+// Hors ligne et mises à jour : quand une nouvelle version est prête, le bouton
+// « Mettre à jour » apparaît en haut. On sauvegarde la partie juste avant de relancer le jeu.
+activerModeHorsLigne({
+  surMiseAJour: (appliquer) =>
+    interfaceJeu.proposerMiseAJour(() => {
+      enregistrer(noterPosition)
+      appliquer()
+    }),
+})
 
 // Accès pratique pour les tests automatiques (sans effet sur le jeu).
 window.__jeu = {

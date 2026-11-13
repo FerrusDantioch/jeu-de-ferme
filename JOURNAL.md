@@ -362,6 +362,71 @@
 | Couleurs des saisons                               | `src/monde/saisons.js`          |
 | Couleurs du ciel selon l'heure                     | `src/monde/ciel.js`             |
 
+## ✅ Version 1.3.0 — Confort et contrôle
+
+### Ce qui est fait
+- **Tutoiement** : tous les textes du jeu disent « tu ».
+- **À propos** : une vraie fenêtre `<dialog>`, avec la même structure que les autres
+  applications de l'Omni-système (logo, version, auteur, licence, confidentialité, contact,
+  lien vers l'Omni-système). Fichier `LICENSE` ajouté (CC BY-NC-ND 4.0).
+- **Bouton « 🔄 Mettre à jour »** : le jeu ne se recharge plus tout seul quand une nouvelle
+  version arrive. Le bouton apparaît en haut ; la partie est sauvegardée avant de relancer.
+- **Fenêtres plus confortables** : croix en haut à droite, bouton « Fermer » toujours visible
+  en bas, fenêtres plus larges sur tablette. Le sac utilise la même fenêtre que les autres.
+
+### Où modifier quoi
+| Je veux changer…                              | Fichier                          |
+|-----------------------------------------------|----------------------------------|
+| L'adresse de contact, le lien Omni-système    | `src/config.js`                  |
+| Le texte de « À propos »                      | `index.html`                     |
+| Le numéro de version                          | `package.json`                   |
+| La façon dont les mises à jour sont proposées | `src/pwa.js`                     |
+| L'allure des fenêtres                         | `src/ui/fenetre.js`, `src/ui/style.css` |
+
+## ✅ Version 1.4.0 — Confort de lecture
+
+### Ce qui est fait
+- **Trois thèmes** dans ⚙️ Réglages : clair (comme avant), sombre, et violet nuit (les
+  couleurs de l'Omni-système). Le thème change les fenêtres, les boutons, les bulles, l'écran
+  de chargement et la couleur de la barre du téléphone. Il est retenu sur l'appareil.
+- **Luminosité** : normale, douce, tamisée, très tamisée. C'est un voile sombre posé sur tout
+  l'écran (ferme comprise) ; il ne gêne aucun toucher.
+- Toutes les couleurs de l'interface sont maintenant rangées dans un seul fichier.
+- Contrastes vérifiés automatiquement dans les trois thèmes (texte toujours bien lisible).
+
+### Où modifier quoi
+| Je veux changer…                          | Fichier                  |
+|-------------------------------------------|--------------------------|
+| Les couleurs d'un thème                   | `src/ui/themes.css`      |
+| Les niveaux de luminosité proposés        | `src/ui/reglages.js`     |
+| Le thème de départ                        | `src/jeu/reglages.js`    |
+
+## ✅ Version 1.5.0 — Sauvegarde blindée
+
+### Ce qui est fait
+- **Copies de secours automatiques** (6 au plus) : une par jour de jeu, et une juste avant
+  chaque import, restauration ou nouvelle partie. Liste et restauration dans ⚙️ Réglages →
+  Sauvegarde → « 🛟 Copies de secours ». Restaurer garde aussi la partie en cours.
+- **Sauvegarde illisible** : le jeu reprend tout seul la copie de secours la plus récente,
+  avec un message rassurant.
+- **Sauvegarde ou fichier importé incohérent** (animal inconnu, nombres manquants…) : les
+  données sont remises en ordre au chargement, le jeu démarre toujours.
+- **Écran de secours** si le jeu ne démarre pas : réessayer, reprendre une copie, enregistrer
+  la sauvegarde dans un fichier, nouvelle partie (avec confirmation, l'ancienne est gardée).
+- **« Tout vendre »** demande une confirmation (« Oui, vendre les 12 » / « Non »).
+
+### Vérifications faites
+- Test automatique : nouvelle partie par erreur puis retour à l'ancienne ; sauvegarde illisible ;
+  sauvegarde incohérente ; écran de secours (3D volontairement bloquée) ; import ; vente.
+- Tests des lots précédents relancés (fenêtres, « À propos », mise à jour) : tout passe.
+
+### Où modifier quoi
+| Je veux changer…                               | Fichier                   |
+|------------------------------------------------|---------------------------|
+| Le nombre de copies de secours gardées         | `src/jeu/sauvegarde.js` (`COPIES_MAXIMUM`) |
+| Les vérifications faites au chargement         | `src/jeu/etat.js` (`remettreEnOrdre`) |
+| Les textes de l'écran de secours               | `src/ui/secours.js`       |
+
 ## 🚀 Mise en ligne (GitHub Pages)
 Le jeu est en ligne : https://ferrusdantioch.github.io/jeu-de-ferme/
 Le fichier `.github/workflows/publication.yml` le republie à chaque mise à jour de `main`.
@@ -383,7 +448,10 @@ dans l'onglet « Actions ») : c'est normal, et sans danger.
   branche `main`, la publication se fait depuis sa branche principale actuelle.
 
 ## 🔜 Ce qui reste
-- Vérifier la fluidité sur le vrai téléphone, une fois le jeu en ligne.
+- Vérifier la fluidité sur la vraie tablette.
+- Idées notées lors de l'audit, pas encore faites : messages importants qui restent jusqu'au
+  toucher, « Déplacer » une décoration puis « Annuler » la remet dans le sac au lieu de la
+  laisser à sa place, tests automatiques à ranger dans le dépôt.
 
 ## Commandes utiles (pour un développeur)
 - `npm install` : installe les outils (une seule fois).

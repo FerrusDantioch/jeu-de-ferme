@@ -1,0 +1,111 @@
+/*
+ * themes.css — les couleurs de l'interface, pour les trois thèmes.
+ *
+ * C'est le SEUL fichier qui contient les couleurs des boutons, des fenêtres et des
+ * textes : style.css n'utilise que ces « variables » (les noms qui commencent par --).
+ * Le thème actif est choisi dans ⚙️ Réglages ; il est posé sur la page sous la forme
+ * data-theme="clair" | "sombre" | "violet" (voir src/jeu/reglages.js).
+ *
+ * Pour retoucher une couleur : change sa valeur ici, dans le thème voulu.
+ * (Les couleurs de la ferme en 3D ne sont pas ici : voir src/modeles/materiaux.js.)
+ */
+
+/* --- Clair (thème de départ) : crème et vert --- */
+:root,
+[data-theme='clair'] {
+  --couleur-texte: #2f3a2f; /* texte principal */
+  --couleur-panneau: #fffaf0; /* fond des fenêtres et de la fiche du bas */
+  --couleur-bouton: #ffffff; /* fond des boutons */
+  --couleur-carte: #ffffff; /* petites cartes : cases du sac, quêtes, bulles, champs */
+  --couleur-carte-reussie: #f1f9ec; /* quête terminée, petit message de confirmation */
+  --couleur-accent: #5a9e58; /* bouton principal, choix sélectionné */
+  --couleur-accent-texte: #ffffff; /* texte posé sur l'accent */
+  --couleur-titre: #3d6b3b; /* titres */
+  --couleur-secondaire: #6b4a35; /* sous-titres, compteur de pièces */
+  --couleur-lien: #2f6f2d; /* liens de « À propos » */
+  --couleur-trait: #efe5d2; /* traits fins entre les lignes */
+  --couleur-bord-champ: #e2d6bf; /* bord des champs de texte */
+  --couleur-jauge-fond: #e8e0cf; /* fond des barres de progression */
+  --couleur-jauge-debut: #9fd67f; /* barre de progression (dégradé) */
+  --couleur-jauge-fin: #6dbb5e;
+  --couleur-attention: #e8834e; /* bouton « Oui, tout effacer », pastille des quêtes */
+  --couleur-attention-texte: #ffffff;
+  --couleur-focus: #2c6fbf; /* contour du bouton sélectionné au clavier */
+  --couleur-voile: rgba(30, 40, 30, 0.35); /* derrière les fenêtres */
+  --couleur-voile-leger: rgba(30, 40, 30, 0.08); /* derrière « Mon personnage » */
+  --couleur-etiquette: rgba(255, 250, 240, 0.92); /* étiquette du lieu, en haut à gauche */
+  --couleur-pastille: rgba(255, 255, 255, 0.92); /* petites icônes rondes au-dessus des animaux */
+  --couleur-fondu: #f6ead6; /* écran de passage d'une porte */
+  --couleur-fondu-texte: #6b4a35;
+  --couleur-chargement: #cdeaf7; /* écran de chargement */
+  --couleur-test: #fff3c4; /* étiquette du mode test */
+  --ombre: 0 4px 14px rgba(0, 0, 0, 0.18);
+  --ombre-carte: 0 1px 4px rgba(0, 0, 0, 0.1);
+  color-scheme: light;
+}
+
+/* --- Sombre : gris doux, le vert de la ferme est gardé --- */
+[data-theme='sombre'] {
+  --couleur-texte: #ecefe9;
+  --couleur-panneau: #26292a;
+  --couleur-bouton: #3a4041;
+  --couleur-carte: #303536;
+  --couleur-carte-reussie: #2c3f2c;
+  --couleur-accent: #7cc47a;
+  --couleur-accent-texte: #10240f;
+  --couleur-titre: #a8d8a0;
+  --couleur-secondaire: #dcc3a6;
+  --couleur-lien: #a8d8a0;
+  --couleur-trait: #444a4b;
+  --couleur-bord-champ: #5d6566;
+  --couleur-jauge-fond: #444a4b;
+  --couleur-jauge-debut: #6dbb5e;
+  --couleur-jauge-fin: #9fd67f;
+  --couleur-attention: #f0996a;
+  --couleur-attention-texte: #2a1206;
+  --couleur-focus: #9cc4ff;
+  --couleur-voile: rgba(8, 10, 8, 0.6);
+  --couleur-voile-leger: rgba(8, 10, 8, 0.15);
+  --couleur-etiquette: rgba(38, 41, 42, 0.92);
+  --couleur-pastille: rgba(58, 64, 65, 0.94);
+  --couleur-fondu: #26292a;
+  --couleur-fondu-texte: #dcc3a6;
+  --couleur-chargement: #1c1f20;
+  --couleur-test: #5a4e1a;
+  --ombre: 0 4px 14px rgba(0, 0, 0, 0.45);
+  --ombre-carte: 0 1px 4px rgba(0, 0, 0, 0.3);
+  color-scheme: dark;
+}
+
+/* --- Violet nuit : les couleurs de l'Omni-système --- */
+[data-theme='violet'] {
+  --couleur-texte: #e9e4f2;
+  --couleur-panneau: #1d1929;
+  --couleur-bouton: #322a4d;
+  --couleur-carte: #272038;
+  --couleur-carte-reussie: #332758;
+  --couleur-accent: #a777ff; /* le violet du logo */
+  --couleur-accent-texte: #140d24;
+  --couleur-titre: #d6c2ff;
+  --couleur-secondaire: #c3b6dc;
+  --couleur-lien: #d6c2ff;
+  --couleur-trait: #332c47;
+  --couleur-bord-champ: #51466f;
+  --couleur-jauge-fond: #332c47;
+  --couleur-jauge-debut: #8a5cf0;
+  --couleur-jauge-fin: #c9a9ff;
+  --couleur-attention: #ff8a93;
+  --couleur-attention-texte: #1f0a0d;
+  --couleur-focus: #d6c2ff;
+  --couleur-voile: rgba(8, 6, 14, 0.68);
+  --couleur-voile-leger: rgba(8, 6, 14, 0.18);
+  --couleur-etiquette: rgba(29, 25, 41, 0.92);
+  --couleur-pastille: rgba(50, 42, 77, 0.94);
+  --couleur-fondu: #1d1929;
+  --couleur-fondu-texte: #d6c2ff;
+  --couleur-chargement: #14111d;
+  --couleur-test: #4a3d1a;
+  --ombre: 0 4px 14px rgba(0, 0, 0, 0.5);
+  --ombre-carte: 0 1px 4px rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
+}
