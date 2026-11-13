@@ -401,6 +401,32 @@
 | Les niveaux de luminosité proposés        | `src/ui/reglages.js`     |
 | Le thème de départ                        | `src/jeu/reglages.js`    |
 
+## ✅ Version 1.5.0 — Sauvegarde blindée
+
+### Ce qui est fait
+- **Copies de secours automatiques** (6 au plus) : une par jour de jeu, et une juste avant
+  chaque import, restauration ou nouvelle partie. Liste et restauration dans ⚙️ Réglages →
+  Sauvegarde → « 🛟 Copies de secours ». Restaurer garde aussi la partie en cours.
+- **Sauvegarde illisible** : le jeu reprend tout seul la copie de secours la plus récente,
+  avec un message rassurant.
+- **Sauvegarde ou fichier importé incohérent** (animal inconnu, nombres manquants…) : les
+  données sont remises en ordre au chargement, le jeu démarre toujours.
+- **Écran de secours** si le jeu ne démarre pas : réessayer, reprendre une copie, enregistrer
+  la sauvegarde dans un fichier, nouvelle partie (avec confirmation, l'ancienne est gardée).
+- **« Tout vendre »** demande une confirmation (« Oui, vendre les 12 » / « Non »).
+
+### Vérifications faites
+- Test automatique : nouvelle partie par erreur puis retour à l'ancienne ; sauvegarde illisible ;
+  sauvegarde incohérente ; écran de secours (3D volontairement bloquée) ; import ; vente.
+- Tests des lots précédents relancés (fenêtres, « À propos », mise à jour) : tout passe.
+
+### Où modifier quoi
+| Je veux changer…                               | Fichier                   |
+|------------------------------------------------|---------------------------|
+| Le nombre de copies de secours gardées         | `src/jeu/sauvegarde.js` (`COPIES_MAXIMUM`) |
+| Les vérifications faites au chargement         | `src/jeu/etat.js` (`remettreEnOrdre`) |
+| Les textes de l'écran de secours               | `src/ui/secours.js`       |
+
 ## 🚀 Mise en ligne (GitHub Pages)
 Le jeu est en ligne : https://ferrusdantioch.github.io/jeu-de-ferme/
 Le fichier `.github/workflows/publication.yml` le republie à chaque mise à jour de `main`.
@@ -422,7 +448,10 @@ dans l'onglet « Actions ») : c'est normal, et sans danger.
   branche `main`, la publication se fait depuis sa branche principale actuelle.
 
 ## 🔜 Ce qui reste
-- Vérifier la fluidité sur le vrai téléphone, une fois le jeu en ligne.
+- Vérifier la fluidité sur la vraie tablette.
+- Idées notées lors de l'audit, pas encore faites : messages importants qui restent jusqu'au
+  toucher, « Déplacer » une décoration puis « Annuler » la remet dans le sac au lieu de la
+  laisser à sa place, tests automatiques à ranger dans le dépôt.
 
 ## Commandes utiles (pour un développeur)
 - `npm install` : installe les outils (une seule fois).

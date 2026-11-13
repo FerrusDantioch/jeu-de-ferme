@@ -8,11 +8,13 @@
  *  - le joystick à l'écran ;
  *  - réduire les animations ;
  *  - les ombres et le mode économie (pour les téléphones moins puissants) ;
- *  - la sauvegarde : exporter, importer, recommencer une partie ;
+ *  - la sauvegarde : exporter, importer, copies de secours, recommencer une partie ;
  *  - « Comment jouer » et « À propos ».
  */
 import { reglages } from '../jeu/reglages.js'
-import { exporterPartie, lireFichierDePartie, remplacerPartie, recommencerPartie } from '../jeu/sauvegarde.js'
+import {
+  exporterPartie, lireFichierDePartie, remplacerPartie, recommencerPartie, copiesDeSecours, restaurerCopie,
+} from '../jeu/sauvegarde.js'
 import { creerFenetre, echapper } from './fenetre.js'
 
 // Les choix proposés : [nom du réglage, titre, [[valeur, texte], …]].
@@ -76,7 +78,9 @@ export function creerReglages({ barre, ouvrirAPropos, avantExport }) {
   document.body.appendChild(choixFichier)
 
   let message = '' // petit message sous la partie « Sauvegarde »
-  let attente = null // { type: 'importer', donnees, resume } ou { type: 'recommencer' }
+  // Ce qu'on est en train de confirmer : { type: 'importer', donnees, resume }, { type: 'recommencer' },
+  // { type: 'secours' } (la liste des copies) ou { type: 'restaurer', numero, titre }.
+  let attente = null
 
   const guide = creerFenetre({ classe: 'panneau-guide' })
   const fenetre = creerFenetre({
@@ -94,13 +98,21 @@ export function creerReglages({ barre, ouvrirAPropos, avantExport }) {
         message = ''
         choixFichier.click()
       } else if (action === 'confirmer-import' && attente?.type === 'importer') {
-        if (!remplacerPartie(attente.donnees)) message = 'Oups, la mémoire du téléphone est peut-être pleine : l’import n’a pas pu se faire.'
+        if (!remplacerPartie(attente.donnees, avantExport)) message = 'Oups, la mémoire du téléphone est peut-être pleine : l’import n’a pas pu se faire.'
         attente = null
       } else if (action === 'recommencer') {
         attente = { type: 'recommencer' }
         message = ''
       } else if (action === 'confirmer-recommencer') {
-        recommencerPartie()
+        recommencerPartie(avantExport)
+      } else if (action === 'secours') {
+        attente = { type: 'secours' }
+        message = ''
+      } else if (action === 'choisir-copie') {
+        attente = { type: 'restaurer', numero: Number(b.dataset.numero), titre: b.dataset.titre }
+      } else if (action === 'confirmer-restaurer' && attente?.type === 'restaurer') {
+        if (!restaurerCopie(attente.numero, avantExport)) message = 'Oups, cette copie n’a pas pu être reprise.'
+        attente = null
       } else if (action === 'annuler') {
         attente = null
         message = ''
@@ -153,14 +165,31 @@ export function creerReglages({ barre, ouvrirAPropos, avantExport }) {
         <button class="bouton" data-action="annuler">Annuler</button></div>`
     } else if (attente?.type === 'recommencer') {
       sauvegarde = `<p><strong>Tout effacer et recommencer une nouvelle partie ?</strong><br>
-        <span class="discret">La partie actuelle sera perdue. Pense à l’exporter d’abord si tu veux la garder.</span></p>
+        <span class="discret">Ta partie actuelle sera gardée dans les « Copies de secours » : tu pourras encore y revenir. Tu peux aussi l’exporter d’abord.</span></p>
         <div class="reglage-choix"><button class="bouton" data-action="annuler">Non, garder ma partie</button>
         <button class="bouton bouton-attention" data-action="confirmer-recommencer">Oui, tout effacer</button></div>`
+    } else if (attente?.type === 'secours') {
+      const copies = copiesDeSecours()
+      const liste = copies
+        .map((c) => `<button class="bouton" data-action="choisir-copie" data-numero="${c.numero}" data-titre="${echapper(c.titre)}">
+          <span class="bouton-textes"><span>🛟 ${echapper(c.titre)}</span>
+          <span class="bouton-detail">${echapper(c.raison)} · ${echapper(c.resume)}</span></span></button>`)
+        .join('')
+      sauvegarde = `<p><strong>🛟 Copies de secours</strong><br>
+        <span class="discret">Le jeu garde tout seul quelques copies de ta partie (une par jour de jeu, et une avant chaque import ou nouvelle partie). Choisis-en une pour y revenir.</span></p>
+        <div class="liste-copies">${liste || '<p class="discret">Pas encore de copie : la première sera faite au prochain lancement du jeu.</p>'}</div>
+        <div class="reglage-choix"><button class="bouton" data-action="annuler">Retour</button></div>`
+    } else if (attente?.type === 'restaurer') {
+      sauvegarde = `<p><strong>Reprendre la copie du ${echapper(attente.titre)} ?</strong><br>
+        <span class="discret">Ta partie actuelle sera gardée, elle aussi, dans les copies de secours.</span></p>
+        <div class="reglage-choix"><button class="bouton bouton-principal" data-action="confirmer-restaurer">Oui, reprendre cette copie</button>
+        <button class="bouton" data-action="annuler">Annuler</button></div>`
     } else {
       sauvegarde = `<p class="discret">La partie est sauvegardée toute seule sur cet appareil. Tu peux aussi la garder dans un fichier.</p>
         <div class="reglage-choix">
           <button class="bouton" data-action="exporter">📤 Exporter</button>
           <button class="bouton" data-action="importer">📥 Importer</button>
+          <button class="bouton" data-action="secours">🛟 Copies de secours</button>
           <button class="bouton" data-action="recommencer">🆕 Nouvelle partie</button>
         </div>`
     }

@@ -3,8 +3,8 @@
  * vendre ses récoltes et les produits des animaux.
  *
  * Deux onglets : « Acheter » et « Vendre ». Les boutons sont grands et bien espacés.
- * Un petit message confirme chaque achat ou vente. Rien n'est jamais acheté par erreur
- * d'un seul geste coûteux : les animaux demandent une confirmation.
+ * Un petit message confirme chaque achat ou vente. Rien n'est jamais fait par erreur
+ * d'un seul geste coûteux : adopter un animal et « tout vendre » demandent une confirmation.
  */
 import { CULTURES } from '../donnees/cultures.js'
 import { ESPECES } from '../donnees/animaux.js'
@@ -27,6 +27,7 @@ export function creerBoutique({ surAdoption } = {}) {
   let onglet = 'acheter'
   let message = ''
   let confirmation = null // espèce dont on attend la confirmation d'adoption
+  let venteAConfirmer = null // objet dont on attend la confirmation pour « tout vendre »
 
   const fenetre = creerFenetre({
     classe: 'panneau-boutique',
@@ -38,6 +39,7 @@ export function creerBoutique({ surAdoption } = {}) {
     surFermeture: () => {
       message = ''
       confirmation = null
+      venteAConfirmer = null
     },
   })
 
@@ -131,7 +133,12 @@ export function creerBoutique({ surAdoption } = {}) {
         <span class="lb-icone" aria-hidden="true">${o.icone}</span>
         <span class="lb-texte"><strong>${echapper(o.nom)} × ${n}</strong>
           <span class="discret">🪙 ${prix} pièce${prix > 1 ? 's' : ''} chacun${demande ? ` · 📋 ${demande} demandé${demande > 1 ? 's' : ''} en commande` : ''}</span></span>
-        <span class="lb-actions">${bouton('vendre', id, 'Vendre 1')}${n > 1 ? bouton('vendre', id, `Tout (🪙 ${prix * n})`, { n }) : ''}</span></div>`
+        <span class="lb-actions">${
+          // « Tout vendre » demande une confirmation : on ne vide pas son sac par erreur.
+          venteAConfirmer === id
+            ? bouton('vendre', id, `Oui, vendre les ${n} (🪙 ${prix * n})`, { n, principal: true }) + bouton('annuler', id, 'Non')
+            : bouton('vendre', id, 'Vendre 1') + (n > 1 ? bouton('demander-vente', id, `Tout (🪙 ${prix * n})`) : '')
+        }</span></div>`
     })
     return `${lignes.join('')}<p class="discret">📋 Pense à garder ce qu’il faut pour les commandes des villageois : elles rapportent plus !</p>`
   }
@@ -150,10 +157,15 @@ export function creerBoutique({ surAdoption } = {}) {
   }
 
   function agir(action, id, n) {
+    const venteDemandee = venteAConfirmer
+    venteAConfirmer = null // toute autre action annule la question « tout vendre ? »
     if (action === 'onglet') {
       onglet = id
       message = ''
       confirmation = null
+    } else if (action === 'demander-vente') {
+      venteAConfirmer = id
+      message = ''
     } else if (action === 'graine') {
       message = acheterGraines(id, n)
         ? `Merci ! ${n} graine${n > 1 ? 's' : ''} de ${CULTURES[id].nomCourt} dans ton sac 🌱`
@@ -178,7 +190,8 @@ export function creerBoutique({ surAdoption } = {}) {
       const c = adopterCompagnon(id)
       if (c) message = `${c.nom} te suivra partout ! ${ESPECES_COMPAGNONS[id].icone}💕`
     } else if (action === 'vendre') {
-      const gain = vendre(id, n)
+      // Vendre plusieurs objets d'un coup n'est possible qu'après la confirmation.
+      const gain = n > 1 && venteDemandee !== id ? 0 : vendre(id, n)
       message = gain ? `Vendu ! +${gain} 🪙` : ''
     }
     dessiner()
@@ -194,6 +207,7 @@ export function creerBoutique({ surAdoption } = {}) {
       onglet = ongletVoulu
       message = ''
       confirmation = null
+      venteAConfirmer = null
       dessiner()
       fenetre.ouvrir()
     },

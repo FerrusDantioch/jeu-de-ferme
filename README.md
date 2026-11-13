@@ -18,6 +18,19 @@ Créé par **Ferrus Dantioch**.
 
 Sans publicité, sans achat, sans compte, sans collecte de données : tout reste sur l'appareil.
 
+## Une partie bien protégée
+- 💾 **Sauvegarde automatique** sur l'appareil (toutes les 15 secondes s'il y a du nouveau,
+  et dès que le jeu passe en arrière-plan).
+- 🛟 **Copies de secours** : le jeu garde tout seul quelques copies de la partie (une par jour
+  de jeu, et une juste avant chaque import, restauration ou nouvelle partie). On y revient
+  depuis ⚙️ Réglages → Sauvegarde → « Copies de secours ». Même une « nouvelle partie » lancée
+  par erreur se rattrape.
+- 📤📥 **Exporter / Importer** la partie dans un fichier (pour la garder ailleurs ou changer d'appareil).
+- 🩹 Une sauvegarde abîmée est réparée ou remplacée par la dernière copie de secours, sans rien demander.
+- 🌱 Si le jeu n'arrive pas à démarrer, un **écran de secours** propose de réessayer, de reprendre
+  une copie, d'enregistrer la sauvegarde dans un fichier ou de repartir de zéro.
+- 🧺 « Tout vendre » demande une confirmation.
+
 ## Confort et contrôle
 - 🔄 **Mettre à jour** : quand une nouvelle version est disponible, un bouton « Mettre à jour »
   apparaît en haut de l'écran. Le jeu ne se recharge jamais tout seul : c'est toi qui décides.

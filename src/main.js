@@ -3,6 +3,7 @@
  * la 3D, les lieux (dehors, maison, étable, boutique), le personnage, la caméra,
  * les commandes, l'interface et la sauvegarde.
  */
+import { montrerSecours, jeuBienDemarre } from './ui/secours.js' // en premier : le filet de sécurité
 import * as THREE from 'three'
 import './ui/themes.css' // les couleurs (thèmes clair, sombre, violet nuit)
 import './ui/style.css'
@@ -21,7 +22,7 @@ import { creerFiche } from './ui/fiche.js'
 import { creerPastilles } from './ui/pastilles.js'
 import { creerSac } from './ui/sac.js'
 import { etat } from './jeu/etat.js'
-import { chargerPartie, demarrerSauvegardeAuto, enregistrer } from './jeu/sauvegarde.js'
+import { chargerPartie, demarrerSauvegardeAuto, enregistrer, garderCopieDuJour } from './jeu/sauvegarde.js'
 import { avancerTous } from './jeu/elevage.js'
 import {
   ficheParcelle, ficheAnimal, ficheReserve, ficheCommandes, ficheCompagnon, ficheArbre, ficheCuisine, fichePeche,
@@ -780,11 +781,15 @@ const image = demarrerBoucle((dt) => {
 // 8) On ouvre le lieu où l'on s'était arrêté (ou la ferme), puis on retire l'écran de chargement.
 const ou = etat.d.joueur
 lieux
-  .demarrer(ou ? ou.lieu : 'exterieur', ou ? { x: ou.x, z: ou.z, angle: 0 } : 'depart')
+  // (« aReplacer » : la position enregistrée était illisible, on repart du point de départ.)
+  .demarrer(ou ? ou.lieu : 'exterieur', ou && !ou.aReplacer ? { x: ou.x, z: ou.z, angle: 0 } : 'depart')
   .then(() => {
     actualiserCompagnon()
     renderer.setAnimationLoop(image)
     interfaceJeu.finChargement()
+    // Le jeu a bien démarré : cette sauvegarde fonctionne, on en garde une copie de secours (une par jour).
+    jeuBienDemarre()
+    garderCopieDuJour()
     if (partie.message) bulles.dire(personnage.modele, partie.message)
     // Nouvelle partie : on commence par choisir son prénom et son allure.
     // (window.__sansAccueil : seulement pour les tests automatiques.)
@@ -797,11 +802,8 @@ lieux
     etat.signaler() // première sauvegarde rapide
     verifierCalendrier()
   })
-  .catch((erreur) => {
-    console.error(erreur)
-    const texte = document.querySelector('#chargement .chargement-texte')
-    if (texte) texte.textContent = 'Oups, le jeu n’a pas pu démarrer. Ferme-le et rouvre-le.'
-  })
+  // Le jeu n'a pas pu démarrer : on affiche l'écran de secours (réessayer, copies de secours…).
+  .catch((erreur) => montrerSecours(erreur))
 // Hors ligne et mises à jour : quand une nouvelle version est prête, le bouton
 // « Mettre à jour » apparaît en haut. On sauvegarde la partie juste avant de relancer le jeu.
 activerModeHorsLigne({
