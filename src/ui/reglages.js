@@ -2,10 +2,10 @@
  * reglages.js (interface) — la fenêtre ⚙️ « Réglages ».
  *
  * On y trouve :
+ *  - le confort de lecture : thème (clair, sombre, violet nuit), luminosité, taille du texte ;
  *  - les sons et la musique (activés ou coupés, volume) ;
  *  - le jour et la nuit, la saison ;
  *  - le joystick à l'écran ;
- *  - la taille du texte ;
  *  - réduire les animations ;
  *  - les ombres et le mode économie (pour les téléphones moins puissants) ;
  *  - la sauvegarde : exporter, importer, recommencer une partie ;
@@ -17,11 +17,15 @@ import { creerFenetre, echapper } from './fenetre.js'
 
 // Les choix proposés : [nom du réglage, titre, [[valeur, texte], …]].
 const CHOIX = [
+  // Confort de lecture.
+  ['theme', '🎨 Thème', [['clair', 'Clair'], ['sombre', 'Sombre'], ['violet', 'Violet nuit']]],
+  ['luminosite', '🔆 Luminosité', [[100, 'Normale'], [85, 'Douce'], [70, 'Tamisée'], [55, 'Très tamisée']]],
+  ['tailleTexte', '🔠 Taille du texte', [['normale', 'Normale'], ['grande', 'Grande'], ['tresGrande', 'Très grande']]],
+  // Sons.
   ['son', '🔊 Sons', [[true, 'Activés'], [false, 'Coupés']]],
   ['musique', '🎵 Musique', [[true, 'Oui'], [false, 'Non']]],
   ['volume', '🔉 Volume', [['doux', 'Doux'], ['moyen', 'Moyen'], ['fort', 'Fort']]],
   ['joystick', '🕹️ Joystick à l’écran', [[false, 'Non'], [true, 'Oui']]],
-  ['tailleTexte', '🔠 Taille du texte', [['normale', 'Normale'], ['grande', 'Grande'], ['tresGrande', 'Très grande']]],
   ['cycleJour', '🌙 Jour et nuit', [['auto', 'Selon l’heure'], ['jour', 'Toujours le jour'], ['nuit', 'Toujours la nuit']]],
   ['saison', '🍂 Saison', [['auto', 'Selon la date'], ['printemps', '🌸 Printemps'], ['ete', '☀️ Été'], ['automne', '🍂 Automne'], ['hiver', '❄️ Hiver']]],
   ['animationsReduites', '🌀 Animations', [[false, 'Normales'], [true, 'Réduites']]],
@@ -136,7 +140,7 @@ export function creerReglages({ barre, ouvrirAPropos, avantExport }) {
       const boutons = options
         .map(([valeur, texte]) => {
           const choisi = actuelle === valeur
-          return `<button class="bouton${choisi ? ' bouton-principal' : ''}" data-reglage="${nom}" data-valeur='${JSON.stringify(valeur)}' aria-pressed="${choisi}"${desactive ? ' disabled' : ''}>${echapper(texte)}</button>`
+          return `<button class="bouton${choisi ? ' bouton-principal' : ''}" data-reglage="${nom}" data-valeur='${JSON.stringify(valeur)}' aria-pressed="${choisi}"${desactive ? ' disabled' : ''}>${nom === 'theme' ? `<span class="apercu-theme" data-theme="${valeur}" aria-hidden="true"></span>` : ''}${echapper(texte)}</button>`
         })
         .join('')
       return `<div class="ligne-reglage"><div class="reglage-titre">${titre}</div><div class="reglage-choix">${boutons}</div></div>`
@@ -164,6 +168,7 @@ export function creerReglages({ barre, ouvrirAPropos, avantExport }) {
     fenetre.remplir(`
       <h2>⚙️ Réglages</h2>
       ${lignes}
+      <p class="discret">🌙 Pour une ferme plus douce pour les yeux le soir, tu peux aussi choisir « Toujours la nuit ».</p>
       <p class="discret">🔋 Le mode économie rend l’image un peu moins fine, mais le jeu plus fluide et moins gourmand en batterie.</p>
       <h3>💾 Sauvegarde</h3>
       ${sauvegarde}

@@ -13,6 +13,8 @@ const DEFAUT = {
   musique: true, // la petite musique d'ambiance
   volume: 'moyen', // 'doux', 'moyen' ou 'fort'
   joystick: false,
+  theme: 'clair', // couleurs de l'interface : 'clair', 'sombre' ou 'violet' (violet nuit)
+  luminosite: 100, // luminosité de l'écran, en % : 100 (normale), 85, 70 ou 55
   tailleTexte: 'normale', // 'normale', 'grande' ou 'tresGrande'
   animationsReduites: null, // null = comme le téléphone le demande ; true / false = choix fait ici
   ombres: true,
@@ -22,6 +24,12 @@ const DEFAUT = {
 }
 
 export const TAILLES_TEXTE = { normale: 20, grande: 24, tresGrande: 28 }
+// Les thèmes : nom affiché et couleur de la barre du téléphone (voir src/ui/themes.css).
+export const THEMES = {
+  clair: { nom: 'Clair', barre: '#7cc47a' },
+  sombre: { nom: 'Sombre', barre: '#26292a' },
+  violet: { nom: 'Violet nuit', barre: '#1d1929' },
+}
 export const VOLUMES = { doux: 0.35, moyen: 0.65, fort: 1 }
 
 const auditeurs = new Set()
@@ -62,11 +70,19 @@ export function animationsReduites() {
   return choix === null || choix === undefined ? systemeMoinsDAnimations.matches : choix
 }
 
-/** Applique les réglages qui touchent la page (taille du texte, animations). */
+/** Applique les réglages qui touchent la page (thème, luminosité, taille du texte, animations). */
 function appliquer() {
   const racine = document.documentElement
   racine.style.setProperty('--taille-texte', `${TAILLES_TEXTE[valeurs.tailleTexte] || 20}px`)
   racine.classList.toggle('moins-animations', animationsReduites())
+  // Le thème : themes.css choisit les couleurs d'après cet attribut.
+  const theme = THEMES[valeurs.theme] ? valeurs.theme : 'clair'
+  racine.dataset.theme = theme
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', THEMES[theme].barre)
+  // La luminosité : un voile noir plus ou moins transparent (jamais en dessous de 40 %,
+  // pour que l'écran reste toujours lisible, même si le réglage enregistré est abîmé).
+  const luminosite = Math.min(100, Math.max(40, Number(valeurs.luminosite) || 100))
+  racine.style.setProperty('--assombrir', String(1 - luminosite / 100))
 }
 appliquer()
 systemeMoinsDAnimations.addEventListener?.('change', appliquer)

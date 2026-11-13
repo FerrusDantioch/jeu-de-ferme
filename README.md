@@ -24,6 +24,10 @@ Sans publicité, sans achat, sans compte, sans collecte de données : tout reste
   La partie est sauvegardée juste avant.
 - ✖️ Chaque fenêtre a une croix en haut à droite et un bouton « Fermer » toujours visible
   en bas (seul le contenu défile). Sur tablette, les fenêtres sont plus larges.
+- 🎨 **Trois thèmes** (dans ⚙️ Réglages) : clair, sombre et violet nuit (les couleurs de
+  l'Omni-système). Ils changent les fenêtres, les boutons et les textes.
+- 🔆 **Luminosité** réglable : normale, douce, tamisée, très tamisée.
+- 🔠 **Taille du texte** réglable : normale, grande, très grande.
 - 💬 Tous les textes sont en français et te tutoient.
 - ℹ️ **À propos** (dans ⚙️ Réglages) : version, licence, confidentialité, contact.
 

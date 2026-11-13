@@ -383,6 +383,24 @@
 | La façon dont les mises à jour sont proposées | `src/pwa.js`                     |
 | L'allure des fenêtres                         | `src/ui/fenetre.js`, `src/ui/style.css` |
 
+## ✅ Version 1.4.0 — Confort de lecture
+
+### Ce qui est fait
+- **Trois thèmes** dans ⚙️ Réglages : clair (comme avant), sombre, et violet nuit (les
+  couleurs de l'Omni-système). Le thème change les fenêtres, les boutons, les bulles, l'écran
+  de chargement et la couleur de la barre du téléphone. Il est retenu sur l'appareil.
+- **Luminosité** : normale, douce, tamisée, très tamisée. C'est un voile sombre posé sur tout
+  l'écran (ferme comprise) ; il ne gêne aucun toucher.
+- Toutes les couleurs de l'interface sont maintenant rangées dans un seul fichier.
+- Contrastes vérifiés automatiquement dans les trois thèmes (texte toujours bien lisible).
+
+### Où modifier quoi
+| Je veux changer…                          | Fichier                  |
+|-------------------------------------------|--------------------------|
+| Les couleurs d'un thème                   | `src/ui/themes.css`      |
+| Les niveaux de luminosité proposés        | `src/ui/reglages.js`     |
+| Le thème de départ                        | `src/jeu/reglages.js`    |
+
 ## 🚀 Mise en ligne (GitHub Pages)
 Le jeu est en ligne : https://ferrusdantioch.github.io/jeu-de-ferme/
 Le fichier `.github/workflows/publication.yml` le republie à chaque mise à jour de `main`.

@@ -4,6 +4,7 @@
  * les commandes, l'interface et la sauvegarde.
  */
 import * as THREE from 'three'
+import './ui/themes.css' // les couleurs (thèmes clair, sombre, violet nuit)
 import './ui/style.css'
 import { creerRendu } from './moteur/rendu.js'
 import { creerCamera } from './moteur/camera.js'
