@@ -5,6 +5,9 @@ ou sur ordinateur, même sans Internet une fois installé.
 
 Créé par **Ferrus Dantioch**.
 
+Les formes sont douces et arrondies (boules bien rondes, coins arrondis, éclairage lissé).
+Pour revenir à l'ancien style à facettes : `FORMES_DOUCES = false` dans `src/config.js`.
+
 ## Ce qu'on peut faire
 - 🌾 Cultiver un potager (6 cultures, qui poussent même quand le jeu est fermé).
 - 🐔 S'occuper des poules, des moutons et des vaches (ils ne meurent jamais).

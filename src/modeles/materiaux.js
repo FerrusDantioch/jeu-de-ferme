@@ -4,16 +4,21 @@
  * On réutilise la même peinture pour tous les objets d'une même couleur :
  * c'est plus économe pour le téléphone que d'en créer une nouvelle à chaque fois.
  * « Lambert » = un type de peinture mate, simple et rapide à calculer.
- * « flatShading » = facettes bien visibles, pour le style low-poly (formes simples).
+ * « flatShading » = facettes bien visibles (ancien style low-poly). Avec les formes douces
+ * (FORMES_DOUCES dans config.js), l'éclairage est lissé : les surfaces paraissent arrondies.
  */
 import * as THREE from 'three'
+import { FORMES_DOUCES } from '../config.js'
+
+// Facettes visibles seulement dans l'ancien style.
+export const FACETTES = !FORMES_DOUCES
 
 const reserve = new Map()
 
 export function materiau(couleur) {
   const cle = String(couleur)
   if (!reserve.has(cle)) {
-    reserve.set(cle, new THREE.MeshLambertMaterial({ color: couleur, flatShading: true }))
+    reserve.set(cle, new THREE.MeshLambertMaterial({ color: couleur, flatShading: FACETTES }))
   }
   return reserve.get(cle)
 }
@@ -84,10 +89,10 @@ export const PALETTE = {
 // lors de l'optimisation (voir fusion.js).
 export const MATERIAU_VITRE = new THREE.MeshLambertMaterial({
   color: PALETTE.vitre,
-  flatShading: true,
+  flatShading: FACETTES,
   emissive: 0xffc46b,
   emissiveIntensity: 0,
 })
 MATERIAU_VITRE.userData.aPart = true
-export const MATERIAU_VITRE_INTERIEURE = new THREE.MeshLambertMaterial({ color: PALETTE.vitre, flatShading: true })
+export const MATERIAU_VITRE_INTERIEURE = new THREE.MeshLambertMaterial({ color: PALETTE.vitre, flatShading: FACETTES })
 MATERIAU_VITRE_INTERIEURE.userData.aPart = true

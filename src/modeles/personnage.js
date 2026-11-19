@@ -13,6 +13,7 @@
 import * as THREE from 'three'
 import { materiau, PALETTE } from './materiaux.js'
 import { fusionnerEnPlace } from './fusion.js'
+import { geoBoite, geoCone, geoCylindre, geoDisque, geoIcosaedre, geoSphere } from './geometries.js'
 
 // Apparence par défaut : celle du joueur (chemise rose, salopette bleue, chapeau de paille).
 const APPARENCE_JOUEUR = {
@@ -63,33 +64,33 @@ function piece(geometrie, couleur, x = 0, y = 0, z = 0) {
 
 // Formes partagées par tous les personnages (créées une seule fois : économe).
 const FORMES = {
-  jambe: new THREE.CylinderGeometry(0.09, 0.08, 0.38, 6).translate(0, -0.19, 0),
-  chaussure: new THREE.BoxGeometry(0.16, 0.1, 0.24),
-  tronc: new THREE.CylinderGeometry(0.22, 0.25, 0.42, 8),
-  ceinture: new THREE.CylinderGeometry(0.255, 0.26, 0.2, 8),
-  bavette: new THREE.BoxGeometry(0.26, 0.2, 0.06),
-  tablier: new THREE.BoxGeometry(0.34, 0.42, 0.05),
-  bras: new THREE.CylinderGeometry(0.065, 0.06, 0.36, 6).translate(0, -0.18, 0),
-  main: new THREE.IcosahedronGeometry(0.07, 0),
-  tete: new THREE.IcosahedronGeometry(0.27, 1),
-  cheveux: new THREE.SphereGeometry(0.285, 8, 6, 0, Math.PI * 2, 0, Math.PI * 0.55),
-  chignon: new THREE.IcosahedronGeometry(0.13, 0),
-  cheveuxLongs: new THREE.CylinderGeometry(0.25, 0.28, 0.42, 10, 1, false, Math.PI * 0.35, Math.PI * 1.3),
-  queue: new THREE.ConeGeometry(0.08, 0.36, 6),
-  couette: new THREE.IcosahedronGeometry(0.1, 0),
-  boucle: new THREE.IcosahedronGeometry(0.09, 0),
-  jupe: new THREE.CylinderGeometry(0.26, 0.36, 0.3, 8),
-  foulard: new THREE.SphereGeometry(0.3, 10, 6, 0, Math.PI * 2, 0, Math.PI * 0.4),
-  noeud: new THREE.IcosahedronGeometry(0.07, 0),
-  petale: new THREE.IcosahedronGeometry(0.055, 0),
-  oeil: new THREE.SphereGeometry(0.035, 6, 4),
-  joue: new THREE.CircleGeometry(0.045, 8),
-  bordChapeau: new THREE.CylinderGeometry(0.46, 0.46, 0.03, 12),
-  calotte: new THREE.CylinderGeometry(0.2, 0.24, 0.18, 10),
-  ruban: new THREE.CylinderGeometry(0.245, 0.245, 0.05, 10),
-  casquette: new THREE.SphereGeometry(0.29, 10, 6, 0, Math.PI * 2, 0, Math.PI * 0.42),
-  visiere: new THREE.BoxGeometry(0.3, 0.025, 0.2),
-  ombre: new THREE.CircleGeometry(0.38, 16),
+  jambe: geoCylindre(0.09, 0.08, 0.38, 6).translate(0, -0.19, 0),
+  chaussure: geoBoite(0.16, 0.1, 0.24),
+  tronc: geoCylindre(0.22, 0.25, 0.42, 8),
+  ceinture: geoCylindre(0.255, 0.26, 0.2, 8),
+  bavette: geoBoite(0.26, 0.2, 0.06),
+  tablier: geoBoite(0.34, 0.42, 0.05),
+  bras: geoCylindre(0.065, 0.06, 0.36, 6).translate(0, -0.18, 0),
+  main: geoIcosaedre(0.07, 0),
+  tete: geoIcosaedre(0.27, 1),
+  cheveux: geoSphere(0.285, 8, 6, 0, Math.PI * 2, 0, Math.PI * 0.55),
+  chignon: geoIcosaedre(0.13, 0),
+  cheveuxLongs: geoCylindre(0.25, 0.28, 0.42, 10, 1, false, Math.PI * 0.35, Math.PI * 1.3),
+  queue: geoCone(0.08, 0.36, 6),
+  couette: geoIcosaedre(0.1, 0),
+  boucle: geoIcosaedre(0.09, 0),
+  jupe: geoCylindre(0.26, 0.36, 0.3, 8),
+  foulard: geoSphere(0.3, 10, 6, 0, Math.PI * 2, 0, Math.PI * 0.4),
+  noeud: geoIcosaedre(0.07, 0),
+  petale: geoIcosaedre(0.055, 0),
+  oeil: geoSphere(0.035, 6, 4),
+  joue: geoDisque(0.045, 8),
+  bordChapeau: geoCylindre(0.46, 0.46, 0.03, 12),
+  calotte: geoCylindre(0.2, 0.24, 0.18, 10),
+  ruban: geoCylindre(0.245, 0.245, 0.05, 10),
+  casquette: geoSphere(0.29, 10, 6, 0, Math.PI * 2, 0, Math.PI * 0.42),
+  visiere: geoBoite(0.3, 0.025, 0.2),
+  ombre: geoDisque(0.38, 16),
 }
 const MATERIAU_OMBRE = new THREE.MeshBasicMaterial({
   color: 0x000000,

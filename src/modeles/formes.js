@@ -4,6 +4,7 @@
  */
 import * as THREE from 'three'
 import { materiau } from './materiaux.js'
+import { geoBoite, geoCylindre, geoIcosaedre } from './geometries.js'
 
 /**
  * Une boîte (pavé) de largeur l, hauteur h, profondeur p.
@@ -12,7 +13,7 @@ import { materiau } from './materiaux.js'
 export function boite(l, h, p, couleur, x = 0, y = 0, z = 0) {
   // « couleur » peut aussi être directement une peinture (ex. : celle des vitres).
   const peinture = couleur?.isMaterial ? couleur : materiau(couleur)
-  const m = new THREE.Mesh(new THREE.BoxGeometry(l, h, p), peinture)
+  const m = new THREE.Mesh(geoBoite(l, h, p), peinture)
   m.position.set(x, y + h / 2, z)
   m.castShadow = true
   m.receiveShadow = true
@@ -24,7 +25,7 @@ export function boite(l, h, p, couleur, x = 0, y = 0, z = 0) {
  * « cotes » = nombre de faces (6 = hexagone, aspect low-poly).
  */
 export function cylindre(r, h, couleur, x = 0, y = 0, z = 0, cotes = 8) {
-  const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, cotes), materiau(couleur))
+  const m = new THREE.Mesh(geoCylindre(r, r, h, cotes), materiau(couleur))
   m.position.set(x, y + h / 2, z)
   m.castShadow = true
   m.receiveShadow = true
@@ -35,7 +36,7 @@ export function cylindre(r, h, couleur, x = 0, y = 0, z = 0, cotes = 8) {
  * Une boule low-poly de rayon r, centrée en (x, y, z).
  */
 export function boule(r, couleur, x = 0, y = 0, z = 0, details = 0) {
-  const m = new THREE.Mesh(new THREE.IcosahedronGeometry(r, details), materiau(couleur))
+  const m = new THREE.Mesh(geoIcosaedre(r, details), materiau(couleur))
   m.position.set(x, y, z)
   m.castShadow = true
   return m
@@ -71,7 +72,7 @@ export function toitDeuxPans(l, p, hMur, hToit, couleur, debord = 0.35, epaisseu
   const pente = Math.atan2(hToit, demi)
   const longueurPan = Math.hypot(demi, hToit) + debord
   for (const cote of [-1, 1]) {
-    const pan = new THREE.Mesh(new THREE.BoxGeometry(longueurPan, epaisseur, p + debord * 2), materiau(couleur))
+    const pan = new THREE.Mesh(geoBoite(longueurPan, epaisseur, p + debord * 2), materiau(couleur))
     // Le milieu du pan se trouve à mi-longueur, en partant du faîte (le sommet).
     const milieu = longueurPan / 2
     pan.position.set(

@@ -38,6 +38,7 @@ import { surChangementDecorations } from '../jeu/decorations.js'
 import { ARBRES_FRUITIERS } from '../donnees/vergers.js'
 import { saisonDuJour } from '../jeu/temps.js'
 import { animationsReduites } from '../jeu/reglages.js'
+import { geoBoite, geoCylindre } from '../modeles/geometries.js'
 
 // Distance entre la façade et le point où l'on se tient pour passer la porte.
 const RECUL_PORTE = 0.9
@@ -66,9 +67,9 @@ export function creerLieu(outils) {
     // Zone invisible pour le toucher, à peu près à la forme du bâtiment :
     // les murs, plus une partie plus étroite pour le toit (pour ne pas cacher ce qui est derrière).
     const zoneBatiment = new THREE.Group()
-    const murs = new THREE.Mesh(new THREE.BoxGeometry(b.largeur + 0.3, 2.8, b.profondeur + 0.3), MATERIAU_INVISIBLE)
+    const murs = new THREE.Mesh(geoBoite(b.largeur + 0.3, 2.8, b.profondeur + 0.3), MATERIAU_INVISIBLE)
     murs.position.y = 1.4
-    const toit = new THREE.Mesh(new THREE.BoxGeometry(b.largeur * 0.55, 1.6, b.profondeur + 0.3), MATERIAU_INVISIBLE)
+    const toit = new THREE.Mesh(geoBoite(b.largeur * 0.55, 1.6, b.profondeur + 0.3), MATERIAU_INVISIBLE)
     toit.position.y = 3.6
     zoneBatiment.add(murs, toit)
     zoneBatiment.position.set(b.x, 0, b.z)
@@ -124,7 +125,7 @@ export function creerLieu(outils) {
     reserve.position.set(r.x, 0, r.z)
     statique.add(reserve)
     grille.bloquerRectangle(r.x, r.z, 1.6, 0.7, 0.3)
-    const zone = new THREE.Mesh(new THREE.BoxGeometry(2, 1.4, 1.2), MATERIAU_INVISIBLE)
+    const zone = new THREE.Mesh(geoBoite(2, 1.4, 1.2), MATERIAU_INVISIBLE)
     zone.position.set(r.x, 0.7, r.z)
     zone.userData.toucher = { type: 'reserve', approche: { x: r.x, z: r.z + 1.0 } }
     groupe.add(zone)
@@ -137,7 +138,7 @@ export function creerLieu(outils) {
   statique.add(etang)
   grille.bloquerCercle(ETANG.x, ETANG.z, ETANG.rayon, 0.3)
   // On touche l'eau pour pêcher.
-  const zoneEtang = new THREE.Mesh(new THREE.CylinderGeometry(ETANG.rayon, ETANG.rayon, 0.5, 16), MATERIAU_INVISIBLE)
+  const zoneEtang = new THREE.Mesh(geoCylindre(ETANG.rayon, ETANG.rayon, 0.5, 16), MATERIAU_INVISIBLE)
   zoneEtang.position.set(ETANG.x, 0.25, ETANG.z)
   zoneEtang.userData.toucher = { type: 'etang' }
   groupe.add(zoneEtang)
@@ -184,7 +185,7 @@ export function creerLieu(outils) {
     tableau.position.set(x, 0, z)
     statique.add(tableau)
     grille.bloquerRectangle(x, z, 1.8, 0.2, 0.3)
-    const zone = new THREE.Mesh(new THREE.BoxGeometry(2, 1.9, 0.8), MATERIAU_INVISIBLE)
+    const zone = new THREE.Mesh(geoBoite(2, 1.9, 0.8), MATERIAU_INVISIBLE)
     zone.position.set(x, 0.95, z)
     zone.userData.toucher = { type: 'tableau', approche: { x, z: z + 1.0 } }
     groupe.add(zone)

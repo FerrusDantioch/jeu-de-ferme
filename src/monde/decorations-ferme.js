@@ -13,6 +13,7 @@ import { DECORATIONS } from '../donnees/decorations.js'
 import { decorationsPosees } from '../jeu/decorations.js'
 import { placesDeBanc, ajouterSiege } from './sieges.js'
 import { creerLueur, oublierLueur } from './ciel.js'
+import { geoCylindre } from '../modeles/geometries.js'
 
 /**
  * @param {object} o
@@ -77,7 +78,7 @@ export function creerDecorationsFerme({ groupe, grille, touchables, interdits = 
         }
       } else {
         const r = Math.max(0.45, info.taille + 0.1)
-        const zone = new THREE.Mesh(new THREE.CylinderGeometry(r, r, 1.4, 8), MATERIAU_INVISIBLE)
+        const zone = new THREE.Mesh(geoCylindre(r, r, 1.4, 8), MATERIAU_INVISIBLE)
         zone.position.set(d.x, 0.7, d.z)
         zone.userData.toucher = { type: 'deco', deco: d }
         conteneur.add(zone)

@@ -24,6 +24,14 @@ export const COULEUR_THEME = '#7cc47a'
 export const COULEUR_FOND = '#cdeaf7'
 
 /**
+ * Style des formes 3D.
+ *  - true : formes douces et arrondies (boules bien rondes, coins arrondis, éclairage lissé) ;
+ *  - false : l'ancien style « low-poly », à facettes et angles visibles.
+ * (Voir src/modeles/geometries.js.)
+ */
+export const FORMES_DOUCES = true
+
+/**
  * Réglages techniques de performance.
  * Ils servent à garder le jeu fluide sur un téléphone de milieu de gamme.
  */

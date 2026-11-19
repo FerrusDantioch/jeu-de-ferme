@@ -8,6 +8,7 @@
 import * as THREE from 'three'
 import { materiau, PALETTE } from './materiaux.js'
 import { fusionnerEnPlace } from './fusion.js'
+import { geoBoite, geoCone, geoCylindre, geoDisque, geoIcosaedre, geoSphere } from './geometries.js'
 
 function piece(geo, couleur, x = 0, y = 0, z = 0) {
   const m = new THREE.Mesh(geo, materiau(couleur))
@@ -37,12 +38,12 @@ export function creerCompagnon(espece, pelage) {
 
   // --- Le tronc (et le ventre plus clair) ---
   const yTronc = t.jambe + t.h / 2
-  corps.add(piece(new THREE.BoxGeometry(t.l, t.h, t.p), c1, 0, yTronc, 0))
-  corps.add(piece(new THREE.BoxGeometry(t.l * 0.8, 0.03, t.p * 0.7), c2, 0, t.jambe + 0.005, 0.02))
+  corps.add(piece(geoBoite(t.l, t.h, t.p), c1, 0, yTronc, 0))
+  corps.add(piece(geoBoite(t.l * 0.8, 0.03, t.p * 0.7), c2, 0, t.jambe + 0.005, 0.02))
 
   // --- Les pattes (accrochées au tronc pour pouvoir bouger) ---
-  const geoPatte = new THREE.CylinderGeometry(0.035, 0.032, t.jambe, 5).translate(0, -t.jambe / 2, 0)
-  const geoPied = new THREE.IcosahedronGeometry(0.04, 0)
+  const geoPatte = geoCylindre(0.035, 0.032, t.jambe, 5).translate(0, -t.jambe / 2, 0)
+  const geoPied = geoIcosaedre(0.04, 0)
   ;[[-1, 1], [1, 1], [-1, -1], [1, -1]].forEach(([cx, cz], n) => {
     const patte = new THREE.Group()
     patte.name = `patte${n}`
@@ -57,24 +58,24 @@ export function creerCompagnon(espece, pelage) {
   tete.name = 'tete'
   tete.position.set(0, yTronc + t.h * 0.55, t.p / 2 + t.tete * 0.45)
   corps.add(tete)
-  tete.add(piece(new THREE.IcosahedronGeometry(t.tete, 1), c1))
+  tete.add(piece(geoIcosaedre(t.tete, 1), c1))
   // Yeux et nez.
-  for (const cote of [-1, 1]) tete.add(piece(new THREE.SphereGeometry(0.022, 6, 4), PALETTE.noir, cote * t.tete * 0.42, 0.03, t.tete * 0.86))
+  for (const cote of [-1, 1]) tete.add(piece(geoSphere(0.022, 6, 4), PALETTE.noir, cote * t.tete * 0.42, 0.03, t.tete * 0.86))
   if (chien) {
     // Un museau allongé, une truffe, des oreilles qui tombent.
-    tete.add(piece(new THREE.BoxGeometry(0.11, 0.08, 0.1), c2, 0, -0.045, t.tete * 0.95))
-    tete.add(piece(new THREE.SphereGeometry(0.028, 6, 4), PALETTE.noir, 0, -0.02, t.tete * 1.28))
+    tete.add(piece(geoBoite(0.11, 0.08, 0.1), c2, 0, -0.045, t.tete * 0.95))
+    tete.add(piece(geoSphere(0.028, 6, 4), PALETTE.noir, 0, -0.02, t.tete * 1.28))
     for (const cote of [-1, 1]) {
-      const oreille = piece(new THREE.BoxGeometry(0.05, 0.13, 0.08), c1 === 0xf7f4ee ? 0xe3c193 : c1, cote * t.tete * 0.95, -0.02, 0)
+      const oreille = piece(geoBoite(0.05, 0.13, 0.08), c1 === 0xf7f4ee ? 0xe3c193 : c1, cote * t.tete * 0.95, -0.02, 0)
       oreille.rotation.z = cote * 0.25
       tete.add(oreille)
     }
   } else {
     // Un petit museau clair, un nez rose, des oreilles pointues.
-    tete.add(piece(new THREE.IcosahedronGeometry(0.05, 0), c2, 0, -0.045, t.tete * 0.8))
-    tete.add(piece(new THREE.SphereGeometry(0.018, 6, 4), 0xf4a3a3, 0, -0.015, t.tete * 1.0))
+    tete.add(piece(geoIcosaedre(0.05, 0), c2, 0, -0.045, t.tete * 0.8))
+    tete.add(piece(geoSphere(0.018, 6, 4), 0xf4a3a3, 0, -0.015, t.tete * 1.0))
     for (const cote of [-1, 1]) {
-      const oreille = piece(new THREE.ConeGeometry(0.05, 0.1, 4), c1, cote * t.tete * 0.6, t.tete * 0.85, -0.01)
+      const oreille = piece(geoCone(0.05, 0.1, 4), c1, cote * t.tete * 0.6, t.tete * 0.85, -0.01)
       oreille.rotation.z = -cote * 0.25
       tete.add(oreille)
     }
@@ -85,7 +86,7 @@ export function creerCompagnon(espece, pelage) {
   queue.name = 'queue'
   queue.position.set(0, yTronc + t.h * 0.3, -t.p / 2)
   const longueur = chien ? 0.2 : 0.3
-  const geoQueue = new THREE.CylinderGeometry(0.022, 0.03, longueur, 5).translate(0, longueur / 2, 0)
+  const geoQueue = geoCylindre(0.022, 0.03, longueur, 5).translate(0, longueur / 2, 0)
   const morceau = piece(geoQueue, c1)
   morceau.rotation.x = chien ? -0.9 : -0.35
   queue.add(morceau)
@@ -98,7 +99,7 @@ export function creerCompagnon(espece, pelage) {
   fusionnerEnPlace(corps)
 
   // Ombre ronde sous lui.
-  const ombre = new THREE.Mesh(new THREE.CircleGeometry(chien ? 0.34 : 0.28, 12), OMBRE)
+  const ombre = new THREE.Mesh(geoDisque(chien ? 0.34 : 0.28, 12), OMBRE)
   ombre.rotation.x = -Math.PI / 2
   ombre.position.y = 0.012
   ombre.name = 'ombre'

@@ -7,6 +7,7 @@
  * les papillons restent cachés et les lucioles ne bougent plus.
  */
 import * as THREE from 'three'
+import { geoDisque } from '../modeles/geometries.js'
 
 // Les coins où vivent les papillons et les lucioles : [x, z, rayon].
 const COINS_PAPILLONS = [
@@ -28,7 +29,7 @@ const COINS_LUCIOLES = [
 ]
 const COULEURS_PAPILLONS = [0xf7bfd6, 0xfff1a8, 0xbfe3f2, 0xd7c4f2, 0xffffff, 0xffc9a0, 0xc6ecc0]
 
-const geoAile = new THREE.CircleGeometry(0.09, 6).scale(1, 0.75, 1).translate(0.085, 0, 0).rotateX(-Math.PI / 2)
+const geoAile = geoDisque(0.09, 6).scale(1, 0.75, 1).translate(0.085, 0, 0).rotateX(-Math.PI / 2)
 
 /** Un papillon : deux ailes qui battent autour d'une charnière. */
 function creerPapillon(couleur) {

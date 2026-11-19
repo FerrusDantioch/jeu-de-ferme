@@ -11,6 +11,7 @@
 import * as THREE from 'three'
 import { materiau, PALETTE } from './materiaux.js'
 import { boite, boule, cylindre } from './formes.js'
+import { geoCone } from './geometries.js'
 
 const VERT = PALETTE.feuillage
 const VERT_CLAIR = PALETTE.feuillageClair
@@ -68,7 +69,7 @@ const FORMES = {
     g.add(touffe(4, taille, VERT, 0.18))
     for (let k = 0; k < 4; k++) g.add(cylindre(0.01, 0.18, VERT, Math.sin(k * 1.6) * 0.04, 0, Math.cos(k * 1.6) * 0.04, 3))
     if (stade === 3) {
-      const racine = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.22, 6), materiau(PALETTE.citrouille))
+      const racine = new THREE.Mesh(geoCone(0.07, 0.22, 6), materiau(PALETTE.citrouille))
       racine.rotation.x = Math.PI
       racine.position.y = 0.02
       racine.castShadow = true

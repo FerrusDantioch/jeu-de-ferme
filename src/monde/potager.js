@@ -14,6 +14,7 @@ import { obtenirModele } from '../modeles/index.js'
 import { fusionnerParMateriau } from '../modeles/fusion.js'
 import { etat } from '../jeu/etat.js'
 import { observer } from '../jeu/potager.js'
+import { geoBoite } from '../modeles/geometries.js'
 
 // Où placer les plantes dans une parcelle (en mètres depuis son centre).
 const PLACES = {
@@ -59,7 +60,7 @@ export function creerPotagerInteractif({ groupe, touchables, pastilles }) {
       const approche = { x: cx, z: devant ? cz + taille / 2 + 0.55 : cz - taille / 2 - 0.55 }
 
       // Zone invisible qu'on touche.
-      const zone = new THREE.Mesh(new THREE.BoxGeometry(taille, 0.7, taille), MATERIAU_INVISIBLE)
+      const zone = new THREE.Mesh(geoBoite(taille, 0.7, taille), MATERIAU_INVISIBLE)
       zone.position.y = 0.35
       zone.userData.toucher = { type: 'parcelle', n, approche, objet: racine }
       racine.add(zone)

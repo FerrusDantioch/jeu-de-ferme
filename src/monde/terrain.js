@@ -11,6 +11,7 @@ import * as THREE from 'three'
 import { materiau, PALETTE } from '../modeles/materiaux.js'
 import { MONDE } from '../config.js'
 import { ARBRES, ROCHERS, CHEMINS, NOMBRE_DE_FLEURS } from '../donnees/ferme.js'
+import { geoBoite, geoCone, geoCylindre, geoDodecaedre, geoIcosaedre } from '../modeles/geometries.js'
 
 // Aléatoire « reproductible » : le même décor à chaque lancement.
 function generateurAleatoire(graine) {
@@ -72,9 +73,9 @@ export function creerTerrain(groupe, grille, statique = groupe) {
   })
 
   // --- Arbres ---
-  const geoTronc = new THREE.CylinderGeometry(0.18, 0.25, 1.2, 6).translate(0, 0.6, 0)
-  const geoFeuillage = new THREE.IcosahedronGeometry(1.1, 0).translate(0, 2.0, 0)
-  const geoFeuillageHaut = new THREE.IcosahedronGeometry(0.75, 0).translate(0.15, 2.8, 0.1)
+  const geoTronc = geoCylindre(0.18, 0.25, 1.2, 6).translate(0, 0.6, 0)
+  const geoFeuillage = geoIcosaedre(1.1, 0).translate(0, 2.0, 0)
+  const geoFeuillageHaut = geoIcosaedre(0.75, 0).translate(0.15, 2.8, 0.1)
   const troncs = new THREE.InstancedMesh(geoTronc, materiau(PALETTE.tronc), ARBRES.length)
   // Les feuillages ont leur propre peinture : elle change avec les saisons.
   const feuillages = new THREE.InstancedMesh(geoFeuillage, materiau(PALETTE.feuillage).clone(), ARBRES.length)
@@ -97,7 +98,7 @@ export function creerTerrain(groupe, grille, statique = groupe) {
   }
 
   // --- Rochers ---
-  const geoRocher = new THREE.DodecahedronGeometry(1, 0)
+  const geoRocher = geoDodecaedre(1, 0)
   const instRochers = new THREE.InstancedMesh(geoRocher, materiau(PALETTE.rocher), ROCHERS.length)
   ROCHERS.forEach(([x, z, r], n) => {
     q.setFromAxisAngle(axeY, alea() * Math.PI)
@@ -117,7 +118,7 @@ export function creerTerrain(groupe, grille, statique = groupe) {
     positionsPiquets.push([t, -demi], [t, demi])
     if (t !== -demi && t !== demi) positionsPiquets.push([-demi, t], [demi, t])
   }
-  const geoPiquet = new THREE.BoxGeometry(0.16, 0.9, 0.16).translate(0, 0.45, 0)
+  const geoPiquet = geoBoite(0.16, 0.9, 0.16).translate(0, 0.45, 0)
   const piquets = new THREE.InstancedMesh(geoPiquet, materiau(PALETTE.bois), positionsPiquets.length)
   positionsPiquets.forEach(([x, z], n) => {
     m.makeTranslation(x, 0, z)
@@ -127,7 +128,7 @@ export function creerTerrain(groupe, grille, statique = groupe) {
   groupe.add(piquets)
 
   // Barres horizontales de la clôture (4 côtés × 2 hauteurs).
-  const geoBarre = new THREE.BoxGeometry(taille, 0.08, 0.06)
+  const geoBarre = geoBoite(taille, 0.08, 0.06)
   for (const h of [0.35, 0.7]) {
     for (const [x, z, rot] of [[0, -demi, 0], [0, demi, 0], [-demi, 0, Math.PI / 2], [demi, 0, Math.PI / 2]]) {
       const barre = new THREE.Mesh(geoBarre, materiau(PALETTE.bois))
@@ -147,7 +148,7 @@ export function creerTerrain(groupe, grille, statique = groupe) {
 
   // --- Touffes d'herbe (pur décor, pas d'obstacle) ---
   const nbTouffes = 70
-  const geoTouffe = new THREE.ConeGeometry(0.12, 0.35, 4).translate(0, 0.17, 0)
+  const geoTouffe = geoCone(0.12, 0.35, 4).translate(0, 0.17, 0)
   const touffes = new THREE.InstancedMesh(geoTouffe, materiau(PALETTE.herbeFoncee).clone(), nbTouffes)
   for (let n = 0; n < nbTouffes; n++) {
     let x, z
@@ -174,8 +175,8 @@ export function creerTerrain(groupe, grille, statique = groupe) {
 export function semerFleurs(groupe, grille) {
   const alea = generateurAleatoire(42)
   const couleurs = [PALETTE.fleurRose, PALETTE.fleurJaune, PALETTE.fleurBlanche, PALETTE.fleurViolette]
-  const geoFleur = new THREE.IcosahedronGeometry(0.09, 0).translate(0, 0.2, 0)
-  const geoTige = new THREE.CylinderGeometry(0.015, 0.015, 0.2, 3).translate(0, 0.1, 0)
+  const geoFleur = geoIcosaedre(0.09, 0).translate(0, 0.2, 0)
+  const geoTige = geoCylindre(0.015, 0.015, 0.2, 3).translate(0, 0.1, 0)
   const parCouleur = couleurs.map(() => [])
   const demi = MONDE.taille / 2 - 1
   let essais = 0

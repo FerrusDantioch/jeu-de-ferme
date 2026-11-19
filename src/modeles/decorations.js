@@ -6,6 +6,7 @@ import * as THREE from 'three'
 import { PALETTE, MATERIAU_VITRE } from './materiaux.js'
 import { boite, boule, cylindre, toitDeuxPans } from './formes.js'
 import { creerBanc } from './decor.js'
+import { geoCone, geoTore } from './geometries.js'
 
 const FLEURS = [PALETTE.fleurRose, PALETTE.fleurJaune, PALETTE.fleurBlanche, PALETTE.fleurViolette]
 
@@ -60,11 +61,11 @@ const FABRIQUES = {
     g.add(cylindre(0.13, 0.12, PALETTE.chaussures, 0, 0, 0, 8))
     g.add(cylindre(0.15, 0.25, PALETTE.tissuBleu, 0, 0.12, 0, 8))
     g.add(boule(0.11, PALETTE.peau, 0, 0.47, 0))
-    const barbe = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.18, 6), new THREE.MeshLambertMaterial({ color: PALETTE.blanc }))
+    const barbe = new THREE.Mesh(geoCone(0.1, 0.18, 6), new THREE.MeshLambertMaterial({ color: PALETTE.blanc }))
     barbe.position.set(0, 0.38, 0.06)
     barbe.rotation.x = Math.PI
     g.add(barbe)
-    const bonnet = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.3, 6), new THREE.MeshLambertMaterial({ color: PALETTE.tomate }))
+    const bonnet = new THREE.Mesh(geoCone(0.12, 0.3, 6), new THREE.MeshLambertMaterial({ color: PALETTE.tomate }))
     bonnet.position.set(0, 0.65, 0)
     g.add(bonnet)
     g.add(boule(0.03, PALETTE.joues, 0, 0.47, 0.11)) // le nez
@@ -115,7 +116,7 @@ const FABRIQUES = {
     g.add(boule(0.32, PALETTE.blanc, 0, 0.3, 0, 1))
     g.add(boule(0.23, PALETTE.blanc, 0, 0.75, 0, 1))
     g.add(boule(0.16, PALETTE.blanc, 0, 1.08, 0, 1))
-    const nez = new THREE.Mesh(new THREE.ConeGeometry(0.035, 0.16, 5), new THREE.MeshLambertMaterial({ color: PALETTE.citrouille }))
+    const nez = new THREE.Mesh(geoCone(0.035, 0.16, 5), new THREE.MeshLambertMaterial({ color: PALETTE.citrouille }))
     nez.rotation.x = Math.PI / 2
     nez.position.set(0, 1.08, 0.22)
     g.add(nez)
@@ -132,7 +133,7 @@ const FABRIQUES = {
     const g = new THREE.Group()
     for (const x of [-0.65, 0.65]) g.add(boite(0.12, 1.9, 0.12, PALETTE.blanc, x, 0, 0))
     // L'arc : un demi-anneau couvert de fleurs.
-    const arc = new THREE.Mesh(new THREE.TorusGeometry(0.65, 0.06, 5, 12, Math.PI), new THREE.MeshLambertMaterial({ color: PALETTE.blanc }))
+    const arc = new THREE.Mesh(geoTore(0.65, 0.06, 5, 12, Math.PI), new THREE.MeshLambertMaterial({ color: PALETTE.blanc }))
     arc.position.y = 1.9
     g.add(arc)
     for (let k = 0; k <= 10; k++) {

@@ -12,6 +12,7 @@ import {
 import * as THREE from 'three'
 import { MATERIAU_INVISIBLE } from '../modeles/formes.js'
 import { creerPnjDuLieu } from './pnj-du-lieu.js'
+import { geoBoite } from '../modeles/geometries.js'
 
 export function creerLieu(outils) {
   const piece = creerPiece({
@@ -27,7 +28,7 @@ export function creerLieu(outils) {
   // Le comptoir, avec Lila derrière (elle est ajoutée par la liste des villageois).
   placer(creerComptoir(3.6), 0, -1.6, { obstacle: [3.6, 0.7] })
   // Le comptoir se touche pour ouvrir la boutique.
-  const zoneComptoir = new THREE.Mesh(new THREE.BoxGeometry(3.8, 1.2, 0.9), MATERIAU_INVISIBLE)
+  const zoneComptoir = new THREE.Mesh(geoBoite(3.8, 1.2, 0.9), MATERIAU_INVISIBLE)
   zoneComptoir.position.set(0, 0.6, -1.6)
   zoneComptoir.userData.toucher = { type: 'boutique', approche: { x: 0, z: -0.6 } }
   piece.groupe.add(zoneComptoir)

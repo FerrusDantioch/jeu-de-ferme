@@ -7,6 +7,7 @@ import { materiau, PALETTE, MATERIAU_VITRE } from './materiaux.js'
 import { boite, boule, cylindre, toitDeuxPans } from './formes.js'
 import { panneauTexte } from './batiments.js'
 import { creerBotteDeFoin, creerSac } from './mobilier.js'
+import { geoDisque } from './geometries.js'
 
 /** Un puits en pierre avec un petit toit. */
 export function creerPuits() {
@@ -61,7 +62,7 @@ export function creerPanneau(texte, largeur = 1.4) {
 /** Un petit étang rond avec des pierres autour et deux nénuphars. */
 export function creerEtang(rayon = 2.2) {
   const g = new THREE.Group()
-  const eau = new THREE.Mesh(new THREE.CircleGeometry(rayon, 18), materiau(PALETTE.eau))
+  const eau = new THREE.Mesh(geoDisque(rayon, 18), materiau(PALETTE.eau))
   eau.rotation.x = -Math.PI / 2
   eau.position.y = 0.03
   eau.receiveShadow = true
@@ -75,7 +76,7 @@ export function creerEtang(rayon = 2.2) {
     g.add(pierre)
   }
   for (const [x, z] of [[-0.6, 0.4], [0.7, -0.5]]) {
-    const nenuphar = new THREE.Mesh(new THREE.CircleGeometry(0.28, 7), materiau(PALETTE.feuillage))
+    const nenuphar = new THREE.Mesh(geoDisque(0.28, 7), materiau(PALETTE.feuillage))
     nenuphar.rotation.x = -Math.PI / 2
     nenuphar.position.set(x, 0.05, z)
     g.add(nenuphar)
