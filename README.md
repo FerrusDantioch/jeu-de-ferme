@@ -44,6 +44,8 @@ Sans publicité, sans achat, sans compte, sans collecte de données : tout reste
   l'Omni-système). Ils changent les fenêtres, les boutons et les textes.
 - 🔆 **Luminosité** réglable : normale, douce, tamisée, très tamisée.
 - 🔠 **Taille du texte** réglable : normale, grande, très grande.
+- 📌 Les messages importants (quête terminée, souci de sauvegarde…) restent affichés en haut
+  de l'écran jusqu'à ce qu'on touche « OK ».
 - 💬 Tous les textes sont en français et te tutoient.
 - ℹ️ **À propos** (dans ⚙️ Réglages) : version, licence, confidentialité, contact.
 

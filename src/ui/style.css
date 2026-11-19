@@ -991,3 +991,35 @@ dialog {
   display: grid;
   gap: 10px;
 }
+
+/* --- Annonces : messages importants, qui restent jusqu'au toucher (voir src/ui/annonces.js) --- */
+.annonces {
+  position: absolute;
+  top: 84px; /* (recalculé pour se placer juste sous la barre du haut) */
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(520px, calc(100% - 24px));
+  display: grid;
+  gap: 10px;
+  pointer-events: none !important; /* on peut toucher le jeu autour des cartes */
+  z-index: 3; /* au-dessus de la fiche du bas, sous les fenêtres */
+}
+.annonce {
+  pointer-events: auto;
+  padding: 12px 14px;
+  border-radius: var(--rayon);
+  background: var(--couleur-panneau);
+  border: 2px solid var(--couleur-accent);
+  box-shadow: var(--ombre);
+  line-height: 1.35;
+}
+.annonce-texte {
+  margin: 0 0 10px;
+  font-weight: 600;
+}
+.annonce-boutons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}

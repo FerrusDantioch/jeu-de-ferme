@@ -21,6 +21,7 @@ import { creerFondu } from './ui/fondu.js'
 import { creerFiche } from './ui/fiche.js'
 import { creerPastilles } from './ui/pastilles.js'
 import { creerSac } from './ui/sac.js'
+import { creerAnnonces } from './ui/annonces.js'
 import { etat } from './jeu/etat.js'
 import { chargerPartie, demarrerSauvegardeAuto, enregistrer, garderCopieDuJour } from './jeu/sauvegarde.js'
 import { avancerTous } from './jeu/elevage.js'
@@ -84,6 +85,8 @@ const interfaceJeu = creerInterface({ aideAuDemarrage: nouvellePartie })
 const bulles = creerBulles()
 const fondu = creerFondu()
 const pastilles = creerPastilles()
+// Les messages importants (quête terminée, souci de sauvegarde…) : ils restent jusqu'au toucher.
+const annonces = creerAnnonces(interfaceJeu.barre)
 const fiche = creerFiche({ surOuverture: () => interfaceJeu.cacherAide() })
 creerSac(interfaceJeu.barre)
 creerCarnet()
@@ -289,7 +292,8 @@ const descriptionPeche = fichePeche({
 })
 
 // --- Décorer la ferme : choisir une décoration, toucher l'herbe, puis « Poser ici » ---
-const placement = { type: null, x: 0, z: 0, angle: 0, possible: false }
+// (« origine » : la place d'avant d'une décoration qu'on déplace, pour l'y remettre si on annule.)
+const placement = { type: null, x: 0, z: 0, angle: 0, possible: false, origine: null }
 
 function actualiserApercu() {
   const decos = lieux.actuel?.decorations
@@ -298,22 +302,48 @@ function actualiserApercu() {
   fiche.rafraichir()
 }
 
+/**
+ * Termine le placement (posé, annulé, ou parce qu'on change de lieu).
+ * Si on était en train de DÉPLACER une décoration déjà posée et qu'on ne l'a pas reposée,
+ * elle retourne à sa place d'avant (et non dans le sac).
+ */
 function finirPlacement() {
+  if (placement.type && placement.origine) {
+    const o = placement.origine
+    poserDecoration(placement.type, o.x, o.z, o.angle)
+  }
+  placement.origine = null
   placement.type = null
   lieux.lieuConstruit('exterieur')?.decorations.cacherApercu()
 }
 
-/** Commence à poser une décoration (seulement dehors). */
-function commencerPlacement(type) {
+/**
+ * Commence à poser une décoration (seulement dehors).
+ * @param {string} type  la décoration
+ * @param {object} [origine]  pour DÉPLACER une décoration déjà posée : { n, x, z, angle }
+ */
+function commencerPlacement(type, origine = null) {
   if (lieux.actuel.id !== 'exterieur') return
+  // Un autre placement était en cours : on le termine proprement d'abord.
+  if (placement.type) finirPlacement()
   toutFermer()
   if (personnage.assis) personnage.seLever()
   personnage.arreter()
-  // On propose d'abord une place juste devant le personnage.
   placement.type = type
-  placement.angle = 0
-  placement.x = personnage.position.x
-  placement.z = personnage.position.z + 1.8
+  placement.origine = null
+  if (origine) {
+    // On la retire de sa place (elle passe un instant par le sac) et on part de là où elle était.
+    rangerDecoration(origine.n)
+    placement.origine = { x: origine.x, z: origine.z, angle: origine.angle || 0 }
+    placement.angle = placement.origine.angle
+    placement.x = origine.x
+    placement.z = origine.z
+  } else {
+    // On propose d'abord une place juste devant le personnage.
+    placement.angle = 0
+    placement.x = personnage.position.x
+    placement.z = personnage.position.z + 1.8
+  }
   fiche.ouvrir(() => {
     if (!placement.type) return null
     const d = DECORATIONS[placement.type]
@@ -333,6 +363,7 @@ function commencerPlacement(type) {
           faire: () => {
             if (!poserDecoration(placement.type, placement.x, placement.z, placement.angle)) return
             jouer('planter')
+            placement.origine = null // posée à sa nouvelle place : rien à remettre
             finirPlacement()
             fiche.fermer()
             bulles.flotter(personnage.modele, '✨', 1.7)
@@ -346,6 +377,8 @@ function commencerPlacement(type) {
             actualiserApercu()
           },
         },
+        // Annuler : une nouvelle décoration reste dans le sac ; une décoration déplacée
+        // retourne à sa place d'avant (voir finirPlacement).
         { icone: '✖️', texte: 'Annuler', faire: () => fiche.fermer() },
       ],
     }
@@ -453,14 +486,7 @@ entrees.surToucher((x, y) => {
           {
             icone: '✋',
             texte: 'Déplacer',
-            faire: () => {
-              rangerDecoration(d.n)
-              commencerPlacement(d.type)
-              placement.x = d.x
-              placement.z = d.z
-              placement.angle = d.angle || 0
-              actualiserApercu()
-            },
+            faire: () => commencerPlacement(d.type, { n: d.n, x: d.x, z: d.z, angle: d.angle }),
           },
           { icone: '🎒', texte: 'Ranger dans le sac', faire: () => rangerDecoration(d.n) },
         ],
@@ -565,7 +591,7 @@ entrees.surToucher((x, y) => {
     if (r) {
       cible.objet.visible = false
       bulles.flotter(cible.objet, `+${r.pieces} 🪙  🥚 ${r.trouves}/${CACHETTES_OEUFS.length}`, 0.6)
-      if (r.trouves === CACHETTES_OEUFS.length) bulles.dire(personnage.modele, 'Tous les œufs sont trouvés ! 🐣🎉')
+      if (r.trouves === CACHETTES_OEUFS.length) annonces.montrer('paques', '🐣🎉 Bravo, tu as trouvé tous les œufs de Pâques !')
     }
     marcherVers(new THREE.Vector3(cible.objet.position.x, 0, cible.objet.position.z + 0.6))
     return
@@ -647,8 +673,15 @@ function verifierCalendrier() {
 // Quand une quête est terminée, le personnage le dit (et le bouton 📜 affiche un nombre).
 quetes.surQueteTerminee(() => {
   jouer('quete')
-  bulles.dire(personnage.modele, 'Quête terminée ! 📜 Touche « Quêtes » pour recevoir la récompense.')
+  bulles.flotter(personnage.modele, '📜✨', 1.7)
+  annonces.montrer('quete', '📜 Quête terminée ! Ta récompense t’attend.', {
+    action: { texte: '🎁 Voir mes quêtes', faire: () => panneauQuetes.ouvrir() },
+  })
   panneauQuetes.actualiser()
+})
+// Les récompenses ont toutes été reçues : l'annonce « Quête terminée » n'a plus de raison d'être.
+etat.ecouter(() => {
+  if (annonces.affichee('quete') && quetes.nombreARecevoir() === 0) annonces.retirer('quete')
 })
 
 /**
@@ -728,7 +761,9 @@ function surveillerFluidite(dt) {
     dejaPropose = !!localStorage.getItem('jeu-de-ferme:economie-proposee')
     if (parSeconde < 24 && !reglages.get('economie') && !dejaPropose) {
       localStorage.setItem('jeu-de-ferme:economie-proposee', '1')
-      bulles.dire(personnage.modele, 'Le jeu semble un peu lent sur cet appareil : essaie le « Mode économie » dans ⚙️ Réglages.')
+      annonces.montrer('lenteur', '🔋 Le jeu semble un peu lent sur cet appareil. Le « Mode économie » peut le rendre plus fluide.', {
+        action: { texte: '🔋 L’activer', faire: () => reglages.set('economie', true) },
+      })
     }
   } catch {
     /* pas grave */
@@ -790,14 +825,15 @@ lieux
     // Le jeu a bien démarré : cette sauvegarde fonctionne, on en garde une copie de secours (une par jour).
     jeuBienDemarre()
     garderCopieDuJour()
-    if (partie.message) bulles.dire(personnage.modele, partie.message)
+    if (partie.message) annonces.montrer('chargement', partie.message)
     // Nouvelle partie : on commence par choisir son prénom et son allure.
     // (window.__sansAccueil : seulement pour les tests automatiques.)
     if (!etat.d.perso.choisi && !window.__sansAccueil) setTimeout(() => fenetrePerso.ouvrir({ accueil: true }), 600)
     // La sauvegarde automatique note aussi où se trouve le personnage.
     demarrerSauvegardeAuto(
       noterPosition,
-      () => bulles.dire(personnage.modele, 'Oups, la partie n’a pas pu être sauvegardée. La mémoire du téléphone est peut-être pleine.')
+      () =>
+        annonces.montrer('sauvegarde', '💾 Oups, la partie n’a pas pu être sauvegardée. La mémoire de l’appareil est peut-être pleine : pense à exporter ta partie (⚙️ Réglages → Sauvegarde).')
     )
     etat.signaler() // première sauvegarde rapide
     verifierCalendrier()
@@ -816,7 +852,7 @@ activerModeHorsLigne({
 
 // Accès pratique pour les tests automatiques (sans effet sur le jeu).
 window.__jeu = {
-  personnage, lieux, camera, bulles, etat, fiche, boutique, verifierCalendrier, renderer, reglages, fenetrePerso, ciel, appliquerCiel,
+  personnage, lieux, camera, bulles, annonces, etat, fiche, boutique, verifierCalendrier, renderer, reglages, fenetrePerso, ciel, appliquerCiel,
   get compagnon() {
     return animalCompagnon
   },

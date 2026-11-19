@@ -454,6 +454,32 @@
 | Revenir à l'ancien style à facettes               | `src/config.js` (`FORMES_DOUCES`) |
 | L'arrondi des boîtes, la finesse des boules       | `src/modeles/geometries.js`    |
 
+## ✅ Version 1.6.1 — Deux petites corrections
+
+### Ce qui est fait
+- **Décorations** : « Déplacer » puis « Annuler » (ou la croix, ou entrer dans un bâtiment)
+  laisse maintenant la décoration à sa place d'avant, au lieu de la ranger dans le sac.
+- **Messages importants** : ils s'affichent dans une carte en haut de l'écran, sous les boutons,
+  et restent jusqu'à ce qu'on touche « OK ». Sont concernés :
+  - « Quête terminée » (avec un bouton « 🎁 Voir mes quêtes » ; la carte part toute seule une
+    fois les récompenses reçues) ;
+  - la sauvegarde impossible (mémoire pleine) ;
+  - la reprise d'une copie de secours au démarrage ;
+  - la proposition du mode économie (avec un bouton pour l'activer) ;
+  - tous les œufs de Pâques trouvés.
+  Les petites phrases du quotidien (villageois, compagnon, « Ça mord ! ») restent des bulles.
+
+### Vérifications faites
+- Test automatique : déplacer puis annuler, fermer avec la croix, changer de lieu, reposer
+  ailleurs en tournant ; annonces sur tablette et téléphone (encore là après 12 secondes,
+  sous la barre, boutons de 56 px), sauvegarde impossible simulée.
+
+### Où modifier quoi
+| Je veux changer…                         | Fichier                    |
+|------------------------------------------|----------------------------|
+| Les textes des annonces                  | `src/main.js` (cherche `annonces.montrer`) |
+| L'allure des annonces                    | `src/ui/annonces.js`, `src/ui/style.css` |
+
 ## 🚀 Mise en ligne (GitHub Pages)
 Le jeu est en ligne : https://ferrusdantioch.github.io/jeu-de-ferme/
 Le fichier `.github/workflows/publication.yml` le republie à chaque mise à jour de `main`.
@@ -476,9 +502,7 @@ dans l'onglet « Actions ») : c'est normal, et sans danger.
 
 ## 🔜 Ce qui reste
 - Vérifier la fluidité sur la vraie tablette.
-- Idées notées lors de l'audit, pas encore faites : messages importants qui restent jusqu'au
-  toucher, « Déplacer » une décoration puis « Annuler » la remet dans le sac au lieu de la
-  laisser à sa place, tests automatiques à ranger dans le dépôt.
+- Idée notée lors de l'audit, pas encore faite : ranger les tests automatiques dans le dépôt.
 
 ## Commandes utiles (pour un développeur)
 - `npm install` : installe les outils (une seule fois).
