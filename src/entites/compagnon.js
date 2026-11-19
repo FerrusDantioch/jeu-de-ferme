@@ -11,6 +11,7 @@ import * as THREE from 'three'
 import { obtenirModele } from '../modeles/index.js'
 import { MATERIAU_INVISIBLE } from '../modeles/formes.js'
 import { couleursPelage } from '../jeu/compagnon.js'
+import { geoCylindre } from '../modeles/geometries.js'
 
 const VITESSE = 3.6 // un peu plus rapide que le personnage, pour le rattraper
 const DISTANCE_SUIVI = 1.6 // au-delà, il se met en route
@@ -37,7 +38,7 @@ export class Compagnon {
     this.recalcul = 0
 
     // Zone invisible pour le toucher (plus grande que lui, il est petit).
-    this.zone = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 0.8, 8), MATERIAU_INVISIBLE)
+    this.zone = new THREE.Mesh(geoCylindre(0.45, 0.45, 0.8, 8), MATERIAU_INVISIBLE)
     this.zone.position.y = 0.4
     this.zone.userData.toucher = { type: 'compagnon', compagnon: this }
     this.modele.add(this.zone)

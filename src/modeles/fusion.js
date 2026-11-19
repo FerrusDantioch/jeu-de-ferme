@@ -12,9 +12,10 @@
  */
 import * as THREE from 'three'
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
+import { FACETTES } from './materiaux.js'
 
 // Une seule « peinture » pour toutes les pièces collées : elle lit la couleur peinte sur chaque sommet.
-const PEINTURE_PAR_SOMMET = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true })
+const PEINTURE_PAR_SOMMET = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: FACETTES })
 
 /** Vrai si une pièce peut être collée avec les autres (couleur simple, sans image, opaque). */
 function collable(materiau) {

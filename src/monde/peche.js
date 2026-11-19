@@ -8,12 +8,13 @@
 import * as THREE from 'three'
 import { materiau, PALETTE } from '../modeles/materiaux.js'
 import { ATTENTE_PECHE } from '../donnees/poissons.js'
+import { geoCylindre, geoSphere } from '../modeles/geometries.js'
 
 const HAUT = new THREE.Vector3(0, 1, 0)
 
 export function creerPeche(scene) {
   // La canne : un long bâton fin.
-  const canne = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.03, 1, 5), materiau(PALETTE.boisFonce))
+  const canne = new THREE.Mesh(geoCylindre(0.015, 0.03, 1, 5), materiau(PALETTE.boisFonce))
   canne.castShadow = true
   // Le fil, du bout de la canne jusqu'au bouchon.
   const geoFil = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()])
@@ -21,8 +22,8 @@ export function creerPeche(scene) {
   fil.frustumCulled = false
   // Le bouchon : rouge et blanc.
   const bouchon = new THREE.Group()
-  const haut = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 4, 0, Math.PI * 2, 0, Math.PI / 2), materiau(PALETTE.tomate))
-  const bas = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 4, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), materiau(PALETTE.blanc))
+  const haut = new THREE.Mesh(geoSphere(0.07, 8, 4, 0, Math.PI * 2, 0, Math.PI / 2), materiau(PALETTE.tomate))
+  const bas = new THREE.Mesh(geoSphere(0.07, 8, 4, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), materiau(PALETTE.blanc))
   bouchon.add(haut, bas)
   const groupe = new THREE.Group()
   groupe.add(canne, fil, bouchon)

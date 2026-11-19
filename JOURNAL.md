@@ -427,6 +427,33 @@
 | Les vérifications faites au chargement         | `src/jeu/etat.js` (`remettreEnOrdre`) |
 | Les textes de l'écran de secours               | `src/ui/secours.js`       |
 
+## ✅ Version 1.6.0 — Formes douces
+
+### Ce qui est fait
+- À la demande de l'utilisatrice : des graphismes **moins anguleux**.
+  - Les boules (feuillages, moutons, têtes, plantes, pots…) sont bien rondes.
+  - Les cylindres (troncs, bras, jambes, pots, piquets) ont assez de côtés pour paraître ronds.
+  - Les boîtes (murs, meubles, clôtures, bancs) ont des coins et des arêtes arrondis.
+  - Les rochers deviennent des galets.
+  - L'éclairage est lissé (plus de facettes visibles).
+- Tout passe par un seul fichier, `src/modeles/geometries.js` : les autres fichiers demandent
+  « une boîte », « un cylindre »… et reçoivent la version douce.
+- La finesse dépend de la taille : un petit objet (main, fleur) a moins de faces qu'un gros
+  (feuillage d'arbre), pour garder le jeu fluide.
+
+### Vérifications faites
+- Captures avant / après (ferme, enclos, personnage, maison, étable) : même disposition, mêmes tailles.
+- Le jeu dessine environ 5 fois plus de petits triangles dehors (environ 140 000 par image,
+  ombres comprises) ; la fluidité mesurée reste la même dans le test. À confirmer sur la tablette :
+  si le jeu rame, le « Mode économie » des Réglages aide, ou on peut réduire la finesse.
+- Tests des lots précédents relancés : tout passe.
+
+### Où modifier quoi
+| Je veux changer…                                  | Fichier                        |
+|---------------------------------------------------|--------------------------------|
+| Revenir à l'ancien style à facettes               | `src/config.js` (`FORMES_DOUCES`) |
+| L'arrondi des boîtes, la finesse des boules       | `src/modeles/geometries.js`    |
+
 ## 🚀 Mise en ligne (GitHub Pages)
 Le jeu est en ligne : https://ferrusdantioch.github.io/jeu-de-ferme/
 Le fichier `.github/workflows/publication.yml` le republie à chaque mise à jour de `main`.

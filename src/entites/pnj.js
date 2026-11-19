@@ -16,6 +16,7 @@ import { obtenirModele } from '../modeles/index.js'
 import { MATERIAU_INVISIBLE } from '../modeles/formes.js'
 import { Marcheur } from './marcheur.js'
 import { avecPrenom } from '../jeu/perso.js'
+import { geoCylindre } from '../modeles/geometries.js'
 
 // Distance (en mètres) à laquelle un villageois remarque le joueur et le salue.
 const DISTANCE_SALUT = 2.6
@@ -46,7 +47,7 @@ export class PNJ extends Marcheur {
     this.placer(x, z, this.angleDepart)
 
     // Zone invisible autour de lui, plus grande que lui : facile à toucher du doigt.
-    const zone = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 1.8, 8), MATERIAU_INVISIBLE)
+    const zone = new THREE.Mesh(geoCylindre(0.6, 0.6, 1.8, 8), MATERIAU_INVISIBLE)
     zone.position.y = 0.9
     zone.userData.toucher = { type: 'pnj', pnj: this }
     this.modele.add(zone)

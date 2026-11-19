@@ -12,6 +12,7 @@
  */
 import * as THREE from 'three'
 import { MATERIAU_INVISIBLE } from '../modeles/formes.js'
+import { geoBoite } from '../modeles/geometries.js'
 
 /**
  * Les deux places d'un banc (un banc fait 1,6 m de long : deux personnes).
@@ -40,7 +41,7 @@ export function placesDeBanc(x, z, angle, hauteur = 0.5) {
  * @param {object} [taille] { largeur, profondeur, hauteur } de la zone
  */
 export function ajouterSiege({ groupe, touchables }, siege, { largeur = 0.8, profondeur = 0.7, hauteur = 1.1 } = {}) {
-  const zone = new THREE.Mesh(new THREE.BoxGeometry(largeur, hauteur, profondeur), MATERIAU_INVISIBLE)
+  const zone = new THREE.Mesh(geoBoite(largeur, hauteur, profondeur), MATERIAU_INVISIBLE)
   zone.position.set(siege.x, hauteur / 2, siege.z)
   zone.rotation.y = siege.angle
   zone.userData.toucher = { type: 'siege', siege }

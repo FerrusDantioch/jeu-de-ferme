@@ -12,6 +12,7 @@ import * as THREE from 'three'
 import { materiau, PALETTE } from '../modeles/materiaux.js'
 import { boite, boule, cylindre, MATERIAU_INVISIBLE } from '../modeles/formes.js'
 import { fusionnerParMateriau } from '../modeles/fusion.js'
+import { geoCone, geoSphere } from '../modeles/geometries.js'
 
 // Où sont cachés les œufs de Pâques (près des arbres) : [x, z].
 export const CACHETTES_OEUFS = [
@@ -34,7 +35,7 @@ function sapin() {
   g.add(cylindre(0.15, 0.5, PALETTE.tronc, 0, 0, 0, 6))
   const etages = [[1.0, 1.0, 0.4], [0.8, 0.9, 1.0], [0.55, 0.8, 1.55]]
   for (const [r, h, y] of etages) {
-    const cone = new THREE.Mesh(new THREE.ConeGeometry(r, h, 8), materiau(PALETTE.feuillage))
+    const cone = new THREE.Mesh(geoCone(r, h, 8), materiau(PALETTE.feuillage))
     cone.position.y = y + h / 2
     cone.castShadow = true
     g.add(cone)
@@ -72,7 +73,7 @@ function coeurSurPiquet() {
   const coeur = new THREE.Group()
   coeur.add(boule(0.13, PALETTE.fleurRose, -0.09, 0.08, 0, 1))
   coeur.add(boule(0.13, PALETTE.fleurRose, 0.09, 0.08, 0, 1))
-  const pointe = new THREE.Mesh(new THREE.ConeGeometry(0.19, 0.28, 4), materiau(PALETTE.fleurRose))
+  const pointe = new THREE.Mesh(geoCone(0.19, 0.28, 4), materiau(PALETTE.fleurRose))
   pointe.rotation.z = Math.PI
   pointe.position.y = -0.08
   coeur.add(pointe)
@@ -91,7 +92,7 @@ function guirlande(x1, x2, z, couleurs) {
   const nb = Math.floor(longueur / 0.35)
   for (let k = 1; k < nb; k++) {
     const x = x1 + (longueur * k) / nb
-    const fanion = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.3, 3), materiau(couleurs[k % couleurs.length]))
+    const fanion = new THREE.Mesh(geoCone(0.12, 0.3, 3), materiau(couleurs[k % couleurs.length]))
     fanion.rotation.z = Math.PI
     fanion.scale.z = 0.25
     fanion.position.set(x, 2.06, z)
@@ -120,7 +121,7 @@ export function creerDecorationsFete(fete, grille, oeufsTrouves = []) {
       oeuf.position.set(x, 0, z)
       oeuf.rotation.y = n
       // Zone invisible plus grande que l'œuf : facile à toucher.
-      const zone = new THREE.Mesh(new THREE.SphereGeometry(0.45, 8, 6), MATERIAU_INVISIBLE)
+      const zone = new THREE.Mesh(geoSphere(0.45, 8, 6), MATERIAU_INVISIBLE)
       zone.position.y = 0.25
       zone.userData.toucher = { type: 'oeufPaques', numero: String(n), objet: oeuf }
       oeuf.add(zone)

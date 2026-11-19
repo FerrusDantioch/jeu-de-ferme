@@ -12,6 +12,7 @@ import { ajouterSiege } from '../monde/sieges.js'
 import * as THREE from 'three'
 import { MATERIAU_INVISIBLE } from '../modeles/formes.js'
 import { creerPnjDuLieu } from './pnj-du-lieu.js'
+import { geoBoite } from '../modeles/geometries.js'
 
 export function creerLieu(outils) {
   const piece = creerPiece({ id: 'maison', titre: '🏠 La maison', largeur: 10, profondeur: 8 })
@@ -23,7 +24,7 @@ export function creerLieu(outils) {
   placer(creerEtagere(1.4), -1.9, -3.7, { obstacle: [1.4, 0.45] })
   placer(creerCuisine(2.2), 3.4, -3.6, { obstacle: [2.2, 0.6] })
   // On touche la cuisine pour cuisiner (voir src/donnees/recettes.js).
-  const zoneCuisine = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.6, 1.0), MATERIAU_INVISIBLE)
+  const zoneCuisine = new THREE.Mesh(geoBoite(2.4, 1.6, 1.0), MATERIAU_INVISIBLE)
   zoneCuisine.position.set(3.4, 0.8, -3.5)
   zoneCuisine.userData.toucher = { type: 'cuisine', approche: { x: 3.4, z: -2.6 } }
   piece.groupe.add(zoneCuisine)

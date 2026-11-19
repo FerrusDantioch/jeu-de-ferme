@@ -10,6 +10,7 @@ import { GrilleChemin } from '../moteur/chemin.js'
 import { fusionnerParMateriau } from '../modeles/fusion.js'
 import { boite, MATERIAU_INVISIBLE } from '../modeles/formes.js'
 import { PALETTE } from '../modeles/materiaux.js'
+import { geoBoite } from '../modeles/geometries.js'
 
 // Distance aux murs que le personnage garde (pour ne pas « rentrer » dans les murs).
 const MARGE_MURS = 0.4
@@ -72,7 +73,7 @@ export function creerPiece({
     titre: '🌳 La ferme',
   }
   // Zone invisible autour de la porte et du paillasson : facile à toucher.
-  const zone = new THREE.Mesh(new THREE.BoxGeometry(2.0, 2.4, 1.6), MATERIAU_INVISIBLE)
+  const zone = new THREE.Mesh(geoBoite(2.0, 2.4, 1.6), MATERIAU_INVISIBLE)
   zone.position.set(0, 1.2, p / 2 - 0.3)
   zone.userData.toucher = { type: 'porte', porte }
   groupe.add(zone)

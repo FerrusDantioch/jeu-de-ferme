@@ -12,6 +12,7 @@ import { MATERIAU_INVISIBLE } from '../modeles/formes.js'
 import { creerPnjDuLieu } from './pnj-du-lieu.js'
 import { creerAnimauxDuLieu, animerAnimaux } from './animaux-du-lieu.js'
 import { ajouterSiege } from '../monde/sieges.js'
+import { geoBoite } from '../modeles/geometries.js'
 
 // Position (x) des trois stalles, de gauche à droite (places 0, 1 et 2).
 const STALLES = [-3, 0, 3]
@@ -48,7 +49,7 @@ export function creerLieu(outils) {
   placer(creerBotteDeFoin(), -5.2, 2.05, { angle: Math.PI / 2, y: 0.55 })
   placer(creerLanterne(), -5.2, 1.5, { y: 0.55 })
   // Ce tas de foin sert de réserve de nourriture gratuite : on peut le toucher.
-  const zoneReserve = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.4, 2.4), MATERIAU_INVISIBLE)
+  const zoneReserve = new THREE.Mesh(geoBoite(1.4, 1.4, 2.4), MATERIAU_INVISIBLE)
   zoneReserve.position.set(-5.2, 0.7, 2.05)
   zoneReserve.userData.toucher = { type: 'reserve', approche: { x: -4.0, z: 2.05 } }
   piece.groupe.add(zoneReserve)

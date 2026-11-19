@@ -9,6 +9,7 @@ import * as THREE from 'three'
 import { materiau, PALETTE } from './materiaux.js'
 import { boite, boule } from './formes.js'
 import { fusionnerEnPlace } from './fusion.js'
+import { geoCone, geoDisque, geoSphere } from './geometries.js'
 
 /** Optimisation : on « colle » les pièces de la tête et du corps (les pattes restent séparées). */
 function optimiser(g) {
@@ -21,7 +22,7 @@ function optimiser(g) {
 const OMBRE = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.16, depthWrite: false })
 
 function ombreRonde(rayon) {
-  const o = new THREE.Mesh(new THREE.CircleGeometry(rayon, 14), OMBRE)
+  const o = new THREE.Mesh(geoDisque(rayon, 14), OMBRE)
   o.rotation.x = -Math.PI / 2
   o.position.y = 0.01
   return o
@@ -58,13 +59,13 @@ export function creerPoule() {
   tete.position.set(0, 0.5, 0.14)
   tete.add(boule(0.11, PALETTE.blanc, 0, 0, 0, 1))
   tete.add(boite(0.03, 0.08, 0.12, PALETTE.tomate, 0, 0.08, 0)) // crête
-  const bec = new THREE.Mesh(new THREE.ConeGeometry(0.035, 0.08, 4), materiau(PALETTE.fleurJaune))
+  const bec = new THREE.Mesh(geoCone(0.035, 0.08, 4), materiau(PALETTE.fleurJaune))
   bec.rotation.x = Math.PI / 2
   bec.position.set(0, -0.01, 0.12)
   tete.add(bec)
   tete.add(boule(0.025, PALETTE.tomate, 0, -0.07, 0.08)) // barbillon
   for (const cote of [-1, 1]) {
-    const oeil = new THREE.Mesh(new THREE.SphereGeometry(0.018, 5, 4), materiau(PALETTE.noir))
+    const oeil = new THREE.Mesh(geoSphere(0.018, 5, 4), materiau(PALETTE.noir))
     oeil.position.set(cote * 0.075, 0.02, 0.07)
     tete.add(oeil)
   }
@@ -95,7 +96,7 @@ export function creerVache() {
     tete.add(boite(0.06, 0.12, 0.06, PALETTE.paille, cote * 0.15, 0.17, 0)) // cornes
     const oreille = boite(0.14, 0.06, 0.08, PALETTE.blanc, cote * 0.25, 0.05, 0)
     tete.add(oreille)
-    const oeil = new THREE.Mesh(new THREE.SphereGeometry(0.03, 5, 4), materiau(PALETTE.noir))
+    const oeil = new THREE.Mesh(geoSphere(0.03, 5, 4), materiau(PALETTE.noir))
     oeil.position.set(cote * 0.11, 0.05, 0.23)
     tete.add(oeil)
   }
@@ -127,7 +128,7 @@ export function creerMouton() {
     const oreille = boite(0.14, 0.05, 0.07, PALETTE.toitArdoise, cote * 0.16, -0.02, 0.02)
     oreille.rotation.z = -cote * 0.4
     tete.add(oreille)
-    const oeil = new THREE.Mesh(new THREE.SphereGeometry(0.022, 5, 4), materiau(PALETTE.blanc))
+    const oeil = new THREE.Mesh(geoSphere(0.022, 5, 4), materiau(PALETTE.blanc))
     oeil.position.set(cote * 0.07, 0.01, 0.17)
     tete.add(oeil)
   }

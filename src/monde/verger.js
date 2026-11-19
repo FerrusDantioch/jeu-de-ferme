@@ -9,11 +9,12 @@ import { materiau, PALETTE } from '../modeles/materiaux.js'
 import { MATERIAU_INVISIBLE } from '../modeles/formes.js'
 import { ARBRES_FRUITIERS, FRUITS, FRUITS_MAXIMUM } from '../donnees/vergers.js'
 import { observerArbre } from '../jeu/verger.js'
+import { geoCylindre, geoIcosaedre } from '../modeles/geometries.js'
 
-const geoTronc = new THREE.CylinderGeometry(0.16, 0.22, 1.1, 6).translate(0, 0.55, 0)
-const geoFeuillage = new THREE.IcosahedronGeometry(1.0, 1).scale(1, 0.85, 1).translate(0, 1.75, 0)
-const geoHaut = new THREE.IcosahedronGeometry(0.55, 0).translate(0.2, 2.35, 0.15)
-const geoFruit = new THREE.IcosahedronGeometry(0.11, 0)
+const geoTronc = geoCylindre(0.16, 0.22, 1.1, 6).translate(0, 0.55, 0)
+const geoFeuillage = geoIcosaedre(1.0, 1).scale(1, 0.85, 1).translate(0, 1.75, 0)
+const geoHaut = geoIcosaedre(0.55, 0).translate(0.2, 2.35, 0.15)
+const geoFruit = geoIcosaedre(0.11, 0)
 
 // Où pendent les fruits (à la surface du feuillage, côté visible) : 2 par fruit.
 const PLACES = []
@@ -52,7 +53,7 @@ export function creerVerger({ groupe, grille, touchables, feuillage, haut }) {
     grille.bloquerCercle(a.x, a.z, 0.3, 0.35)
 
     // Zone invisible à toucher (tout l'arbre).
-    const zone = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 3, 8), MATERIAU_INVISIBLE)
+    const zone = new THREE.Mesh(geoCylindre(1.2, 1.2, 3, 8), MATERIAU_INVISIBLE)
     zone.position.set(a.x, 1.5, a.z)
     zone.userData.toucher = { type: 'arbre', arbre: a, approche: { x: a.x, z: a.z + 1.3 }, objet: g }
     groupe.add(zone)

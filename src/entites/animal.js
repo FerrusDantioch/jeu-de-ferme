@@ -12,6 +12,7 @@ import { MATERIAU_INVISIBLE } from '../modeles/formes.js'
 import { ESPECES, SOINS } from '../donnees/animaux.js'
 import { infosObjet } from '../donnees/objets.js'
 import { trouver } from '../jeu/elevage.js'
+import { geoCylindre } from '../modeles/geometries.js'
 
 // Réglages propres à chaque espèce : vitesse de marche, taille de la zone à toucher,
 // hauteur de l'icône, et la tête baissée (picorer / brouter).
@@ -53,7 +54,7 @@ export class Animal {
 
     // Zone invisible pour le toucher (plus grande que l'animal).
     const r = this.allure.rayonToucher
-    const zoneToucher = new THREE.Mesh(new THREE.CylinderGeometry(r, r, r * 2, 8), MATERIAU_INVISIBLE)
+    const zoneToucher = new THREE.Mesh(geoCylindre(r, r, r * 2, 8), MATERIAU_INVISIBLE)
     zoneToucher.position.y = r
     zoneToucher.userData.toucher = { type: 'animal', animal: this }
     this.modele.add(zoneToucher)
